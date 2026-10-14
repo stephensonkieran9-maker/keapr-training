@@ -11,7 +11,11 @@ export function Welcome({ data }: { data: DashboardData }) {
   const summary =
     data.courses.length === 0
       ? "No training has been assigned to you yet. Your manager will let you know when it has."
-      : `Pick up where you left off. You have ${inProgress} ${inProgress === 1 ? "course" : "courses"} in progress and ${notStarted} not yet started.`;
+      : inProgress === 0 && notStarted > 0
+        ? `You have ${notStarted} ${notStarted === 1 ? "course" : "courses"} ready to start.`
+        : inProgress === 0
+          ? "You've completed all your assigned training."
+          : `Pick up where you left off. You have ${inProgress} ${inProgress === 1 ? "course" : "courses"} in progress${notStarted ? ` and ${notStarted} not yet started` : ""}.`;
 
   return (
     <section className="welcome">

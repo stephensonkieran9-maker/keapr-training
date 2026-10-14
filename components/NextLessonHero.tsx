@@ -14,7 +14,7 @@ export function NextLessonHero({ lesson, isDemo }: { lesson: NextLesson; isDemo:
     <section className="hero" aria-labelledby="cur-title">
       <div>
         <div className="chips">
-          <span className="chip live">Next lesson · In progress</span>
+          <span className="chip live">{lesson.lessonsPassed > 0 || lesson.watchedSeconds > 0 ? "Next lesson · In progress" : "Next lesson · Ready to start"}</span>
           <span className="chip">Lesson {lesson.position} of {lesson.lessonCount}</span>
         </div>
         <h2 id="cur-title">{lesson.courseTitle}</h2>
