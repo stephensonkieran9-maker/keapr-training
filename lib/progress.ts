@@ -20,6 +20,8 @@ export interface EnrolmentRow {
   title: string;
   description: string;
   isDemo: boolean;
+  versionId?: string;
+  version?: number;
   completedAt: string | null;
   assignedAt: string;
   lessons: LessonRow[];

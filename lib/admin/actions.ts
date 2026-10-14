@@ -242,3 +242,27 @@ export async function publishCourse(courseId: string, details: { title: string; 
   revalidatePath("/admin/courses");
   return { ok: true, message: "Published. New assignments will get this version; people already on the course keep the version they started." };
 }
+
+// ─── Video uploads ───────────────────────────────────────────────────────
+
+export interface UploadTicket {
+  ok: boolean;
+  error?: string;
+  path?: string;
+  token?: string;
+}
+
+/** A one-time upload URL into the private lesson-videos bucket. The file
+ * goes straight from the admin's browser to storage. */
+export async function createVideoUpload(courseId: string, fileName: string): Promise<UploadTicket> {
+  const { profile: me } = await requireAdmin();
+  const safe = fileName.toLowerCase().replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "").slice(-60) || "video.mp4";
+  const path = `${courseId}/${Date.now()}-${safe}`;
+  const admin = createAdminClient();
+  const { data, error } = await admin.storage.from("lesson-videos").createSignedUploadUrl(path);
+  if (error || !data) {
+    return { ok: false, error: `Upload couldn't start: ${error?.message ?? "unknown error"}. Has migration 0005 been run?` };
+  }
+  await audit(me.id, "video_upload", "course", courseId, { path });
+  return { ok: true, path: data.path, token: data.token };
+}

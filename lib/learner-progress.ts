@@ -17,7 +17,7 @@ export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: s
     .from("enrolments")
     .select(
       `id, assigned_at, completed_at,
-       course_versions ( id, course_id, title, description, is_demo,
+       course_versions ( id, course_id, version, title, description, is_demo,
          lessons ( id, position, title, objectives, video_seconds, required_watch_ratio, pass_ratio, is_required, estimated_minutes ) )`,
     )
     .eq("learner_id", learnerId)
@@ -30,11 +30,11 @@ export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: s
     id: string; position: number; title: string; objectives: string[] | null; video_seconds: number;
     required_watch_ratio: number | string; pass_ratio: number | string; is_required: boolean; estimated_minutes: number | null;
   };
-  type VersionDb = { id: string; course_id: string; title: string; description: string; is_demo: boolean; lessons: LessonDb[] | null };
+  type VersionDb = { id: string; course_id: string; version: number; title: string; description: string; is_demo: boolean; lessons: LessonDb[] | null };
   type EnrolmentDb = { id: string; assigned_at: string; completed_at: string | null; course_versions: VersionDb | VersionDb[] | null };
 
   const enrolments: EnrolmentRow[] = ((enrolmentRows ?? []) as unknown as EnrolmentDb[])
-    .map((row) => {
+    .map((row): EnrolmentRow | null => {
       const v = Array.isArray(row.course_versions) ? row.course_versions[0] : row.course_versions;
       if (!v) return null;
       return {
@@ -43,6 +43,8 @@ export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: s
         title: v.title,
         description: v.description,
         isDemo: v.is_demo,
+        versionId: v.id,
+        version: v.version,
         completedAt: row.completed_at,
         assignedAt: row.assigned_at,
         lessons: (v.lessons ?? []).map((l) => ({

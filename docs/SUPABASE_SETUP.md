@@ -40,6 +40,14 @@ SQL Editor → paste `supabase/migrations/0003_publish_course.sql` → Run. This
 
 SQL Editor → paste `supabase/migrations/0004_staff_overview.sql` → Run. The staff page then loads with one query. Without it, the page still works but is slower.
 
+## 7. Run the fifth migration (lessons and quizzes)
+
+SQL Editor → paste `supabase/migrations/0005_lessons_and_quizzes.sql` → Run. Adds the private `lesson-videos` storage bucket and the function that scores quizzes on the server. Without it, video uploads and quiz submissions fail.
+
+## 8. Add the Getting started course
+
+SQL Editor → paste `supabase/seed/getting_started_course.sql` → Run. Creates *Getting started with Keapr Training* (three lessons about how the app works) and assigns it to everyone active. Upload the videos from the course builder, then publish.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

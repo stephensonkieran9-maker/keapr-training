@@ -2,7 +2,7 @@
 
 Private internal training app for Keapr staff: video lessons followed by quizzes, where passing a quiz unlocks the next lesson.
 
-**Status:** sign-in and the learner dashboard are connected to Supabase. A public demo with sample data is at `/demo`. The lesson player, quizzes and admin tools are next. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
+**Status:** sign-in, learner dashboard, course pages, lesson player with watch tracking, server-scored quizzes, and admin (overview, staff, course builder with video upload) are built. Public previews with sample data: `/demo` and `/demo/admin`. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
 
 ## Stack
 
@@ -33,8 +33,9 @@ app/
   layout.tsx            fonts, icon sprite, saved light/dark choice
   globals.css           theme tokens and all styles
   dashboard/page.tsx    learner dashboard
-  lessons/[lessonId]/   placeholder: lesson player and quiz come next
-  courses/[courseId]/   placeholder: course overview comes next
+  (app)/lessons/[id]    lesson player, watch tracking, quiz
+  (app)/courses/[id]    course overview and completion record
+  (app)/admin/          overview, staff, course builder
 components/             Sidebar, TopBar, NextLessonHero, StatTiles,
                         LessonSteps, CourseGrid, ResourceList, ...
 lib/
@@ -56,7 +57,7 @@ See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Without the Supabase env v
 npm test
 ```
 
-Covers the progression rules in `lib/progress.ts`: exact pass ratio, unlocking, retries keeping a pass, course completion.
+Covers progression rules (`lib/progress.ts`), watched-time ranges (`lib/video-ranges.ts`), course draft validation and the admin overview calculations.
 
 The service role key is server-only. Never expose it in browser code or commit it.
 

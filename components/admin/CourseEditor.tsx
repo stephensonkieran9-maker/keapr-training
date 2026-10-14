@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { publishCourse, saveCourseDraft, type ActionState } from "@/lib/admin/actions";
+import { createVideoUpload, publishCourse, saveCourseDraft, type ActionState } from "@/lib/admin/actions";
+import { getBrowserClient } from "@/lib/supabase/browser";
 import {
   correctNeeded,
   emptyLesson,
@@ -121,6 +122,7 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
       {draft.lessons.map((lesson, i) => (
         <LessonEditor
           key={lesson.key}
+          courseId={courseId}
           lesson={lesson}
           index={i}
           count={draft.lessons.length}
@@ -160,8 +162,9 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
 }
 
 function LessonEditor({
-  lesson, index, count, open, onToggle, onChange, onQuestionChange, onAddQuestion, onRemoveQuestion, onMove, onRemove,
+  courseId, lesson, index, count, open, onToggle, onChange, onQuestionChange, onAddQuestion, onRemoveQuestion, onMove, onRemove,
 }: {
+  courseId: string;
   lesson: DraftLesson;
   index: number;
   count: number;
@@ -210,8 +213,8 @@ function LessonEditor({
 
         <div className="form-row">
           <div className="field" style={{ gridColumn: "span 2" }}>
-            <label htmlFor={id("video")}>Video link</label>
-            <input id={id("video")} value={lesson.videoRef} placeholder="Add once videos are ready" onChange={(e) => onChange({ videoRef: e.target.value })} />
+            <span className="label">Video</span>
+            <VideoUpload courseId={courseId} lesson={lesson} onUploaded={(ref, secs) => onChange({ videoRef: ref, videoSeconds: secs || lesson.videoSeconds })} />
           </div>
           <div className="field">
             <span className="label" id={id("lenlabel")}>Video length</span>
@@ -331,4 +334,69 @@ function LessonEditor({
       </div>
     </details>
   );
+}
+
+const MAX_UPLOAD_MB = 50;
+
+function VideoUpload({ courseId, lesson, onUploaded }: { courseId: string; lesson: DraftLesson; onUploaded: (ref: string, seconds: number) => void }) {
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const id = `${lesson.key}-file`;
+  const hasVideo = lesson.videoRef.startsWith("storage:") || /^https:\/\//.test(lesson.videoRef);
+  const label = lesson.videoRef.startsWith("storage:") ? lesson.videoRef.split("/").pop()?.replace(/^\d+-/, "") : lesson.videoRef;
+
+  async function handle(file: File) {
+    setError(null);
+    if (!file.type.startsWith("video/")) return setError("Choose a video file (MP4 works best).");
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+      return setError(`That file is ${(file.size / 1048576).toFixed(0)} MB. Videos need to be under ${MAX_UPLOAD_MB} MB on the current Supabase plan. Export at 720p to make it smaller.`);
+    }
+    setBusy(true);
+    setStatus("Reading video length…");
+    const seconds = await readDuration(file);
+    setStatus("Uploading…");
+    const ticket = await createVideoUpload(courseId, file.name);
+    if (!ticket.ok || !ticket.path || !ticket.token) {
+      setBusy(false);
+      setStatus(null);
+      return setError(ticket.error ?? "Upload couldn't start.");
+    }
+    const { error: upErr } = await getBrowserClient().storage.from("lesson-videos").uploadToSignedUrl(ticket.path, ticket.token, file, { contentType: file.type });
+    setBusy(false);
+    if (upErr) {
+      setStatus(null);
+      return setError(`Upload failed: ${upErr.message}`);
+    }
+    onUploaded(`storage:lesson-videos/${ticket.path}`, Math.round(seconds));
+    setStatus("Uploaded. Save the draft and publish to make it live.");
+  }
+
+  return (
+    <div className="form-stack" style={{ gap: 8 }}>
+      <div className="option-row">
+        <span className="input" style={{ color: hasVideo ? "var(--fg)" : "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {hasVideo ? label : "No video yet. Learners see a placeholder."}
+        </span>
+        <label htmlFor={id} className={`btn btn-ghost btn-sm${busy ? " disabled" : ""}`} style={{ cursor: busy ? "wait" : "pointer" }}>
+          {busy ? "Uploading…" : hasVideo ? "Replace" : "Upload video"}
+        </label>
+        <input id={id} type="file" accept="video/*" className="sr-only" disabled={busy}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) void handle(f); e.target.value = ""; }} />
+      </div>
+      {status && !error && <p className="hint">{status}</p>}
+      {error && <p className="hint" style={{ color: "#9a3326" }} role="alert">{error}</p>}
+    </div>
+  );
+}
+
+function readDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const v = document.createElement("video");
+    v.preload = "metadata";
+    v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(Number.isFinite(v.duration) ? v.duration : 0); };
+    v.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+    v.src = url;
+  });
 }
