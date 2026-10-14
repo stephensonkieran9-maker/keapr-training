@@ -5,15 +5,17 @@ import type { Learner } from "@/lib/types";
 export function AppShell({
   learner,
   active,
+  demoMode = false,
   children,
 }: {
   learner: Learner;
   active: NavKey;
+  demoMode?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="app">
-      <Sidebar learner={learner} active={active} />
+      <Sidebar learner={learner} active={active} demoMode={demoMode} />
       <div className="main">
         <div className="mobile-nav">
           <span className="mark">K</span>Keapr Training

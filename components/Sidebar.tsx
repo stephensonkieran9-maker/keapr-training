@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Icon, type IconName } from "./Icons";
 import type { Learner } from "@/lib/types";
+import { signOut } from "@/app/auth/actions";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export type NavKey = "dashboard" | "training" | "resources" | "help" | "admin";
 
@@ -11,7 +13,10 @@ const learningLinks: { key: NavKey; label: string; href: string; icon: IconName 
   { key: "help", label: "Help", href: "#", icon: "help" },
 ];
 
-export function Sidebar({ learner, active }: { learner: Learner; active: NavKey }) {
+export function Sidebar({ learner, active, demoMode = false }: { learner: Learner; active: NavKey; demoMode?: boolean }) {
+  const base = demoMode ? "/demo" : "/dashboard";
+  const links = learningLinks.map((l) => ({ ...l, href: l.href.replace("/dashboard", base) }));
+  const canSignOut = !demoMode && isSupabaseConfigured();
   return (
     <aside className="side" aria-label="Main navigation">
       <div className="brand">
@@ -23,7 +28,7 @@ export function Sidebar({ learner, active }: { learner: Learner; active: NavKey 
 
       <div className="navlabel">Learning</div>
       <ul className="nav">
-        {learningLinks.map((l) => (
+        {links.map((l) => (
           <li key={l.key}>
             <Link href={l.href} aria-current={active === l.key ? "page" : undefined}>
               <Icon name={l.icon} />
@@ -53,9 +58,17 @@ export function Sidebar({ learner, active }: { learner: Learner; active: NavKey 
           {learner.firstName}
           <small>{learner.team}</small>
         </div>
-        <button className="iconbtn" aria-label="Sign out">
-          <Icon name="out" />
-        </button>
+        {canSignOut ? (
+          <form action={signOut} className="signout">
+            <button className="iconbtn" type="submit" aria-label="Sign out">
+              <Icon name="out" />
+            </button>
+          </form>
+        ) : demoMode ? (
+          <Link className="iconbtn" href="/login" aria-label="Sign in">
+            <Icon name="out" />
+          </Link>
+        ) : null}
       </div>
     </aside>
   );

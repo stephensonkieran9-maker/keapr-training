@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon } from "./Icons";
 import { ProgressBar } from "./ProgressBar";
-import { formatDuration, percent } from "@/lib/data";
+import { formatDuration, percent } from "@/lib/format";
 import type { NextLesson } from "@/lib/types";
 
 export function NextLessonHero({ lesson, isDemo }: { lesson: NextLesson; isDemo: boolean }) {

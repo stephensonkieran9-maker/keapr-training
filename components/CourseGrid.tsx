@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Icon } from "./Icons";
 import { ProgressBar } from "./ProgressBar";
-import { formatShortDate, percent } from "@/lib/data";
+import { formatShortDate, percent } from "@/lib/format";
 import type { CourseStatus, CourseSummary } from "@/lib/types";
 
 type Filter = "all" | CourseStatus;

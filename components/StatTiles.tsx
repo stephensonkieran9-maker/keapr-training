@@ -1,5 +1,5 @@
 import { Icon } from "./Icons";
-import { formatShortDate } from "@/lib/data";
+import { formatShortDate } from "@/lib/format";
 import type { CourseSummary, NextLesson } from "@/lib/types";
 
 export function StatTiles({ courses, nextLesson }: { courses: CourseSummary[]; nextLesson: NextLesson | null }) {

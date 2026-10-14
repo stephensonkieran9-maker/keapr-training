@@ -189,3 +189,26 @@ button,a{font:inherit;color:inherit}
   .step .right{grid-column:2;justify-content:flex-start}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* Sign-in pages */
+.auth-page{min-height:100%;display:grid;place-items:center;padding:32px 16px;background:var(--bg)}
+.auth-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:32px 28px;display:flex;flex-direction:column;gap:14px}
+.auth-brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:18px;text-decoration:none;color:var(--fg);margin-bottom:8px}
+.auth-brand .mark{width:32px;height:32px;border-radius:8px;background:var(--forest);color:var(--forest-ink);display:grid;place-items:center}
+.auth-brand small{display:block;font-family:var(--body);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.auth-card h1{font-size:26px;font-weight:800}
+.auth-intro{margin:0;color:var(--muted)}
+.auth-form{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.auth-form label{font-size:14px;font-weight:600}
+.auth-form input{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.auth-form input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.auth-form .btn{margin-top:8px;width:100%}
+.auth-form .btn:disabled{opacity:.7;cursor:wait}
+.label-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.label-row a,.auth-foot a{color:var(--accent);font-weight:600;font-size:14px}
+.hint{margin:-6px 0 6px;font-size:13px;color:var(--muted)}
+.form-error{margin:0;padding:10px 12px;border-radius:8px;background:#fbe4e1;color:#8a2a1f;font-size:14px}
+.form-ok{margin:0;padding:12px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-size:14px}
+.auth-foot{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+:root[data-mode="dark"] .form-error{background:#3d1d19;color:#f2b8ae}
+.signout{margin:0}

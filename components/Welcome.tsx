@@ -29,9 +29,11 @@ export function Welcome({ data }: { data: DashboardData }) {
         <p>{summary}</p>
       </div>
       <div className="actions">
-        <div className="metric">
-          Lessons passed<strong>{passed} of {total}</strong>
-        </div>
+        {total > 0 && (
+          <div className="metric">
+            Lessons passed<strong>{passed} of {total}</strong>
+          </div>
+        )}
         <Link className="btn btn-ghost" href="#resources">
           <Icon name="folder" />
           Resources

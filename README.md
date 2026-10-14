@@ -2,7 +2,7 @@
 
 Private internal training app for Keapr staff: video lessons followed by quizzes, where passing a quiz unlocks the next lesson.
 
-**Status:** the learner dashboard is built and runs on clearly labelled demo data. Sign-in, the lesson player, quizzes and admin tools are next. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
+**Status:** sign-in and the learner dashboard are connected to Supabase. A public demo with sample data is at `/demo`. The lesson player, quizzes and admin tools are next. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
 
 ## Stack
 
@@ -44,12 +44,17 @@ lib/
 supabase/migrations/    database schema and access policies
 ```
 
-## Connecting Supabase (next step)
+## Supabase
 
-1. Create a **development** Supabase project. Don't use any Keapr production database.
-2. Run `supabase/migrations/0001_initial_schema.sql` in the SQL editor.
-3. Copy `.env.example` to `.env.local` and fill in the values from Project Settings → API. Add the same values in Vercel → Settings → Environment Variables.
-4. Replace the demo data in `lib/data.ts` with real queries.
+See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Without the Supabase env vars the app runs in demo mode (no sign-in, sample data).
+
+## Tests
+
+```bash
+npm test
+```
+
+Covers the progression rules in `lib/progress.ts`: exact pass ratio, unlocking, retries keeping a pass, course completion.
 
 The service role key is server-only. Never expose it in browser code or commit it.
 
