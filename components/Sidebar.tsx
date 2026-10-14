@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./Icons";
 import type { Learner } from "@/lib/types";
 import { signOut } from "@/app/auth/actions";
 
-export type NavKey = "dashboard" | "training" | "resources" | "help" | "staff" | "courses";
+export type NavKey = "dashboard" | "training" | "resources" | "help" | "overview" | "staff" | "courses";
 
 const learningLinks: { key: NavKey; label: string; href: string; icon: IconName }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "grid" },
@@ -17,7 +17,9 @@ const learningLinks: { key: NavKey; label: string; href: string; icon: IconName 
 
 export function Sidebar({ learner, demoMode = false, canSignOut = false }: { learner: Learner; demoMode?: boolean; canSignOut?: boolean }) {
   const pathname = usePathname();
-  const active: NavKey = pathname.startsWith("/admin/staff")
+  const active: NavKey = pathname === "/admin" || pathname === "/demo/admin"
+    ? "overview"
+    : pathname.startsWith("/admin/staff")
     ? "staff"
     : pathname.startsWith("/admin/courses")
       ? "courses"
@@ -51,6 +53,12 @@ export function Sidebar({ learner, demoMode = false, canSignOut = false }: { lea
         <>
           <div className="navlabel" style={{ marginTop: 24 }}>Admin</div>
           <ul className="nav">
+            <li>
+              <Link href="/admin" aria-current={active === "overview" ? "page" : undefined}>
+                <Icon name="progress" />
+                Overview
+              </Link>
+            </li>
             <li>
               <Link href="/admin/staff" aria-current={active === "staff" ? "page" : undefined}>
                 <Icon name="users" />

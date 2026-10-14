@@ -17,10 +17,11 @@ export function createAdminClient() {
 
 /** Throws a readable error (and logs the detail) when an admin query fails,
  * instead of quietly showing an empty list. */
-export function check<T>(label: string, result: { data: T; error: { message: string; code?: string } | null }): T {
+export function check<T>(label: string, result: { data: T | null; error: { message: string; code?: string } | null }): T {
   if (result.error) {
     console.error(`[admin] ${label} failed: ${result.error.code ?? ""} ${result.error.message}`);
     throw new Error(`Couldn't load ${label}: ${result.error.message}`);
   }
+  if (result.data === null) throw new Error(`Couldn't load ${label}: no data returned`);
   return result.data;
 }
