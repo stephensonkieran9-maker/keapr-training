@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./Icons";
 import type { Learner } from "@/lib/types";
 import { signOut } from "@/app/auth/actions";
 
-export type NavKey = "dashboard" | "training" | "resources" | "help" | "overview" | "staff" | "courses";
+export type NavKey = "dashboard" | "training" | "resources" | "help" | "overview" | "staff" | "courses" | "reports";
 
 const learningLinks: { key: NavKey; label: string; href: string; icon: IconName }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "grid" },
@@ -23,6 +23,8 @@ export function Sidebar({ learner, demoMode = false, canSignOut = false }: { lea
     ? "staff"
     : pathname.startsWith("/admin/courses")
       ? "courses"
+      : pathname.startsWith("/admin/reports")
+      ? "reports"
       : pathname.startsWith("/lessons") || pathname.startsWith("/courses")
         ? "training"
         : "dashboard";
@@ -69,6 +71,12 @@ export function Sidebar({ learner, demoMode = false, canSignOut = false }: { lea
               <Link href="/admin/courses" aria-current={active === "courses" ? "page" : undefined}>
                 <Icon name="book" />
                 Courses
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/reports" aria-current={active === "reports" ? "page" : undefined}>
+                <Icon name="chart" />
+                Reports
               </Link>
             </li>
           </ul>

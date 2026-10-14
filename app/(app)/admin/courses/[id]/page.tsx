@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icons";
 import { notFound } from "next/navigation";
 import { CourseEditor } from "@/components/admin/CourseEditor";
 import { requireAdmin } from "@/lib/auth";
@@ -29,6 +30,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
         </div>
         <div className="actions-row">
           {course.isDemo && <span className="demo">Demo content</span>}
+          <Link className="btn btn-ghost btn-sm" href={`/admin/courses/${course.id}/preview`} title="See the saved draft as staff will"><Icon name="eye" />Preview as learner</Link>
           {course.latestVersion ? <span className="badge active">Published v{course.latestVersion}</span> : <span className="badge draft">Draft</span>}
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 Private internal training app for Keapr staff: video lessons followed by quizzes, where passing a quiz unlocks the next lesson.
 
-**Status:** sign-in, learner dashboard, course pages, lesson player with watch tracking, server-scored quizzes, and admin (overview, staff, course builder with video upload) are built. Public previews with sample data: `/demo` and `/demo/admin`. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
+**Status:** sign-in, learner dashboard, course pages, lesson player with watch tracking, server-scored quizzes, and admin (overview, staff with search, course builder with video upload and learner preview, reports with CSV export) are built. Public previews with sample data: `/demo` and `/demo/admin`. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
 
 ## Stack
 
@@ -57,7 +57,7 @@ See [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md). Without the Supabase env v
 npm test
 ```
 
-Covers progression rules (`lib/progress.ts`), watched-time ranges (`lib/video-ranges.ts`), course draft validation and the admin overview calculations.
+Covers progression rules (`lib/progress.ts`), watched-time ranges (`lib/video-ranges.ts`), course draft validation, preview scoring, reports and CSV, and the admin overview calculations.
 
 The service role key is server-only. Never expose it in browser code or commit it.
 

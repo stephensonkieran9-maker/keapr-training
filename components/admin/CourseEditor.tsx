@@ -147,7 +147,7 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
 
       <div className="savebar">
         <span className="status-text">
-          {pending ? "Working…" : dirty ? "Unsaved changes" : latestVersion ? `Published as version ${latestVersion}` : "Not published yet"}
+          {pending ? "Working…" : dirty ? "Unsaved changes (save to see them in Preview)" : latestVersion ? `Published as version ${latestVersion}` : "Not published yet"}
           {!pending && problems.length > 0 && ` · ${problems.length} thing${problems.length === 1 ? "" : "s"} to fix before publishing`}
         </span>
         <div className="actions-row">

@@ -158,7 +158,7 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
   };
 }
 
-async function resolveVideo(ref: string | null): Promise<LessonView["video"]> {
+export async function resolveVideo(ref: string | null): Promise<LessonView["video"]> {
   const value = (ref ?? "").trim();
   if (value.startsWith("storage:")) {
     const path = value.slice("storage:".length).replace(/^lesson-videos\//, "");

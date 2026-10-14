@@ -15,8 +15,10 @@ export function useWatchTracker(opts: {
   requiredRatio: number;
   initialRanges: Range[];
   initialUnlocked: boolean;
+  /** Admin preview: track locally, never save. */
+  preview?: boolean;
 }) {
-  const { lessonId, duration, requiredRatio } = opts;
+  const { lessonId, duration, requiredRatio, preview = false } = opts;
   const [ranges, setRanges] = useState<Range[]>(() => mergeRanges(opts.initialRanges, duration));
   const [unlocked, setUnlocked] = useState(opts.initialUnlocked);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -38,6 +40,17 @@ export function useWatchTracker(opts: {
     closeCurrent();
     const batch = pending.current;
     pending.current = [];
+    if (preview) {
+      setRanges((r) => {
+        const merged = mergeRanges([...r, ...batch], duration);
+        if (!unlockedRef.current && meetsWatchRequirement(watchedSeconds(merged), duration, requiredRatio)) {
+          unlockedRef.current = true;
+          setUnlocked(true);
+        }
+        return merged;
+      });
+      return;
+    }
     saving.current = true;
     try {
       const res = await saveVideoProgress(lessonId, batch, position.current);
@@ -57,7 +70,7 @@ export function useWatchTracker(opts: {
     } finally {
       saving.current = false;
     }
-  }, [lessonId]);
+  }, [lessonId, preview, duration, requiredRatio]);
 
   /** Call on every time update while the video is playing. */
   const onTime = useCallback(
@@ -106,6 +119,12 @@ export function useWatchTracker(opts: {
     };
   }, [flush]);
 
+  /** Preview only: open the quiz without watching. */
+  const unlock = useCallback(() => {
+    unlockedRef.current = true;
+    setUnlocked(true);
+  }, []);
+
   const watched = Math.min(duration, watchedSeconds(ranges));
-  return { watched, unlocked, saveError, onTime, onSeek, onPause };
+  return { watched, unlocked, saveError, onTime, onSeek, onPause, unlock };
 }
