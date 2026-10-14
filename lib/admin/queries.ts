@@ -1,5 +1,5 @@
 import "server-only";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { check, createAdminClient } from "@/lib/supabase/admin";
 import { loadLearnerProgress } from "@/lib/learner-progress";
 import { normaliseDraft, newKey, type CourseDraft } from "./draft.ts";
 
@@ -58,11 +58,14 @@ export async function listStaff(): Promise<StaffRow[]> {
   }
 
   // Fallback until migration 0004 is run: slower, uses the auth admin API.
-  const [{ data: profiles }, { data: enrolments }, authUsers] = await Promise.all([
+  if (error) console.warn(`[admin] staff overview function unavailable (${error.message}); using slower fallback. Run migration 0004.`);
+  const [profilesRes, enrolmentsRes, authUsers] = await Promise.all([
     admin.from("profiles").select("id, full_name, email, role, is_active").order("full_name"),
     admin.from("enrolments").select("learner_id, completed_at").is("unassigned_at", null),
     authUserMap(),
   ]);
+  const profiles = check("staff", profilesRes);
+  const enrolments = check("assignments", enrolmentsRes);
 
   return (profiles ?? []).map((p) => {
     const mine = (enrolments ?? []).filter((e) => e.learner_id === p.id);
@@ -113,11 +116,14 @@ export interface CourseRow {
 
 export async function listCourses(): Promise<CourseRow[]> {
   const admin = createAdminClient();
-  const [{ data: courses }, { data: versions }, { data: enrolments }] = await Promise.all([
+  const [coursesRes, versionsRes, enrolmentsRes] = await Promise.all([
     admin.from("courses").select("id, title, description, is_demo, updated_at, draft").order("updated_at", { ascending: false }),
     admin.from("course_versions").select("id, course_id, version, status, published_at, lessons(count)"),
     admin.from("enrolments").select("course_version_id").is("unassigned_at", null),
   ]);
+  const courses = check("courses", coursesRes);
+  const versions = check("course versions", versionsRes);
+  const enrolments = check("assignments", enrolmentsRes);
 
   return (courses ?? []).map((c) => {
     const mine = (versions ?? []).filter((v) => v.course_id === c.id);
