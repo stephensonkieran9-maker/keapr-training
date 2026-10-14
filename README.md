@@ -8,7 +8,7 @@ Private internal training app for Keapr staff: video lessons followed by quizzes
 
 - Next.js 15 (App Router) + TypeScript
 - Plain CSS with theme tokens in `app/globals.css` (light by default, dark via the toggle)
-- Supabase for sign-in, the database and private file storage (not connected yet)
+- Supabase for sign-in, the database and private file storage
 - Hosted on Vercel
 
 ## Run it locally
@@ -40,7 +40,9 @@ components/             Sidebar, TopBar, NextLessonHero, StatTiles,
 lib/
   types.ts              data shapes the components render
   demo-data.ts          DEMO CONTENT ONLY, not approved training material
-  data.ts               getDashboardData(): swap demo data for Supabase here
+  data.ts               dashboard data from Supabase (demo data on /demo)
+  progress.ts           progression rules (tested in tests/)
+  auth.ts               requireProfile / requireAdmin
 supabase/migrations/    database schema and access policies
 ```
 
