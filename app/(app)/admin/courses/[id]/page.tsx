@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CourseEditor } from "@/components/admin/CourseEditor";
 import { requireAdmin } from "@/lib/auth";
+import { timed } from "@/lib/timing";
 import { getCourseForEditor } from "@/lib/admin/queries";
 import { formatShortDate } from "@/lib/format";
 
@@ -11,7 +12,7 @@ export const metadata = { title: "Edit course · Keapr Training" };
 export default async function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { profile } = await requireAdmin();
   const { id } = await params;
-  const course = await getCourseForEditor(id);
+  const course = await timed("course editor", () => getCourseForEditor(id));
   if (!course) notFound();
 
   return (

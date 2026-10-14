@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { InviteForm } from "@/components/admin/InviteForm";
 import { requireAdmin } from "@/lib/auth";
+import { timed } from "@/lib/timing";
 import { listStaff, type StaffStatus } from "@/lib/admin/queries";
 import { formatShortDate } from "@/lib/format";
 
@@ -11,7 +12,7 @@ const statusLabel: Record<StaffStatus, string> = { active: "Active", invited: "I
 
 export default async function StaffPage() {
   const { profile } = await requireAdmin();
-  const staff = await listStaff();
+  const staff = await timed("staff list", () => listStaff());
   const counts = {
     active: staff.filter((s) => s.status === "active").length,
     invited: staff.filter((s) => s.status === "invited").length,

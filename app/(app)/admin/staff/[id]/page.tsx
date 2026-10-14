@@ -4,6 +4,7 @@ import { AssignCourseForm } from "@/components/admin/AssignCourseForm";
 import { SignInLinkForm } from "@/components/admin/SignInLinkForm";
 import { ProgressBar } from "@/components/ProgressBar";
 import { requireAdmin } from "@/lib/auth";
+import { timed } from "@/lib/timing";
 import { getStaffMember, publishedCourseOptions } from "@/lib/admin/queries";
 import { setActive, setRole, unassignCourse } from "@/lib/admin/actions";
 import { formatShortDate, percent } from "@/lib/format";
@@ -25,7 +26,7 @@ export default async function StaffMemberPage({
   const { profile } = await requireAdmin();
   const { id } = await params;
   const { error } = await searchParams;
-  const [person, courseOptions] = await Promise.all([getStaffMember(id), publishedCourseOptions()]);
+  const [person, courseOptions] = await timed("staff member", () => Promise.all([getStaffMember(id), publishedCourseOptions()]));
   if (!person) notFound();
 
   const assignedIds = new Set(person.courses.map((c) => c.courseId));

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { NewCourseForm } from "@/components/admin/NewCourseForm";
 import { requireAdmin } from "@/lib/auth";
+import { timed } from "@/lib/timing";
 import { listCourses } from "@/lib/admin/queries";
 import { formatShortDate } from "@/lib/format";
 
@@ -9,7 +10,7 @@ export const metadata = { title: "Courses · Keapr Training" };
 
 export default async function CoursesPage() {
   const { profile } = await requireAdmin();
-  const courses = await listCourses();
+  const courses = await timed("course list", () => listCourses());
 
   return (
     <>

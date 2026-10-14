@@ -3,6 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import type { Learner } from "./types";
+import { timed } from "./timing";
 
 export interface Profile {
   id: string;
@@ -18,15 +19,13 @@ export interface Profile {
 // Cached per request, so the layout and the page share one lookup.
 export const requireProfile = cache(async function requireProfile(): Promise<{ profile: Profile; supabase: Awaited<ReturnType<typeof createClient>> }> {
   const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
+  const { data: claimsData } = await timed("auth check", () => supabase.auth.getClaims());
   const userId = claimsData?.claims?.sub;
   if (!userId) redirect("/login");
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, full_name, email, role, is_active")
-    .eq("id", userId)
-    .maybeSingle();
+  const { data, error } = await timed("profile query", async () =>
+    supabase.from("profiles").select("id, full_name, email, role, is_active").eq("id", userId).maybeSingle(),
+  );
 
   if (error || !data) {
     await supabase.auth.signOut();

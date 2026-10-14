@@ -1,6 +1,7 @@
 import "server-only";
 import { demoDashboard } from "./demo-data";
 import { loadLearnerProgress } from "./learner-progress";
+import { timed } from "./timing";
 import { isSupabaseConfigured } from "./supabase/config";
 import { learnerFromProfile, requireProfile } from "./auth";
 import type { DashboardData } from "./types";
@@ -20,7 +21,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   const { profile, supabase } = await requireProfile();
   const learner = learnerFromProfile(profile);
 
-  const { enrolments, computed, resources } = await loadLearnerProgress(supabase, profile.id);
+  const { enrolments, computed, resources } = await timed("dashboard data", () => loadLearnerProgress(supabase, profile.id));
 
   const currentEnrolment = computed.nextLesson?.enrolmentId;
 
