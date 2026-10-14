@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { AppShell } from "@/components/AppShell";
 import { NewCourseForm } from "@/components/admin/NewCourseForm";
-import { learnerFromProfile, requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { listCourses } from "@/lib/admin/queries";
 import { formatShortDate } from "@/lib/format";
 
@@ -13,7 +12,7 @@ export default async function CoursesPage() {
   const courses = await listCourses();
 
   return (
-    <AppShell learner={learnerFromProfile(profile)} active="courses">
+    <>
       <div className="page-head">
         <div>
           <div className="eyebrow"><b>Admin</b></div>
@@ -57,6 +56,6 @@ export default async function CoursesPage() {
         </div>
         <NewCourseForm />
       </div>
-    </AppShell>
+    </>
   );
 }

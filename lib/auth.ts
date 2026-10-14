@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
 import type { Learner } from "./types";
@@ -14,7 +15,8 @@ export interface Profile {
 // Returns the signed-in, active user's profile, or sends them to sign in.
 // Every protected page calls this on the server; the middleware redirect is
 // a convenience, not the security boundary.
-export async function requireProfile(): Promise<{ profile: Profile; supabase: Awaited<ReturnType<typeof createClient>> }> {
+// Cached per request, so the layout and the page share one lookup.
+export const requireProfile = cache(async function requireProfile(): Promise<{ profile: Profile; supabase: Awaited<ReturnType<typeof createClient>> }> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
@@ -45,7 +47,7 @@ export async function requireProfile(): Promise<{ profile: Profile; supabase: Aw
       isActive: data.is_active,
     },
   };
-}
+});
 
 export async function requireAdmin() {
   const result = await requireProfile();

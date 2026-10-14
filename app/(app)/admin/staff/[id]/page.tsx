@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AppShell } from "@/components/AppShell";
 import { AssignCourseForm } from "@/components/admin/AssignCourseForm";
 import { SignInLinkForm } from "@/components/admin/SignInLinkForm";
 import { ProgressBar } from "@/components/ProgressBar";
-import { learnerFromProfile, requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { getStaffMember, publishedCourseOptions } from "@/lib/admin/queries";
 import { setActive, setRole, unassignCourse } from "@/lib/admin/actions";
 import { formatShortDate, percent } from "@/lib/format";
@@ -34,7 +33,7 @@ export default async function StaffMemberPage({
   const isMe = person.id === profile.id;
 
   return (
-    <AppShell learner={learnerFromProfile(profile)} active="staff">
+    <>
       <div className="page-head">
         <div>
           <Link className="crumb" href="/admin/staff">← Staff</Link>
@@ -123,6 +122,6 @@ export default async function StaffMemberPage({
           </section>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

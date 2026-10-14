@@ -1,3 +1,4 @@
+import { AppShell } from "@/components/AppShell";
 import { DashboardView } from "@/components/DashboardView";
 import { getDemoDashboard } from "@/lib/data";
 
@@ -7,5 +8,9 @@ export const metadata = { title: "Demo · Keapr Training" };
 
 export default async function DemoPage() {
   const data = await getDemoDashboard();
-  return <DashboardView data={data} demoMode />;
+  return (
+    <AppShell learner={data.learner} demoMode>
+      <DashboardView data={data} />
+    </AppShell>
+  );
 }

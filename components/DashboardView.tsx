@@ -1,4 +1,3 @@
-import { AppShell } from "./AppShell";
 import { Welcome } from "./Welcome";
 import { NextLessonHero } from "./NextLessonHero";
 import { StatTiles } from "./StatTiles";
@@ -7,11 +6,11 @@ import { CourseGrid } from "./CourseGrid";
 import { ResourceList } from "./ResourceList";
 import type { DashboardData } from "@/lib/types";
 
-export function DashboardView({ data, demoMode = false }: { data: DashboardData; demoMode?: boolean }) {
+export function DashboardView({ data }: { data: DashboardData }) {
   const current = data.courses.find((c) => c.enrolmentId === data.nextLesson?.enrolmentId);
 
   return (
-    <AppShell learner={data.learner} active="dashboard" demoMode={demoMode}>
+    <>
       <Welcome data={data} />
       {data.nextLesson && <NextLessonHero lesson={data.nextLesson} isDemo={data.isDemo} />}
       {data.courses.length > 0 && <StatTiles courses={data.courses} nextLesson={data.nextLesson} />}
@@ -25,6 +24,6 @@ export function DashboardView({ data, demoMode = false }: { data: DashboardData;
       )}
       <CourseGrid courses={data.courses} />
       {data.resources.length > 0 && <ResourceList resources={data.resources} />}
-    </AppShell>
+    </>
   );
 }

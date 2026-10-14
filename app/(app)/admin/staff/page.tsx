@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { AppShell } from "@/components/AppShell";
 import { InviteForm } from "@/components/admin/InviteForm";
-import { learnerFromProfile, requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { listStaff, type StaffStatus } from "@/lib/admin/queries";
 import { formatShortDate } from "@/lib/format";
 
@@ -19,7 +18,7 @@ export default async function StaffPage() {
   };
 
   return (
-    <AppShell learner={learnerFromProfile(profile)} active="staff">
+    <>
       <div className="page-head">
         <div>
           <div className="eyebrow"><b>Admin</b></div>
@@ -56,6 +55,6 @@ export default async function StaffPage() {
         </div>
         <InviteForm />
       </div>
-    </AppShell>
+    </>
   );
 }

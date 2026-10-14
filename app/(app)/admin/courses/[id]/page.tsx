@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AppShell } from "@/components/AppShell";
 import { CourseEditor } from "@/components/admin/CourseEditor";
-import { learnerFromProfile, requireAdmin } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth";
 import { getCourseForEditor } from "@/lib/admin/queries";
 import { formatShortDate } from "@/lib/format";
 
@@ -16,7 +15,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
   if (!course) notFound();
 
   return (
-    <AppShell learner={learnerFromProfile(profile)} active="courses">
+    <>
       <div className="page-head">
         <div>
           <Link className="crumb" href="/admin/courses">← Courses</Link>
@@ -39,6 +38,6 @@ export default async function EditCoursePage({ params }: { params: Promise<{ id:
         initialDraft={course.draft}
         latestVersion={course.latestVersion}
       />
-    </AppShell>
+    </>
   );
 }

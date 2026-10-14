@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Icon, type IconName } from "./Icons";
 import type { Learner } from "@/lib/types";
 import { signOut } from "@/app/auth/actions";
-import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export type NavKey = "dashboard" | "training" | "resources" | "help" | "staff" | "courses";
 
@@ -13,10 +15,17 @@ const learningLinks: { key: NavKey; label: string; href: string; icon: IconName 
   { key: "help", label: "Help", href: "#", icon: "help" },
 ];
 
-export function Sidebar({ learner, active, demoMode = false }: { learner: Learner; active: NavKey; demoMode?: boolean }) {
+export function Sidebar({ learner, demoMode = false, canSignOut = false }: { learner: Learner; demoMode?: boolean; canSignOut?: boolean }) {
+  const pathname = usePathname();
+  const active: NavKey = pathname.startsWith("/admin/staff")
+    ? "staff"
+    : pathname.startsWith("/admin/courses")
+      ? "courses"
+      : pathname.startsWith("/lessons") || pathname.startsWith("/courses")
+        ? "training"
+        : "dashboard";
   const base = demoMode ? "/demo" : "/dashboard";
   const links = learningLinks.map((l) => ({ ...l, href: l.href.replace("/dashboard", base) }));
-  const canSignOut = !demoMode && isSupabaseConfigured();
   return (
     <aside className="side" aria-label="Main navigation">
       <div className="brand">
@@ -64,7 +73,7 @@ export function Sidebar({ learner, active, demoMode = false }: { learner: Learne
           {learner.firstName}
           <small>{learner.team}</small>
         </div>
-        {canSignOut ? (
+        {canSignOut && !demoMode ? (
           <form action={signOut} className="signout">
             <button className="iconbtn" type="submit" aria-label="Sign out">
               <Icon name="out" />

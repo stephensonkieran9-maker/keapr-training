@@ -36,6 +36,10 @@ The public demo with sample data stays at https://keapr-training.vercel.app/demo
 
 SQL Editor → paste `supabase/migrations/0003_publish_course.sql` → Run. This adds the function that publishes a course draft as a new version in one step. Without it, **Publish** in the course builder fails.
 
+## 6. Run the fourth migration (fast staff list)
+
+SQL Editor → paste `supabase/migrations/0004_staff_overview.sql` → Run. The staff page then loads with one query. Without it, the page still works but is slower.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

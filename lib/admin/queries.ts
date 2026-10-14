@@ -37,6 +37,27 @@ function statusOf(isActive: boolean, auth?: { lastSignInAt: string | null; confi
 
 export async function listStaff(): Promise<StaffRow[]> {
   const admin = createAdminClient();
+
+  // Fast path: one database query (migration 0004).
+  const { data: rows, error } = await admin.rpc("admin_staff_overview");
+  if (!error && rows) {
+    type Row = {
+      id: string; full_name: string; email: string; role: "learner" | "admin"; is_active: boolean;
+      last_sign_in_at: string | null; email_confirmed_at: string | null; assigned_count: number; completed_count: number;
+    };
+    return (rows as Row[]).map((r) => ({
+      id: r.id,
+      fullName: r.full_name,
+      email: r.email,
+      role: r.role,
+      status: statusOf(r.is_active, { lastSignInAt: r.last_sign_in_at, confirmed: Boolean(r.email_confirmed_at) }),
+      lastSignInAt: r.last_sign_in_at,
+      assignedCount: Number(r.assigned_count),
+      completedCount: Number(r.completed_count),
+    }));
+  }
+
+  // Fallback until migration 0004 is run: slower, uses the auth admin API.
   const [{ data: profiles }, { data: enrolments }, authUsers] = await Promise.all([
     admin.from("profiles").select("id, full_name, email, role, is_active").order("full_name"),
     admin.from("enrolments").select("learner_id, completed_at").is("unassigned_at", null),
