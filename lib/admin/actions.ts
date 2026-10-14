@@ -155,12 +155,17 @@ export async function assignCourse(_prev: ActionState, formData: FormData): Prom
     .limit(1);
   if (active && active.length) return { error: "This course is already assigned to them." };
 
-  // Re-assigning a version they were unassigned from keeps their history.
+  // Re-assigning a version they were unassigned from (with progress kept)
+  // picks up where they left off. Cleared assignments start fresh.
   const { data: previous } = await admin
     .from("enrolments")
     .select("id")
     .eq("learner_id", userId)
     .eq("course_version_id", version.id)
+    .is("progress_cleared_at", null)
+    .not("unassigned_at", "is", null)
+    .order("assigned_at", { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   if (previous) {
@@ -175,15 +180,56 @@ export async function assignCourse(_prev: ActionState, formData: FormData): Prom
   return { ok: true, message: "Course assigned." };
 }
 
-export async function unassignCourse(formData: FormData) {
+export async function unassignCourse(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const { profile: me } = await requireAdmin();
   const enrolmentId = String(formData.get("enrolmentId") ?? "");
   const userId = String(formData.get("userId") ?? "");
+  const mode = String(formData.get("mode") ?? "keep") as "keep" | "clear" | "reset";
+  const reason = String(formData.get("reason") ?? "").trim();
   const admin = createAdminClient();
-  await admin.from("enrolments").update({ unassigned_at: new Date().toISOString() }).eq("id", enrolmentId).eq("learner_id", userId);
-  await audit(me.id, "unassign", "enrolment", enrolmentId, { learner_id: userId });
+
+  const { data: enrolment } = await admin
+    .from("enrolments")
+    .select("id, course_version_id, course_versions(course_id)")
+    .eq("id", enrolmentId)
+    .eq("learner_id", userId)
+    .maybeSingle();
+  if (!enrolment) return { error: "That assignment couldn't be found." };
+
+  if (mode === "keep") {
+    await admin.from("enrolments").update({ unassigned_at: new Date().toISOString() }).eq("id", enrolmentId);
+    await audit(me.id, "unassign", "enrolment", enrolmentId, { learner_id: userId, progress: "kept" }, reason || undefined);
+  } else {
+    if (formData.get("confirm") !== "yes") return { error: "Tick the box to confirm you want to clear their progress." };
+    const { error } = await admin.rpc("clear_enrolment_progress", { p_enrolment: enrolmentId, p_actor: me.id, p_reason: reason });
+    if (error) return { error: `Progress couldn't be cleared: ${error.message}. Has migration 0006 been run?` };
+
+    if (mode === "reset") {
+      // Start again on the latest published version of the same course.
+      const v = enrolment.course_versions as unknown as { course_id: string } | { course_id: string }[] | null;
+      const courseId = Array.isArray(v) ? v[0]?.course_id : v?.course_id;
+      const { data: latest } = await admin
+        .from("course_versions")
+        .select("id")
+        .eq("course_id", courseId ?? "")
+        .eq("status", "published")
+        .order("version", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const versionId = latest?.id ?? enrolment.course_version_id;
+      const { error: insErr } = await admin.from("enrolments").insert({ learner_id: userId, course_version_id: versionId, assigned_by: me.id });
+      if (insErr) return { error: `Progress was cleared, but the course couldn't be reassigned: ${insErr.message}` };
+      await audit(me.id, "reset", "enrolment", enrolmentId, { learner_id: userId, new_version_id: versionId }, reason || undefined);
+    }
+  }
+
   revalidatePath(`/admin/staff/${userId}`);
   revalidatePath("/admin/staff");
+  revalidatePath("/admin");
+  return {
+    ok: true,
+    message: mode === "keep" ? "Unassigned. Their progress is kept." : mode === "clear" ? "Unassigned and progress cleared." : "Progress reset. They start again from lesson 1.",
+  };
 }
 
 // ─── Courses ─────────────────────────────────────────────────────────────

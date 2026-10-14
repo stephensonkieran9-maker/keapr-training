@@ -6,7 +6,8 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { requireAdmin } from "@/lib/auth";
 import { timed } from "@/lib/timing";
 import { getStaffMember, publishedCourseOptions } from "@/lib/admin/queries";
-import { setActive, setRole, unassignCourse } from "@/lib/admin/actions";
+import { setActive, setRole } from "@/lib/admin/actions";
+import { UnassignControls } from "@/components/admin/UnassignControls";
 import { formatShortDate, percent } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -69,11 +70,7 @@ export default async function StaffMemberPage({
                       </span>
                     </div>
                     <ProgressBar label="Lessons passed" value={pct} valueLabel={`${c.lessonsPassed} of ${c.lessonCount}`} />
-                    <form action={unassignCourse} className="actions-row">
-                      <input type="hidden" name="enrolmentId" value={c.enrolmentId} />
-                      <input type="hidden" name="userId" value={person.id} />
-                      <button className="mini danger" type="submit">Unassign (progress is kept)</button>
-                    </form>
+                    <UnassignControls enrolmentId={c.enrolmentId} userId={person.id} courseTitle={c.title} />
                   </div>
                 );
               })}

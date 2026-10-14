@@ -48,6 +48,10 @@ SQL Editor → paste `supabase/migrations/0005_lessons_and_quizzes.sql` → Run.
 
 SQL Editor → paste `supabase/seed/getting_started_course.sql` → Run. Creates *Getting started with Keapr Training* (three lessons about how the app works) and assigns it to everyone active. Upload the videos from the course builder, then publish.
 
+## 9. Run the sixth migration (clear or reset progress)
+
+SQL Editor → paste `supabase/migrations/0006_clear_progress.sql` → Run. Enables **Unassign and clear progress** and **Reset progress** on a person's Staff page. Quiz attempts are never deleted; completions are revoked with a reason.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).
