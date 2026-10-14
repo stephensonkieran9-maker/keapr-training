@@ -1,0 +1,13 @@
+import { chromium } from "playwright";
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const p = await b.newPage({ viewport: { width: 1360, height: 1700 } });
+const errors = [];
+p.on("pageerror", (e) => errors.push(e.message));
+p.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+await p.goto("http://localhost:3125/zz-preview", { waitUntil: "networkidle" });
+await p.screenshot({ path: process.argv[2], fullPage: false });
+const p2 = await b.newPage({ viewport: { width: 400, height: 900 } });
+await p2.goto("http://localhost:3125/zz-preview", { waitUntil: "networkidle" });
+const w = await p2.evaluate(() => document.documentElement.scrollWidth);
+console.log("phone scrollWidth", w, "errors", JSON.stringify(errors));
+await b.close();

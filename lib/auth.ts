@@ -1,6 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "./supabase/server";
+import type { Learner } from "./types";
 
 export interface Profile {
   id: string;
@@ -50,4 +51,15 @@ export async function requireAdmin() {
   const result = await requireProfile();
   if (result.profile.role !== "admin") redirect("/dashboard");
   return result;
+}
+
+export function learnerFromProfile(profile: Profile): Learner {
+  const firstName = profile.fullName.split(" ")[0] || profile.fullName;
+  return {
+    id: profile.id,
+    firstName,
+    initial: firstName.charAt(0).toUpperCase(),
+    team: profile.role === "admin" ? "Administrator" : "Learner",
+    isAdmin: profile.role === "admin",
+  };
 }

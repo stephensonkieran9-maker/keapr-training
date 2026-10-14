@@ -4,7 +4,7 @@ import type { Learner } from "@/lib/types";
 import { signOut } from "@/app/auth/actions";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export type NavKey = "dashboard" | "training" | "resources" | "help" | "admin";
+export type NavKey = "dashboard" | "training" | "resources" | "help" | "staff" | "courses";
 
 const learningLinks: { key: NavKey; label: string; href: string; icon: IconName }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "grid" },
@@ -38,14 +38,20 @@ export function Sidebar({ learner, active, demoMode = false }: { learner: Learne
         ))}
       </ul>
 
-      {learner.isAdmin && (
+      {learner.isAdmin && !demoMode && (
         <>
           <div className="navlabel" style={{ marginTop: 24 }}>Admin</div>
           <ul className="nav">
             <li>
-              <Link href="#" aria-current={active === "admin" ? "page" : undefined}>
+              <Link href="/admin/staff" aria-current={active === "staff" ? "page" : undefined}>
                 <Icon name="users" />
-                Staff &amp; reporting
+                Staff
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/courses" aria-current={active === "courses" ? "page" : undefined}>
+                <Icon name="book" />
+                Courses
               </Link>
             </li>
           </ul>

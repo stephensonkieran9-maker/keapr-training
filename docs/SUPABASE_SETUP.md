@@ -32,6 +32,14 @@ Open https://keapr-training.vercel.app, sign in with the account from step 2. Th
 
 The public demo with sample data stays at https://keapr-training.vercel.app/demo.
 
+## 5. Run the third migration (course builder)
+
+SQL Editor → paste `supabase/migrations/0003_publish_course.sql` → Run. This adds the function that publishes a course draft as a new version in one step. Without it, **Publish** in the course builder fails.
+
+## Inviting staff
+
+Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).
+
 ## Later: email templates for invitations
 
 Before inviting staff, change the Invite user and Reset password templates (Authentication → Emails) so their links go through the app:
