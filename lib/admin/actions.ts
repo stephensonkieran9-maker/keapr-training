@@ -312,3 +312,37 @@ export async function createVideoUpload(courseId: string, fileName: string): Pro
   await audit(me.id, "video_upload", "course", courseId, { path });
   return { ok: true, path: data.path, token: data.token };
 }
+
+// ─── Overrides ───────────────────────────────────────────────────────────
+
+/** Marks a lesson complete for someone, with a required reason. */
+export async function markLessonComplete(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { profile: me } = await requireAdmin();
+  const enrolmentId = String(formData.get("enrolmentId") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "");
+  const userId = String(formData.get("userId") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!reason) return { error: "Add a reason. It's saved with the completion." };
+  if (formData.get("confirm") !== "yes") return { error: "Tick the box to confirm." };
+
+  const admin = createAdminClient();
+  const { data: enrolment } = await admin.from("enrolments").select("id").eq("id", enrolmentId).eq("learner_id", userId).maybeSingle();
+  if (!enrolment) return { error: "That assignment wasn't found." };
+
+  const { data, error } = await admin.rpc("admin_complete_lesson", { p_enrolment: enrolmentId, p_lesson: lessonId, p_actor: me.id, p_reason: reason });
+  if (error) {
+    if (/function .*admin_complete_lesson|Could not find the function/i.test(error.message)) {
+      return { error: "Run migration 0007_admin_complete_lesson.sql in Supabase first." };
+    }
+    if (error.message.includes("NOT_ENROLLED")) return { error: "This course isn't assigned to them any more." };
+    console.error(`[admin] mark complete failed: ${error.message}`);
+    return { error: "The lesson couldn't be marked complete. Try again." };
+  }
+
+  const r = data as { already_complete: boolean; course_completed: boolean };
+  revalidatePath(`/admin/staff/${userId}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/reports");
+  if (r.already_complete) return { ok: true, message: "That lesson was already complete." };
+  return { ok: true, message: r.course_completed ? "Marked complete. That finishes the course." : "Marked complete. The next lesson is now unlocked for them." };
+}

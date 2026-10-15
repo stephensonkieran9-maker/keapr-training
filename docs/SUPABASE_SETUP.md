@@ -52,15 +52,20 @@ SQL Editor → paste `supabase/seed/getting_started_course.sql` → Run. Creates
 
 SQL Editor → paste `supabase/migrations/0006_clear_progress.sql` → Run. Enables **Unassign and clear progress** and **Reset progress** on a person's Staff page. Quiz attempts are never deleted; completions are revoked with a reason.
 
+## 10. Run the seventh migration (mark a lesson complete)
+
+SQL Editor → paste `supabase/migrations/0007_admin_complete_lesson.sql` → Run. Enables **Mark complete…** under each course on a person's Staff page. A reason is required; the completion shows as admin-marked and is recorded in the audit history.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).
 
-## Later: email templates for invitations
+## Optional: password reset emails
 
-Before inviting staff, change the Invite user and Reset password templates (Authentication → Emails) so their links go through the app:
+Invites don't use email: **Add someone** gives you a link to send yourself. The only email Supabase sends is from **Forgot password** on the sign-in page. It uses Supabase's built-in sender, which is limited to a few emails an hour and comes from a Supabase address. That's fine for a small team. Test it once; if the link in the email doesn't work, change the Reset password template (Authentication → Emails) to:
 
 ```
-{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=invite
 {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery
 ```
+
+If someone is ever stuck, open their Staff page and use **Get a password reset link** instead and send it to them.

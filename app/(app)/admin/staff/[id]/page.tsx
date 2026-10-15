@@ -8,6 +8,7 @@ import { timed } from "@/lib/timing";
 import { getStaffMember, publishedCourseOptions } from "@/lib/admin/queries";
 import { setActive, setRole } from "@/lib/admin/actions";
 import { UnassignControls } from "@/components/admin/UnassignControls";
+import { LessonOverrides } from "@/components/admin/LessonOverrides";
 import { formatShortDate, percent } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -70,6 +71,7 @@ export default async function StaffMemberPage({
                       </span>
                     </div>
                     <ProgressBar label="Lessons passed" value={pct} valueLabel={`${c.lessonsPassed} of ${c.lessonCount}`} />
+                    <LessonOverrides enrolmentId={c.enrolmentId} userId={person.id} lessons={c.lessons} />
                     <UnassignControls enrolmentId={c.enrolmentId} userId={person.id} courseTitle={c.title} />
                   </div>
                 );

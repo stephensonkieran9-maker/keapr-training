@@ -88,6 +88,18 @@ export async function getStaffMember(id: string) {
   const { data: p } = await admin.from("profiles").select("id, full_name, email, role, is_active, created_at").eq("id", id).maybeSingle();
   if (!p) return null;
   const [{ data: authData }, progress] = await Promise.all([admin.auth.admin.getUserById(id), loadLearnerProgress(admin, id)]);
+  const enrolmentIds = progress.computed.courses.map((c) => c.enrolmentId);
+  const { data: overrideRows } = enrolmentIds.length
+    ? await admin
+        .from("lesson_completions")
+        .select("enrolment_id, lesson_id, override_reason, completed_at")
+        .in("enrolment_id", enrolmentIds)
+        .eq("source", "admin_override")
+        .is("revoked_at", null)
+    : { data: [] };
+  const overrides = new Map(
+    (overrideRows ?? []).map((o) => [`${o.enrolment_id}:${o.lesson_id}`, { reason: o.override_reason as string, at: o.completed_at as string }]),
+  );
   const auth = authData?.user ? { lastSignInAt: authData.user.last_sign_in_at ?? null, confirmed: Boolean(authData.user.email_confirmed_at) } : undefined;
   return {
     id: p.id,
@@ -98,7 +110,13 @@ export async function getStaffMember(id: string) {
     createdAt: p.created_at as string,
     status: statusOf(p.is_active, auth),
     lastSignInAt: auth?.lastSignInAt ?? null,
-    courses: progress.computed.courses,
+    courses: progress.computed.courses.map((c) => ({
+      ...c,
+      lessons: (progress.computed.stepsByEnrolment.get(c.enrolmentId) ?? []).map((s) => ({
+        ...s,
+        override: overrides.get(`${c.enrolmentId}:${s.lessonId}`),
+      })),
+    })),
   };
 }
 
