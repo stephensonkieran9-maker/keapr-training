@@ -60,6 +60,10 @@ SQL Editor → paste `supabase/migrations/0007_admin_complete_lesson.sql` → Ru
 
 SQL Editor → paste `supabase/migrations/0008_notifications.sql` → Run. Turns on the bell in the top bar. People are notified when a course is added, removed or reset, or a lesson is marked complete for them; admins are notified when someone completes a course or reports a problem from the Help page. Until it's run, the bell simply shows nothing.
 
+## 12. Run the ninth migration (watch-only lessons)
+
+SQL Editor → paste `supabase/migrations/0009_watch_only_lessons.sql` → Run. Lets a lesson have no quiz: untick **This lesson has a quiz** in the course builder and the lesson completes once the video has been watched (100% by default; skipping ahead doesn't count).
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

@@ -72,7 +72,7 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
       <section className="panel" aria-labelledby="lessons-title">
         <div className="panel-head">
           <h2 id="lessons-title">Lessons</h2>
-          <div className="req">Lessons unlock in order. Pass each quiz to open the next one.</div>
+          <div className="req">Lessons unlock in order. Pass each quiz, or watch the whole video for lessons without one, to open the next.</div>
         </div>
         <ol className="steps">
           {steps.map((s) => {

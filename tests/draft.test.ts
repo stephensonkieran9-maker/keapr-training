@@ -58,3 +58,13 @@ test("normalising junk produces a safe draft", () => {
   assert.equal(d.lessons[0].questions[0].correctIndex, 0);
   assert.deepEqual(normaliseDraft(null), { lessons: [] });
 });
+
+test("watch-only lessons publish without questions; quiz lessons still need one", async () => {
+  const { publishProblems, cleanDraft, normaliseDraft, emptyLesson } = await import("../lib/admin/draft.ts");
+  const watchOnly = { ...emptyLesson(), title: "Welcome", videoSeconds: 451, hasQuiz: false, requiredWatchPercent: 100 };
+  assert.deepEqual(publishProblems({ lessons: [watchOnly] }), []);
+  assert.equal(cleanDraft({ lessons: [watchOnly] }).lessons[0].questions.length, 0);
+  const quiz = { ...emptyLesson(), title: "Quiz lesson", videoSeconds: 60, questions: [] };
+  assert.ok(publishProblems({ lessons: [quiz] }).some((p) => p.includes("quiz question")));
+  assert.equal(normaliseDraft({ lessons: [{ title: "Old" }] }).lessons[0].hasQuiz, true);
+});

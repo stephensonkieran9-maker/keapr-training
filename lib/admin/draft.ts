@@ -21,6 +21,8 @@ export interface DraftLesson {
   requiredWatchPercent: number;
   isRequired: boolean;
   estimatedMinutes: number | null;
+  /** false = watch-only: the lesson completes once the video has been watched. */
+  hasQuiz: boolean;
   questions: DraftQuestion[];
 }
 
@@ -53,6 +55,7 @@ export function emptyLesson(): DraftLesson {
     requiredWatchPercent: DEFAULT_WATCH_PERCENT,
     isRequired: true,
     estimatedMinutes: null,
+    hasQuiz: true,
     questions: [emptyQuestion()],
   };
 }
@@ -71,6 +74,7 @@ export function normaliseDraft(raw: unknown): CourseDraft {
       passPercent: clampPercent(l.passPercent, DEFAULT_PASS_PERCENT),
       requiredWatchPercent: clampPercent(l.requiredWatchPercent, DEFAULT_WATCH_PERCENT),
       isRequired: l.isRequired !== false,
+      hasQuiz: l.hasQuiz !== false,
       estimatedMinutes: l.estimatedMinutes == null || l.estimatedMinutes === ("" as unknown) ? null : Math.max(1, Math.round(Number(l.estimatedMinutes))),
       questions: (Array.isArray(l.questions) ? l.questions : []).map((q) => {
         const options = Array.isArray(q.options) ? q.options.map(String) : [];
@@ -99,7 +103,8 @@ export function cleanDraft(draft: CourseDraft): CourseDraft {
       ...l,
       title: l.title.trim(),
       objectives: l.objectives.map((o) => o.trim()).filter(Boolean),
-      questions: l.questions.map((q) => {
+      // Watch-only lessons publish with no questions.
+      questions: (l.hasQuiz ? l.questions : []).map((q) => {
         const kept = q.options.map((o, i) => ({ text: o.trim(), i })).filter((o) => o.text);
         const newCorrect = kept.findIndex((o) => o.i === q.correctIndex);
         return {
@@ -123,7 +128,7 @@ export function publishProblems(draft: CourseDraft): string[] {
     const name = `Lesson ${li + 1}`;
     if (!l.title) problems.push(`${name} needs a title.`);
     if (!(l.videoSeconds > 0)) problems.push(`${name} needs the video length.`);
-    if (l.questions.length === 0) problems.push(`${name} needs at least one quiz question.`);
+    if (l.hasQuiz && l.questions.length === 0) problems.push(`${name} needs at least one quiz question, or untick "This lesson has a quiz".`);
     l.questions.forEach((q, qi) => {
       const qn = `${name}, question ${qi + 1}`;
       if (!q.prompt) problems.push(`${qn} needs the question text.`);

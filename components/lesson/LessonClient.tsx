@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Icon } from "@/components/Icons";
 import { submitQuiz, type QuizResult } from "@/lib/lesson-actions";
@@ -45,7 +46,11 @@ export function LessonClient({ view, preview }: { view: LessonView; preview?: Pr
       <div className="watch-meter" aria-live="polite">
         <div className="progress-label">
           <span>Watched {formatDuration(tracker.watched)} of {formatDuration(lesson.videoSeconds)}</span>
-          <span>{tracker.unlocked ? "Quiz unlocked" : `${watchedPct}% of ${needed}% needed`}</span>
+          <span>
+            {tracker.unlocked
+              ? lesson.hasQuiz ? "Quiz unlocked" : "Watched"
+              : needed >= 100 ? `${watchedPct}% · watch it all to finish` : `${watchedPct}% of ${needed}% needed`}
+          </span>
         </div>
         <div className="bar watch-bar" role="progressbar" aria-valuenow={watchedPct} aria-valuemin={0} aria-valuemax={100} aria-label="Video watched">
           <i style={{ width: `${watchedPct}%` }} />
@@ -54,17 +59,72 @@ export function LessonClient({ view, preview }: { view: LessonView; preview?: Pr
         {tracker.saveError && <p className="form-error" role="alert" style={{ marginTop: 8 }}>{tracker.saveError}</p>}
         {preview && !tracker.unlocked && (
           <button type="button" className="btn btn-ghost btn-sm" style={{ marginTop: 10 }} onClick={tracker.unlock}>
-            Skip to the quiz (preview only)
+            {lesson.hasQuiz ? "Skip to the quiz (preview only)" : "Skip to the end (preview only)"}
           </button>
         )}
       </div>
 
-      <Quiz view={view} unlocked={tracker.unlocked} preview={preview} />
+      {lesson.hasQuiz ? (
+        <Quiz view={view} unlocked={tracker.unlocked} preview={preview} />
+      ) : (
+        <WatchToComplete view={view} tracker={tracker} preview={preview} />
+      )}
     </div>
   );
 }
 
 type Tracker = ReturnType<typeof useWatchTracker>;
+
+/** Watch-only lessons: no quiz; the lesson completes once the video is watched. */
+function WatchToComplete({ view, tracker, preview }: { view: LessonView; tracker: Tracker; preview?: PreviewMode }) {
+  const router = useRouter();
+  const { lesson } = view;
+  const done = view.state === "passed" || Boolean(tracker.completion) || (Boolean(preview) && tracker.unlocked);
+  const nextId = tracker.completion ? tracker.completion.nextLessonId : view.nextLessonId;
+  const courseDone = tracker.completion?.courseCompleted ?? false;
+  const justFinished = Boolean(tracker.completion) && view.state !== "passed";
+
+  // Refresh the lesson list and dashboard once the server records completion.
+  useEffect(() => {
+    if (justFinished && !preview) router.refresh();
+  }, [justFinished, preview, router]);
+
+  if (!done) {
+    return (
+      <section className="card quiz quiz-locked" aria-live="polite">
+        <span className="lock-badge" aria-hidden="true"><Icon name="play" /></span>
+        <div>
+          <h2>{lesson.requiredWatchPercent >= 100 ? "Watch the whole video to finish this lesson" : `Watch ${lesson.requiredWatchPercent}% of the video to finish this lesson`}</h2>
+          <p className="muted">
+            There&apos;s no quiz for this one. Skipping ahead doesn&apos;t count, so watch it through. Your place is saved if you need to stop.
+            {tracker.unlocked && !preview ? " Saving…" : ""}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="card quiz result pass" aria-live="polite">
+      <div className="result-head">
+        <div className="result-score"><span className="result-num" aria-hidden="true">✓</span></div>
+        <div>
+          <h2>{courseDone && !nextId ? "Lesson complete. Course complete." : "Lesson complete"}</h2>
+          <p className="muted">{nextId ? "The next lesson is now unlocked." : "You've finished this lesson."}</p>
+        </div>
+      </div>
+      <div className="actions-row">
+        {nextId ? (
+          <Link className="btn btn-primary" href={lessonHref(nextId, preview)}>Continue to next lesson<Icon name="arrow" /></Link>
+        ) : (
+          <Link className="btn btn-primary" href={preview ? `/admin/courses/${preview.courseId}` : `/courses/${view.courseId}`}>
+            {preview ? "Back to course builder" : "Back to course"}<Icon name="arrow" />
+          </Link>
+        )}
+      </div>
+    </section>
+  );
+}
 
 function FilePlayer({ src, startAt, duration, tracker }: { src: string; startAt: number; duration: number; tracker: Tracker }) {
   const ref = useRef<HTMLVideoElement>(null);

@@ -48,7 +48,11 @@ export function NextLessonHero({ lesson, isDemo }: { lesson: NextLesson; isDemo:
           <span>
             Watched {formatDuration(lesson.watchedSeconds)} of {formatDuration(lesson.videoSeconds)} · {watched}%
           </span>
-          <span>{lesson.requiredWatchPercent}% needed for quiz</span>
+          <span>
+            {lesson.hasQuiz === false
+              ? lesson.requiredWatchPercent >= 100 ? "Watch it all to finish" : `${lesson.requiredWatchPercent}% to finish`
+              : `${lesson.requiredWatchPercent}% needed for quiz`}
+          </span>
         </div>
       </div>
     </section>

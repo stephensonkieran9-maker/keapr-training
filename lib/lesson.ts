@@ -25,6 +25,8 @@ export interface LessonView {
     videoSeconds: number;
     requiredWatchPercent: number;
     passPercent: number;
+    /** false = watch-only: completes once the video is watched. */
+    hasQuiz: boolean;
   };
   video: { kind: "file"; src: string } | { kind: "placeholder" };
   state: LessonStep["state"];
@@ -106,8 +108,19 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
     watchedSeconds: new Map((progressRows ?? []).map((p) => [key(enrolment.id, p.lesson_id), Number(p.watched_seconds)])),
   });
   const step = steps.find((s) => s.lessonId === lessonId)!;
+  const hasQuiz = (questions ?? []).length > 0;
 
   const mine = (progressRows ?? []).find((p) => p.lesson_id === lessonId);
+
+  // Watch-only lesson already watched but not yet recorded (e.g. watched
+  // before migration 0009 was run): record it now.
+  if (!hasQuiz && mine?.quiz_unlocked_at && step.state === "available") {
+    const { error } = await createAdminClient().rpc("complete_watched_lesson", { p_learner: profile.id, p_lesson: lessonId });
+    if (!error) {
+      step.state = "passed";
+      delete step.lockedReason;
+    }
+  }
   const watched = Number(mine?.watched_seconds ?? 0);
   const requiredRatio = Number(lessonRow.required_watch_ratio);
   const lessonAttempts = allAttempts.filter((a) => a.lessonId === lessonId);
@@ -129,6 +142,7 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
       videoSeconds: lessonRow.video_seconds,
       requiredWatchPercent: Math.round(requiredRatio * 100),
       passPercent: Math.round(Number(lessonRow.pass_ratio) * 100),
+      hasQuiz,
     },
     video: await resolveVideo(lessonRow.video_ref),
     state: step.state,

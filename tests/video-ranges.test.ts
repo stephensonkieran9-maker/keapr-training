@@ -27,3 +27,12 @@ test("90% of a 120s video needs 108 unique seconds", () => {
   assert.equal(meetsWatchRequirement(107.6, 120, 0.9), true);
   assert.equal(meetsWatchRequirement(0, 0, 0.9), false);
 });
+
+test("watch it all: small allowance for rounding, but no skipping", () => {
+  // 7.5-minute video stored as 451s, actually 450.9s long.
+  assert.equal(meetsWatchRequirement(450.9, 451, 1), true);
+  assert.equal(meetsWatchRequirement(448.5, 451, 1), true); // within 3s
+  assert.equal(meetsWatchRequirement(447, 451, 1), false);
+  assert.equal(meetsWatchRequirement(59.5, 60, 1), true); // 0.6s allowance on a 1-minute video
+  assert.equal(meetsWatchRequirement(59, 60, 1), false);
+});

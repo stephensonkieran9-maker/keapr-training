@@ -190,7 +190,7 @@ function LessonEditor({
         <span className={`lesson-title${lesson.title ? "" : " placeholder"}`}>{lesson.title || "Untitled lesson"}</span>
         <span className="lesson-meta">
           {lesson.videoSeconds ? `${minutes}:${String(seconds).padStart(2, "0")} video · ` : ""}
-          {filledQuestions} question{filledQuestions === 1 ? "" : "s"}
+          {lesson.hasQuiz ? `${filledQuestions} question${filledQuestions === 1 ? "" : "s"}` : "Watch only, no quiz"}
         </span>
       </summary>
 
@@ -229,15 +229,17 @@ function LessonEditor({
 
         <div className="form-row">
           <div className="field">
-            <label htmlFor={id("watch")}>Watch before quiz (%)</label>
+            <label htmlFor={id("watch")}>{lesson.hasQuiz ? "Watch before quiz (%)" : "Watch to complete (%)"}</label>
             <input id={id("watch")} type="number" min={1} max={100} value={lesson.requiredWatchPercent}
               onChange={(e) => onChange({ requiredWatchPercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })} />
           </div>
-          <div className="field">
-            <label htmlFor={id("pass")}>Pass mark (%)</label>
-            <input id={id("pass")} type="number" min={1} max={100} value={lesson.passPercent}
-              onChange={(e) => onChange({ passPercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })} />
-          </div>
+          {lesson.hasQuiz && (
+            <div className="field">
+              <label htmlFor={id("pass")}>Pass mark (%)</label>
+              <input id={id("pass")} type="number" min={1} max={100} value={lesson.passPercent}
+                onChange={(e) => onChange({ passPercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })} />
+            </div>
+          )}
           <div className="field">
             <label htmlFor={id("mins")}>Time to complete (min)</label>
             <input id={id("mins")} type="number" min={1} value={lesson.estimatedMinutes ?? ""}
@@ -255,6 +257,28 @@ function LessonEditor({
           <textarea id={id("notes")} rows={3} value={lesson.notes} onChange={(e) => onChange({ notes: e.target.value })} />
         </div>
 
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={lesson.hasQuiz}
+            onChange={(e) =>
+              onChange(
+                e.target.checked
+                  ? { hasQuiz: true, questions: lesson.questions.length ? lesson.questions : [emptyQuestion()] }
+                  : { hasQuiz: false, requiredWatchPercent: 100 },
+              )
+            }
+          />
+          This lesson has a quiz
+        </label>
+        {!lesson.hasQuiz && (
+          <p className="hint" style={{ margin: 0 }}>
+            Watch only: the lesson completes once they&apos;ve watched {lesson.requiredWatchPercent >= 100 ? "the whole video" : `${lesson.requiredWatchPercent}% of the video`}. Skipping ahead doesn&apos;t count.
+            {lesson.questions.some((q) => q.prompt.trim()) ? " Questions you'd written are kept in the draft but not published." : ""}
+          </p>
+        )}
+
+        {lesson.hasQuiz && (<>
         <div className="sec-head" style={{ marginBottom: 0 }}>
           <div>
             <h3 style={{ fontSize: 16 }}>Quiz</h3>
@@ -323,6 +347,7 @@ function LessonEditor({
             </div>
           </div>
         ))}
+        </>)}
 
         <div className="actions-row" style={{ justifyContent: "space-between", borderTop: "1px solid var(--line)", paddingTop: 14 }}>
           <div className="actions-row">

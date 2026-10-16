@@ -73,3 +73,14 @@ test("watching a video marks the course in progress", () => {
   assert.equal(p.courses[0].status, "in_progress");
   assert.equal(p.nextLesson?.watchedSeconds, 30);
 });
+
+test("locked reason after a watch-only lesson says to finish watching", async () => {
+  const { lessonSteps } = await import("../lib/progress.ts");
+  const base = { videoSeconds: 60, requiredWatchRatio: 1, passRatio: 0.8, isRequired: true, estimatedMinutes: null, objectives: [] };
+  const e = {
+    enrolmentId: "e", courseId: "c", title: "T", description: "", isDemo: false, completedAt: null, assignedAt: "2026-10-01",
+    lessons: [{ ...base, id: "a", position: 1, title: "Welcome", hasQuiz: false }, { ...base, id: "b", position: 2, title: "Next" }],
+  };
+  const steps = lessonSteps(e, { enrolments: [e], completedLessonKeys: new Set(), attempts: [], watchedSeconds: new Map() });
+  assert.equal(steps[1].lockedReason, "Finish watching lesson 1 to unlock");
+});

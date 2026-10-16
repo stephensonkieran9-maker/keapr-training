@@ -26,8 +26,11 @@ export function watchedSeconds(ranges: Range[]): number {
 /** True once the unique watched share reaches the lesson's requirement. */
 export function meetsWatchRequirement(watched: number, duration: number, requiredRatio: number): boolean {
   if (duration <= 0) return false;
-  // Allow half a second of rounding slack at the end of the video.
-  return watched + 0.5 >= duration * requiredRatio;
+  // Half a second of rounding slack. "Watch it all" (99%+) gets a little more,
+  // 1% of the video up to 3 seconds, so stored lengths rounded to the second
+  // and the odd dropped frame can't leave someone stuck at 99.9%.
+  const slack = requiredRatio >= 0.99 ? Math.max(0.5, Math.min(3, duration * 0.01)) : 0.5;
+  return watched + slack >= duration * requiredRatio;
 }
 
 function round2(n: number) {

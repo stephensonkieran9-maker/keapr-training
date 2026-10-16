@@ -12,6 +12,8 @@ export interface LessonRow {
   isRequired: boolean;
   estimatedMinutes: number | null;
   objectives: string[];
+  /** false = watch-only lesson (no quiz). Missing means it has a quiz. */
+  hasQuiz?: boolean;
 }
 
 export interface EnrolmentRow {
@@ -64,6 +66,7 @@ export function lessonSteps(e: EnrolmentRow, input: ProgressInput): LessonStep[]
       ? Math.max(...attempts.map((a) => Math.floor((a.correctCount / a.questionCount) * 100)))
       : undefined;
     const prevPosition = i > 0 ? ordered[i - 1].position : null;
+    const prevWatchOnly = i > 0 && ordered[i - 1].hasQuiz === false;
     const prev = previousTitle;
     previousTitle = lesson.title;
 
@@ -87,7 +90,12 @@ export function lessonSteps(e: EnrolmentRow, input: ProgressInput): LessonStep[]
       position: lesson.position,
       title: lesson.title,
       state: "locked",
-      lockedReason: prevPosition !== null ? `Pass the lesson ${prevPosition} quiz to unlock` : `Pass "${prev}" to unlock`,
+      lockedReason:
+        prevPosition === null
+          ? `Pass "${prev}" to unlock`
+          : prevWatchOnly
+            ? `Finish watching lesson ${prevPosition} to unlock`
+            : `Pass the lesson ${prevPosition} quiz to unlock`,
     };
   });
 }
@@ -156,6 +164,7 @@ export function computeProgress(input: ProgressInput): ComputedProgress {
       videoSeconds: lesson.videoSeconds,
       watchedSeconds: Math.min(lesson.videoSeconds, input.watchedSeconds.get(key(e.enrolmentId, lesson.id)) ?? 0),
       requiredWatchPercent: Math.round(lesson.requiredWatchRatio * 100),
+      hasQuiz: lesson.hasQuiz !== false,
     };
     break;
   }

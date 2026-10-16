@@ -47,6 +47,8 @@ export interface NextLesson {
   videoSeconds: number;
   watchedSeconds: number;
   requiredWatchPercent: number;
+  /** false = watch-only lesson: completes when watched, no quiz. */
+  hasQuiz?: boolean;
 }
 
 export interface Resource {

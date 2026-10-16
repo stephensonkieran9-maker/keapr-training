@@ -222,6 +222,7 @@ async function draftFromVersion(versionId: string): Promise<CourseDraft> {
       requiredWatchPercent: Math.round(Number(l.required_watch_ratio) * 100),
       isRequired: l.is_required,
       estimatedMinutes: l.estimated_minutes,
+      hasQuiz: ((l.quiz_questions ?? []) as unknown as Q[]).length > 0,
       questions: ((l.quiz_questions ?? []) as unknown as Q[])
         .sort((a, b) => a.position - b.position)
         .map((q) => {

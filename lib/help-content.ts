@@ -4,14 +4,14 @@
 export const steps = [
   { title: "Your courses", body: "Courses are assigned to you by an admin and appear on your dashboard. The Next lesson panel always points to the first lesson you haven't passed." },
   { title: "Watch the lesson", body: "The quiz unlocks once you've watched enough of the video (each lesson shows how much). Only the parts that actually play count, so skipping ahead won't unlock it. Your place is saved, so you can stop and carry on later on any device." },
-  { title: "Take the quiz", body: "Answer every question, then submit. The pass mark is shown before you start." },
+  { title: "Take the quiz", body: "Answer every question, then submit. The pass mark is shown before you start. Some lessons have no quiz: watching the video through completes them." },
   { title: "Retry if you need to", body: "If you don't pass, you'll see your score and an explanation for each question. Review the lesson and try again as often as you need. Every attempt is saved, and a later attempt never removes a pass." },
   { title: "Finish the course", body: "A course is complete once every required lesson is passed. Your completion date is recorded, and passed lessons stay available to rewatch." },
 ];
 
 export const faqs = [
   { q: "The quiz is still locked", a: "Check the bar under the video: it shows how much you've watched and how much is needed. Parts you skipped don't count, so go back and play them. If the bar is full and the quiz is still locked, refresh the page. If that doesn't work, report it below." },
-  { q: "A lesson has a padlock", a: "Lessons open in order. Pass the quiz for the lesson before it to unlock it." },
+  { q: "A lesson has a padlock", a: "Lessons open in order. Pass the quiz for the lesson before it (or, if it has no quiz, watch it through) to unlock it." },
   { q: "The video won't play", a: "Refresh the page and check your connection. Try an up-to-date browser such as Chrome, Safari or Edge, or another device. If it still won't play, report it below and say which lesson." },
   { q: "My progress didn't save", a: "Progress saves every few seconds, when you pause and when you leave the page. If saving fails you'll see a red message under the video; keep the page open and it will retry when your connection is back." },
   { q: "I can't see a course I expected", a: "Courses only appear once an admin assigns them to you. You'll get a notification (the bell at the top) when one is added. If you think one is missing, ask your manager." },

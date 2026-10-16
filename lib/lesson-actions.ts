@@ -10,6 +10,10 @@ export interface ProgressResult {
   ok: boolean;
   watchedSeconds?: number;
   quizUnlocked?: boolean;
+  /** Watch-only lessons: completed now that the video has been watched. */
+  lessonCompleted?: boolean;
+  nextLessonId?: string | null;
+  courseCompleted?: boolean;
   error?: string;
 }
 
@@ -73,7 +77,43 @@ export async function saveVideoProgress(lessonId: string, ranges: Range[], posit
   );
   if (error) return { ok: false, error: "Your progress couldn't be saved. Check your connection and keep watching; it will retry." };
 
+  if (quizUnlockedAt) {
+    const done = await completeIfWatchOnly(lessonId, profile);
+    if (done) return { ok: true, watchedSeconds: watched, quizUnlocked: true, ...done };
+  }
   return { ok: true, watchedSeconds: watched, quizUnlocked: Boolean(quizUnlockedAt) };
+}
+
+/** For a lesson with no quiz: records it as complete once watched. Returns
+ * null for lessons that have a quiz. Server-only helper (not exported as an action). */
+async function completeIfWatchOnly(lessonId: string, profile: { id: string; fullName: string }) {
+  const admin = createAdminClient();
+  const { count } = await admin.from("quiz_questions").select("id", { count: "exact", head: true }).eq("lesson_id", lessonId);
+  if ((count ?? 0) > 0) return null;
+
+  const { data, error } = await admin.rpc("complete_watched_lesson", { p_learner: profile.id, p_lesson: lessonId });
+  if (error) {
+    if (!/NOT_WATCHED|LESSON_LOCKED/.test(error.message)) console.error(`[lesson] watch-only completion failed: ${error.message}`);
+    return null;
+  }
+  const r = data as { newly_completed: boolean; next_lesson_id: string | null; course_completed: boolean; course_completed_at: string | null };
+  if (r.newly_completed) {
+    revalidatePath("/dashboard");
+    revalidatePath(`/lessons/${lessonId}`);
+    revalidatePath("/courses", "layout");
+    if (r.course_completed && r.course_completed_at && Date.now() - new Date(r.course_completed_at).getTime() < 15_000) {
+      await notifyCourseCompleted(lessonId, profile);
+    }
+  }
+  return { lessonCompleted: true, nextLessonId: r.next_lesson_id, courseCompleted: r.course_completed };
+}
+
+async function notifyCourseCompleted(lessonId: string, profile: { id: string; fullName: string }) {
+  const admin = createAdminClient();
+  const { data: info } = await admin.from("lessons").select("course_versions(title)").eq("id", lessonId).maybeSingle();
+  const cv = info?.course_versions as unknown as { title: string } | { title: string }[] | null;
+  const title = (Array.isArray(cv) ? cv[0]?.title : cv?.title) ?? "a course";
+  await notifyAdmins({ kind: "course_completed", title: `${profile.fullName} completed ${title}`, link: `/admin/staff/${profile.id}` }, profile.id);
 }
 
 export interface QuizResult {
@@ -122,10 +162,7 @@ export async function submitQuiz(lessonId: string, answers: Record<string, strin
 
   // This attempt finished the course (not a retake after completing): tell the admins.
   if (r.passed && r.course_completed_at && Date.now() - new Date(r.course_completed_at).getTime() < 15_000) {
-    const { data: info } = await admin.from("lessons").select("course_versions(title)").eq("id", lessonId).maybeSingle();
-    const cv = info?.course_versions as unknown as { title: string } | { title: string }[] | null;
-    const title = (Array.isArray(cv) ? cv[0]?.title : cv?.title) ?? "a course";
-    await notifyAdmins({ kind: "course_completed", title: `${profile.fullName} completed ${title}`, link: `/admin/staff/${profile.id}` }, profile.id);
+    await notifyCourseCompleted(lessonId, profile);
   }
 
   revalidatePath("/dashboard");

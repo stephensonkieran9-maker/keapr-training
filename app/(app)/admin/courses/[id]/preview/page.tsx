@@ -61,6 +61,7 @@ export default async function PreviewPage({
       videoSeconds: Math.max(1, l.videoSeconds),
       requiredWatchPercent: l.requiredWatchPercent,
       passPercent: l.passPercent,
+      hasQuiz: l.hasQuiz && l.questions.length > 0,
     },
     video: await resolveVideo(l.videoRef),
     state: "available",

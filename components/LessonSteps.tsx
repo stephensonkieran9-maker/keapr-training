@@ -21,7 +21,7 @@ export function LessonSteps({
           <h2 id="steps-title">{courseTitle}</h2>
         </div>
         <div className="req">
-          Watch {requiredWatchPercent}% of each video, then score at least {passMarkPercent}% on its quiz to unlock the next lesson.
+          Lessons unlock in order. Watch each video (usually {requiredWatchPercent}%), then pass its quiz if it has one (pass mark {passMarkPercent}%).
         </div>
       </div>
       <ol className="steps">

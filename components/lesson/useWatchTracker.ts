@@ -22,6 +22,8 @@ export function useWatchTracker(opts: {
   const [ranges, setRanges] = useState<Range[]>(() => mergeRanges(opts.initialRanges, duration));
   const [unlocked, setUnlocked] = useState(opts.initialUnlocked);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Watch-only lessons: set when the server records the lesson as complete.
+  const [completion, setCompletion] = useState<{ nextLessonId: string | null; courseCompleted: boolean } | null>(null);
 
   const pending = useRef<Range[]>([]);
   const current = useRef<Range | null>(null);
@@ -60,6 +62,7 @@ export function useWatchTracker(opts: {
           unlockedRef.current = true;
           setUnlocked(true);
         }
+        if (res.lessonCompleted) setCompletion({ nextLessonId: res.nextLessonId ?? null, courseCompleted: Boolean(res.courseCompleted) });
       } else {
         pending.current = [...batch, ...pending.current];
         setSaveError(res.error ?? "Your progress couldn't be saved.");
@@ -126,5 +129,5 @@ export function useWatchTracker(opts: {
   }, []);
 
   const watched = Math.min(duration, watchedSeconds(ranges));
-  return { watched, unlocked, saveError, onTime, onSeek, onPause, unlock };
+  return { watched, unlocked, saveError, completion, onTime, onSeek, onPause, unlock };
 }
