@@ -12,7 +12,7 @@ const learningLinks: { key: NavKey; label: string; href: string; icon: IconName 
   { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "grid" },
   { key: "training", label: "My training", href: "/dashboard#my-training", icon: "cap" },
   { key: "resources", label: "Resources", href: "/dashboard#resources", icon: "folder" },
-  { key: "help", label: "Help", href: "#", icon: "help" },
+  { key: "help", label: "Help", href: "/help", icon: "help" },
 ];
 
 export function Sidebar({ learner, demoMode = false, canSignOut = false }: { learner: Learner; demoMode?: boolean; canSignOut?: boolean }) {
@@ -25,11 +25,15 @@ export function Sidebar({ learner, demoMode = false, canSignOut = false }: { lea
       ? "courses"
       : pathname.startsWith("/admin/reports")
       ? "reports"
+      : pathname.startsWith("/help")
+      ? "help"
       : pathname.startsWith("/lessons") || pathname.startsWith("/courses")
         ? "training"
         : "dashboard";
   const base = demoMode ? "/demo" : "/dashboard";
-  const links = learningLinks.map((l) => ({ ...l, href: l.href.replace("/dashboard", base) }));
+  const links = learningLinks
+    .filter((l) => !(demoMode && l.key === "help"))
+    .map((l) => ({ ...l, href: l.href.replace("/dashboard", base) }));
   return (
     <aside className="side" aria-label="Main navigation">
       <div className="brand">

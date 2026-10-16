@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireProfile } from "./auth";
 import { createAdminClient } from "./supabase/admin";
+import { notifyAdmins } from "./notifications";
 import { meetsWatchRequirement, mergeRanges, watchedSeconds, type Range } from "./video-ranges.ts";
 
 export interface ProgressResult {
@@ -115,8 +116,17 @@ export async function submitQuiz(lessonId: string, answers: Record<string, strin
 
   const r = data as {
     passed: boolean; correct: number; total: number; pass_ratio: number; next_lesson_id: string | null; course_completed: boolean;
+    course_completed_at: string | null;
     results: { question_id: string; selected_option_id: string; is_correct: boolean; correct_option_id: string | null; explanation: string }[];
   };
+
+  // This attempt finished the course (not a retake after completing): tell the admins.
+  if (r.passed && r.course_completed_at && Date.now() - new Date(r.course_completed_at).getTime() < 15_000) {
+    const { data: info } = await admin.from("lessons").select("course_versions(title)").eq("id", lessonId).maybeSingle();
+    const cv = info?.course_versions as unknown as { title: string } | { title: string }[] | null;
+    const title = (Array.isArray(cv) ? cv[0]?.title : cv?.title) ?? "a course";
+    await notifyAdmins({ kind: "course_completed", title: `${profile.fullName} completed ${title}`, link: `/admin/staff/${profile.id}` }, profile.id);
+  }
 
   revalidatePath("/dashboard");
   revalidatePath(`/lessons/${lessonId}`);

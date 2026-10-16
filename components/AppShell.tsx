@@ -20,7 +20,7 @@ export function AppShell({
           <span className="mark">K</span>Keapr Training
           <span className="avatar" aria-hidden="true">{learner.initial}</span>
         </div>
-        <TopBar />
+        <TopBar demoMode={demoMode || !isSupabaseConfigured()} />
         <main className="wrap">{children}</main>
       </div>
     </div>

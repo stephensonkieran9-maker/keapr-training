@@ -480,3 +480,35 @@ a.side-link:hover{background:var(--surface-2)}
 .lo-title{flex:1;min-width:0}
 .lo-title small{display:block;color:var(--muted);font-size:12px}
 .lesson-overrides .manage-assignment{margin:8px 0 4px 34px}
+
+/* Notifications */
+.notif{position:relative}
+.notif-btn{position:relative}
+.notif-count{position:absolute;top:0;right:-2px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#c4483d;color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center}
+.notif-panel{position:absolute;right:0;top:calc(100% + 10px);width:min(360px,calc(100vw - 32px));max-height:min(480px,70vh);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 12px 32px rgba(0,0,0,.14);z-index:20}
+.notif-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
+.notif-head h2{font-size:15px;margin:0}
+.notif-empty{margin:0;padding:22px 14px;color:var(--muted);font-size:14px;text-align:center}
+.notif-list{list-style:none;margin:0;padding:0}
+.notif-list li+li{border-top:1px solid var(--line)}
+.notif-item{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:none;border:0;padding:12px 14px;cursor:pointer;color:var(--fg);font:inherit}
+.notif-item:hover,.notif-item:focus-visible{background:var(--surface-2)}
+.notif-item.unread .notif-title{font-weight:700}
+.notif-icon{flex:none;width:30px;height:30px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;color:var(--accent)}
+.notif-icon svg{width:15px;height:15px}
+.notif-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.notif-title{font-size:14px;font-weight:600}
+.notif-body{font-size:13px;color:var(--muted)}
+.notif-time{font-size:12px;color:var(--muted)}
+.notif-dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:6px}
+
+/* Help */
+.help-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px}
+.help-steps li{display:flex;gap:12px}
+.help-num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-weight:700;font-size:14px}
+.help-steps h3{margin:2px 0 4px;font-size:15px}
+.help-steps p{margin:0;font-size:14px;color:var(--muted)}
+.faq details{border-bottom:1px solid var(--line);padding:10px 0}
+.faq details:last-child{border-bottom:0}
+.faq summary{cursor:pointer;font-weight:600;font-size:15px}
+.faq details p{margin:8px 0 2px;font-size:14px;color:var(--muted)}

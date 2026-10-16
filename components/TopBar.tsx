@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Icon } from "./Icons";
+import { NotificationsMenu } from "./NotificationsMenu";
 
 type Mode = "light" | "dark";
 
-export function TopBar() {
+export function TopBar({ demoMode = false }: { demoMode?: boolean }) {
   const [mode, setMode] = useState<Mode>("light");
 
   useEffect(() => {
@@ -40,12 +42,12 @@ export function TopBar() {
         <Icon name="moon" className="sun" />
         <Icon name="sun" className="moon" />
       </button>
-      <button className="iconbtn" aria-label="Help">
-        <Icon name="help" />
-      </button>
-      <button className="iconbtn dot" aria-label="Notifications, 1 unread">
-        <Icon name="bell" />
-      </button>
+      {!demoMode && (
+        <Link className="iconbtn" href="/help" aria-label="Help" title="Help">
+          <Icon name="help" />
+        </Link>
+      )}
+      <NotificationsMenu demoMode={demoMode} />
     </header>
   );
 }

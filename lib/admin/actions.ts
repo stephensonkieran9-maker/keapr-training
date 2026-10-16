@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notify } from "@/lib/notifications";
 import { cleanDraft, normaliseDraft, publishProblems, type CourseDraft } from "./draft.ts";
 
 // Every action re-checks that the caller is an active admin on the server,
@@ -60,6 +61,12 @@ export async function inviteStaff(_prev: ActionState, formData: FormData): Promi
   await admin.from("profiles").update({ full_name: fullName, role }).eq("id", data.user.id);
   await admin.from("invitations").insert({ email, full_name: fullName, role, invited_by: me.id });
   await audit(me.id, "invite", "profile", data.user.id, { email, role });
+  await notify(data.user.id, {
+    kind: "welcome",
+    title: "Welcome to Keapr Training",
+    body: "Your courses appear on your dashboard. The Help page explains how lessons and quizzes work.",
+    link: "/help",
+  });
 
   revalidatePath("/admin/staff");
   return {
@@ -135,7 +142,7 @@ export async function assignCourse(_prev: ActionState, formData: FormData): Prom
   const admin = createAdminClient();
   const { data: version } = await admin
     .from("course_versions")
-    .select("id, version")
+    .select("id, version, title")
     .eq("course_id", courseId)
     .eq("status", "published")
     .order("version", { ascending: false })
@@ -175,6 +182,12 @@ export async function assignCourse(_prev: ActionState, formData: FormData): Prom
     if (error) return { error: `The course couldn't be assigned: ${error.message}` };
   }
   await audit(me.id, "assign", "profile", userId, { course_id: courseId, course_version_id: version.id });
+  await notify(userId, {
+    kind: "course_assigned",
+    title: previous ? `${version.title} is back on your training` : `New course: ${version.title}`,
+    body: previous ? "You can pick up where you left off." : "It's been added to your training. Start whenever you're ready.",
+    link: `/courses/${courseId}`,
+  });
   revalidatePath(`/admin/staff/${userId}`);
   revalidatePath("/admin/staff");
   return { ok: true, message: "Course assigned." };
@@ -190,7 +203,7 @@ export async function unassignCourse(_prev: ActionState, formData: FormData): Pr
 
   const { data: enrolment } = await admin
     .from("enrolments")
-    .select("id, course_version_id, course_versions(course_id)")
+    .select("id, course_version_id, course_versions(course_id, title)")
     .eq("id", enrolmentId)
     .eq("learner_id", userId)
     .maybeSingle();
@@ -222,6 +235,16 @@ export async function unassignCourse(_prev: ActionState, formData: FormData): Pr
       await audit(me.id, "reset", "enrolment", enrolmentId, { learner_id: userId, new_version_id: versionId }, reason || undefined);
     }
   }
+
+  const cv = enrolment.course_versions as unknown as { course_id: string; title: string } | { course_id: string; title: string }[] | null;
+  const course = Array.isArray(cv) ? cv[0] : cv;
+  const courseTitle = course?.title ?? "A course";
+  await notify(
+    userId,
+    mode === "reset"
+      ? { kind: "progress_reset", title: `${courseTitle} has been reset`, body: "Start again from lesson 1.", link: course ? `/courses/${course.course_id}` : undefined }
+      : { kind: "course_removed", title: `${courseTitle} was removed from your training`, body: mode === "keep" ? "Your progress is kept if it's added back." : undefined },
+  );
 
   revalidatePath(`/admin/staff/${userId}`);
   revalidatePath("/admin/staff");
@@ -340,6 +363,17 @@ export async function markLessonComplete(_prev: ActionState, formData: FormData)
   }
 
   const r = data as { already_complete: boolean; course_completed: boolean };
+  if (!r.already_complete) {
+    const { data: info } = await admin.from("lessons").select("title, course_versions(course_id, title)").eq("id", lessonId).maybeSingle();
+    const lv = info?.course_versions as unknown as { course_id: string; title: string } | { course_id: string; title: string }[] | null;
+    const lc = Array.isArray(lv) ? lv[0] : lv;
+    await notify(userId, {
+      kind: "lesson_marked",
+      title: `"${info?.title ?? "A lesson"}" was marked complete`,
+      body: `An admin marked this lesson complete in ${lc?.title ?? "your course"}${r.course_completed ? ", which finishes the course" : ""}.`,
+      link: lc ? `/courses/${lc.course_id}` : undefined,
+    });
+  }
   revalidatePath(`/admin/staff/${userId}`);
   revalidatePath("/admin");
   revalidatePath("/admin/reports");
