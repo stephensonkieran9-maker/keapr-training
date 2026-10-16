@@ -149,8 +149,6 @@ export interface CourseRow {
   updatedAt: string;
   hasUnpublishedChanges: boolean;
   archivedAt: string | null;
-  /** Position in the training path (1 = first), or null if not in it. */
-  pathPosition: number | null;
   /** Ever assigned to anyone (including since unassigned): can't be deleted. */
   everAssigned: boolean;
 }
@@ -182,7 +180,6 @@ export async function listCourses(): Promise<CourseRow[]> {
       assignedCount: (enrolments ?? []).filter((e) => versionIds.has(e.course_version_id) && !e.unassigned_at).length,
       everAssigned: (enrolments ?? []).some((e) => versionIds.has(e.course_version_id)),
       archivedAt: meta.archived.get(c.id) ?? null,
-      pathPosition: meta.path.get(c.id) ?? null,
       updatedAt: c.updated_at,
       hasUnpublishedChanges: !latest || new Date(c.updated_at).getTime() > new Date(latest.published_at).getTime() + 1000,
     };

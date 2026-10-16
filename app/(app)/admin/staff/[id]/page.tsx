@@ -9,6 +9,8 @@ import { getStaffMember, publishedCourseOptions } from "@/lib/admin/queries";
 import { setActive, setRole } from "@/lib/admin/actions";
 import { UnassignControls } from "@/components/admin/UnassignControls";
 import { LessonOverrides } from "@/components/admin/LessonOverrides";
+import { AssignPathForm, RemoveFromPath } from "@/components/admin/PathForms";
+import { listPaths, pathsForPerson } from "@/lib/admin/paths";
 import { formatShortDate, percent } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +30,9 @@ export default async function StaffMemberPage({
   const { profile } = await requireAdmin();
   const { id } = await params;
   const { error } = await searchParams;
-  const [person, courseOptions] = await timed("staff member", () => Promise.all([getStaffMember(id), publishedCourseOptions()]));
+  const [person, courseOptions, myPaths, allPaths] = await timed("staff member", () =>
+    Promise.all([getStaffMember(id), publishedCourseOptions(), pathsForPerson(id), listPaths()]),
+  );
   if (!person) notFound();
 
   const assignedIds = new Set(person.courses.map((c) => c.courseId));
@@ -83,6 +87,25 @@ export default async function StaffMemberPage({
         </section>
 
         <div className="form-stack">
+          <section className="card" aria-labelledby="paths-title">
+            <h2 id="paths-title">Training paths</h2>
+            {myPaths.length === 0 ? (
+              <p className="hint" style={{ marginTop: 0 }}>Not on a path. Their courses are all open.</p>
+            ) : (
+              <ul className="path-member-list">
+                {myPaths.map((p) => (
+                  <li key={p.id}>
+                    <div><Link className="rowlink" href={`/admin/paths/${p.id}`}>{p.name}</Link><small className="muted"> since {formatShortDate(p.assignedAt)}</small></div>
+                    <RemoveFromPath pathId={p.id} userId={person.id} label={p.name} />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {person.isActive && (
+              <AssignPathForm userId={person.id} options={allPaths.filter((p) => !myPaths.some((m) => m.id === p.id)).map((p) => ({ id: p.id, name: p.name }))} />
+            )}
+          </section>
+
           <section className="card">
             <h2>Sign-in</h2>
             <dl className="kv">

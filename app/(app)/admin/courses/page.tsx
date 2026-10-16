@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { NewCourseForm } from "@/components/admin/NewCourseForm";
-import { TrainingPath } from "@/components/admin/TrainingPath";
 import { requireAdmin } from "@/lib/auth";
 import { timed } from "@/lib/timing";
 import { listCourses } from "@/lib/admin/queries";
+import { pathNamesByCourse } from "@/lib/admin/paths";
 import { formatShortDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +13,9 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
   await requireAdmin();
   const sp = await searchParams;
   const showArchived = sp.archived === "1";
-  const all = await timed("course list", () => listCourses());
+  const [all, pathNames] = await timed("course list", () => Promise.all([listCourses(), pathNamesByCourse()]));
   const archivedCount = all.filter((c) => c.archivedAt).length;
   const courses = all.filter((c) => (showArchived ? c.archivedAt : !c.archivedAt));
-  const active = all.filter((c) => !c.archivedAt);
-  const pathOrder = active.filter((c) => c.pathPosition != null).sort((a, b) => a.pathPosition! - b.pathPosition!).map((c) => c.id);
 
   return (
     <>
@@ -49,7 +47,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
           ) : (
             <table className="table">
               <thead>
-                <tr><th>Course</th><th>Status</th><th>Order</th><th>Lessons</th><th>Assigned</th><th>Updated</th></tr>
+                <tr><th>Course</th><th>Status</th><th>Paths</th><th>Lessons</th><th>Assigned</th><th>Updated</th></tr>
               </thead>
               <tbody>
                 {courses.map((c) => (
@@ -68,7 +66,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
                       )}
                       {!c.archivedAt && c.latestVersion && c.hasUnpublishedChanges && <small>Unpublished changes</small>}
                     </td>
-                    <td>{c.pathPosition ? `${c.pathPosition} in path` : <span className="muted">Open</span>}</td>
+                    <td>{pathNames.get(c.id)?.length ? <small style={{ display: "block", color: "var(--fg)" }}>{pathNames.get(c.id)!.join(", ")}</small> : <span className="muted">None</span>}</td>
                     <td>{c.lessonCount}</td>
                     <td>{c.assignedCount}</td>
                     <td>{formatShortDate(c.updatedAt)}</td>
@@ -80,7 +78,13 @@ export default async function CoursesPage({ searchParams }: { searchParams: Prom
         </div>
         <div className="form-stack">
           {!showArchived && (
-            <TrainingPath courses={active.map((c) => ({ id: c.id, title: c.title, published: Boolean(c.latestVersion) }))} initial={pathOrder} />
+            <section className="card">
+              <h2 style={{ marginTop: 0 }}>Courses in order</h2>
+              <p className="hint" style={{ margin: "0 0 12px" }}>
+                Group courses into training paths (for example, one per team) to make them open in order, then assign the path to people.
+              </p>
+              <Link className="btn btn-ghost btn-sm" href="/admin/paths">Manage training paths</Link>
+            </section>
           )}
           <NewCourseForm />
         </div>

@@ -309,9 +309,29 @@ export async function publishCourse(courseId: string, details: { title: string; 
   const { error } = await admin.rpc("publish_course", { p_course_id: courseId, p_actor: me.id });
   if (error) return { error: `Publishing failed: ${error.message}` };
 
+  // Anyone on a training path that includes this course gets it now it's published.
+  const { data: inPaths } = await admin.from("training_path_courses").select("path_id, training_paths(name)").eq("course_id", courseId);
+  let pathAssigned = 0;
+  for (const row of inPaths ?? []) {
+    const { data: added } = await admin.rpc("sync_path", { p_path: row.path_id, p_actor: me.id });
+    const pairs = (added ?? []) as { learner_id: string; course_id: string }[];
+    pathAssigned += pairs.length;
+    const raw = row.training_paths as unknown as { name: string } | { name: string }[] | null;
+    const pathName = (Array.isArray(raw) ? raw[0]?.name : raw?.name) ?? "your training";
+    await notify(pairs.map((p) => p.learner_id), {
+      kind: "course_assigned",
+      title: `New course: ${details.title.trim()}`,
+      body: `Added through the ${pathName} path.`,
+      link: `/courses/${courseId}`,
+    });
+  }
+
   revalidatePath(`/admin/courses/${courseId}`);
   revalidatePath("/admin/courses");
-  return { ok: true, message: "Published. New assignments will get this version; people already on the course keep the version they started." };
+  return {
+    ok: true,
+    message: `Published. New assignments will get this version; people already on the course keep the version they started.${pathAssigned ? ` Assigned to ${pathAssigned} ${pathAssigned === 1 ? "person" : "people"} on its training paths.` : ""}`,
+  };
 }
 
 // ─── Video uploads ───────────────────────────────────────────────────────
@@ -461,26 +481,4 @@ export async function deleteCourse(_prev: ActionState, formData: FormData): Prom
 
   revalidatePath("/admin/courses");
   redirect("/admin/courses?deleted=1");
-}
-
-// ─── Training path ───────────────────────────────────────────────────────
-
-/** Sets the order courses open in. Courses not listed are taken out of the path. */
-export async function saveTrainingPath(courseIds: string[]): Promise<ActionState> {
-  const { profile: me } = await requireAdmin();
-  const ids = [...new Set(courseIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)))].slice(0, 100);
-  const admin = createAdminClient();
-
-  const { error } = await admin.from("courses").update({ path_position: null }).not("path_position", "is", null);
-  if (error) return { error: /path_position/.test(error.message) ? MIGRATION_0010 : `The order couldn't be saved: ${error.message}` };
-  for (let i = 0; i < ids.length; i++) {
-    const { error: e } = await admin.from("courses").update({ path_position: i + 1 }).eq("id", ids[i]);
-    if (e) return { error: `The order couldn't be saved: ${e.message}` };
-  }
-
-  await audit(me.id, "training_path", "course", null, { order: ids });
-  revalidatePath("/admin/courses");
-  revalidatePath("/dashboard");
-  revalidatePath("/courses", "layout");
-  return { ok: true, message: ids.length ? "Order saved. Courses now open in this order." : "Training path cleared. All courses are open." };
 }

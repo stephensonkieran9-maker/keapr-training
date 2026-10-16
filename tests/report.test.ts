@@ -57,7 +57,7 @@ test("filters: deactivated hidden by default, search, status, course", () => {
 });
 
 test("parseFilters ignores unknown status values", () => {
-  assert.deepEqual(parseFilters({ status: "bogus", inactive: "1", q: "a" }), { q: "a", course: "", status: "", inactive: true });
+  assert.deepEqual(parseFilters({ status: "bogus", inactive: "1", q: "a" }), { q: "a", course: "", status: "", inactive: true, path: "" });
 });
 
 test("attempts are numbered per lesson in order", () => {
@@ -71,4 +71,12 @@ test("CSV quotes commas and neutralises formulas", () => {
   const csv = reportCsv(buildReport(input));
   assert.ok(csv.startsWith("Name,Email,Account,Course"));
   assert.ok(csv.includes("Amy Able,amy@x.co,Active,Arbitrage basics,2,Completed,2,2,100,3,1,2026-10-01,2026-10-05,2026-10-05"));
+});
+
+test("path filter keeps only people on the path and courses in it", () => {
+  const rows = buildReport(input);
+  const paths = [{ id: "p", name: "Arbitrage", courseIds: ["c1"], memberIds: ["p1"] }];
+  assert.deepEqual(filterReport(rows, { path: "p" }, paths).map((r) => r.personId), ["p1"]);
+  assert.equal(filterReport(rows, { path: "missing" }, paths).length, 0);
+  assert.equal(parseFilters({ path: "p" }).path, "p");
 });

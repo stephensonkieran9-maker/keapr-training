@@ -64,13 +64,16 @@ SQL Editor → paste `supabase/migrations/0008_notifications.sql` → Run. Turns
 
 SQL Editor → paste `supabase/migrations/0009_watch_only_lessons.sql` → Run. Lets a lesson have no quiz: untick **This lesson has a quiz** in the course builder and the lesson completes once the video has been watched (100% by default; skipping ahead doesn't count).
 
-## 13. Run the tenth migration (training path, archive and delete)
+## 13. Run the tenth migration (archive and delete courses)
 
 SQL Editor → paste `supabase/migrations/0010_course_path_archive_delete.sql` → Run (after 0009). Adds:
 
-- **Training path** on the Courses page: put courses in order and each stays locked until the earlier ones (that the person is assigned) are finished. Checked on the server, not just in the page.
 - **Archive** a course from the bottom of its builder page: hidden from the list, assigning and search, all history kept, restorable.
 - **Delete** a course permanently, only if it has never been assigned to anyone. Its videos are removed too.
+
+## 14. Run the eleventh migration (training paths)
+
+SQL Editor → paste `supabase/migrations/0011_training_paths.sql` → Run (after 0010). Turns on **Admin → Paths**: named, ordered sets of courses (for example one per team). Assign a path to someone, from the path page or their Staff page, and they get its published courses, each locked until the earlier ones are finished. Someone can be on several paths. Courses added to a path later, or published later, are assigned to everyone on it. Locks are checked on the server.
 
 ## Inviting staff
 

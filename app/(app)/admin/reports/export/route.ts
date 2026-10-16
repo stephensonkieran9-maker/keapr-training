@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const sp = Object.fromEntries(req.nextUrl.searchParams.entries());
   const filters = parseFilters(sp);
   const input = await loadReportInput();
-  const rows = filterReport(buildReport(input), filters);
+  const rows = filterReport(buildReport(input), filters, input.paths);
 
   const attempts = sp.type === "attempts";
   const body = attempts ? attemptsCsv(buildAttempts(input, new Set(rows.map((r) => r.enrolmentId)))) : reportCsv(rows);

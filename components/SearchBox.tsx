@@ -17,6 +17,7 @@ const kindIcon: Record<SearchKind, IconName> = {
   help: "help",
   person: "users",
   "admin-course": "stack",
+  path: "list",
 };
 
 export function SearchBox({ demoMode = false }: { demoMode?: boolean }) {

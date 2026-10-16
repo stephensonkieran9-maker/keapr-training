@@ -16,7 +16,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const filters = parseFilters(await searchParams);
   const input = await timed("report data", () => loadReportInput());
   const all = buildReport(input);
-  const rows = filterReport(all, filters);
+  const rows = filterReport(all, filters, input.paths);
 
   const courseOptions = [...new Map(all.map((r) => [r.courseId, r.courseTitle])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
   const counts = {
@@ -27,7 +27,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const query = filtersToQuery(filters);
   const exportBase = `/admin/reports/export${query}`;
   const attemptsHref = `${exportBase}${query ? "&" : "?"}type=attempts`;
-  const filtered = Boolean(filters.q || filters.course || filters.status || filters.inactive);
+  const filtered = Boolean(filters.q || filters.course || filters.status || filters.inactive || filters.path);
 
   return (
     <>
@@ -55,6 +55,15 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
             {courseOptions.map(([id, title]) => <option key={id} value={id}>{title}</option>)}
           </select>
         </label>
+        {(input.paths?.length ?? 0) > 0 && (
+          <label className="field">
+            <span>Path</span>
+            <select name="path" defaultValue={filters.path}>
+              <option value="">All paths</option>
+              {input.paths!.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </label>
+        )}
         <label className="field">
           <span>Status</span>
           <select name="status" defaultValue={filters.status}>

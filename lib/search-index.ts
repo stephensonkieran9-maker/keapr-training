@@ -2,6 +2,7 @@ import "server-only";
 import { requireProfile } from "./auth";
 import { loadLearnerProgress } from "./learner-progress";
 import { listCourses, listStaff } from "./admin/queries";
+import { listPaths } from "./admin/paths";
 import { staticItems, type SearchItem } from "./search.ts";
 
 /** Everything the signed-in person may search: their own courses, lessons
@@ -53,7 +54,10 @@ export async function buildSearchIndex(): Promise<SearchItem[]> {
   }
 
   if (isAdmin) {
-    const [staff, courses] = await Promise.all([listStaff().catch(() => []), listCourses().catch(() => [])]);
+    const [staff, courses, paths] = await Promise.all([listStaff().catch(() => []), listCourses().catch(() => []), listPaths().catch(() => [])]);
+    for (const p of paths) {
+      items.push({ kind: "path", title: p.name, subtitle: `${p.courses.length} courses · ${p.memberCount} people`, href: `/admin/paths/${p.id}`, text: [p.description, ...p.courses.map((c) => c.title)].join(". ") });
+    }
     for (const s of staff) {
       items.push({ kind: "person", title: s.fullName, subtitle: `${s.email}${s.status === "deactivated" ? " · deactivated" : s.status === "invited" ? " · invited" : ""}`, href: `/admin/staff/${s.id}` });
     }

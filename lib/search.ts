@@ -4,7 +4,7 @@
 
 import { faqId, faqs, adminTopics } from "./help-content.ts";
 
-export type SearchKind = "page" | "course" | "lesson" | "resource" | "help" | "person" | "admin-course";
+export type SearchKind = "page" | "course" | "lesson" | "resource" | "help" | "person" | "admin-course" | "path";
 
 export interface SearchItem {
   kind: SearchKind;
@@ -29,12 +29,13 @@ export const kindLabel: Record<SearchKind, string> = {
   help: "Help",
   person: "Staff",
   "admin-course": "Course builder",
+  path: "Training paths",
 };
 
 // Order groups appear in.
-export const kindOrder: SearchKind[] = ["course", "lesson", "resource", "help", "person", "admin-course", "page"];
+export const kindOrder: SearchKind[] = ["course", "lesson", "resource", "help", "person", "admin-course", "path", "page"];
 
-const kindBoost: Record<SearchKind, number> = { course: 6, lesson: 5, resource: 4, person: 4, "admin-course": 3, help: 2, page: 1 };
+const kindBoost: Record<SearchKind, number> = { course: 6, lesson: 5, resource: 4, person: 4, "admin-course": 3, path: 3, help: 2, page: 1 };
 
 /** Lowercase and strip accents so "cafe" finds "Café". */
 export function normalise(s: string): string {
@@ -112,7 +113,8 @@ export function staticItems(isAdmin: boolean): SearchItem[] {
     pages.push(
       { kind: "page", title: "Overview", subtitle: "Admin", href: "/admin", text: "dashboard progress stuck nudge activity" },
       { kind: "page", title: "Staff", subtitle: "Admin", href: "/admin/staff", text: "people team add someone invite" },
-      { kind: "page", title: "Courses", subtitle: "Admin", href: "/admin/courses", text: "course builder new course publish" },
+      { kind: "page", title: "Courses", subtitle: "Admin", href: "/admin/courses", text: "course builder new course publish archive delete" },
+      { kind: "page", title: "Training paths", subtitle: "Admin", href: "/admin/paths", text: "paths teams order sequence assign" },
       { kind: "page", title: "Reports", subtitle: "Admin", href: "/admin/reports", text: "csv export spreadsheet download progress attempts" },
     );
   }

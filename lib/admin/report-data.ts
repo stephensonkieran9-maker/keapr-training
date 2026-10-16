@@ -23,7 +23,7 @@ export async function loadReportInput(): Promise<ReportInput> {
   const admin = createAdminClient();
   type Version = { id: string; course_id: string; title: string; version: number; lessons: { id: string; title: string; position: number; is_required: boolean }[] | null };
 
-  const [people, versions, enrolments, completions, attempts, video] = await Promise.all([
+  const [people, versions, enrolments, completions, attempts, video, pathRows, pathCourses, pathMembers] = await Promise.all([
     all("staff", (a, b) => admin.from("profiles").select("id, full_name, email, is_active").order("id").range(a, b)),
     all("courses", (a, b) => admin.from("course_versions").select("id, course_id, title, version, lessons(id, title, position, is_required)").order("id").range(a, b)),
     all("assignments", (a, b) =>
@@ -34,6 +34,10 @@ export async function loadReportInput(): Promise<ReportInput> {
       admin.from("quiz_attempts").select("enrolment_id, lesson_id, correct_count, question_count, pass_ratio_used, passed, submitted_at").order("id").range(a, b),
     ),
     all("video progress", (a, b) => admin.from("video_progress").select("enrolment_id, lesson_id, updated_at").order("enrolment_id").order("lesson_id").range(a, b)),
+    // Training paths (migration 0011); empty if not there yet.
+    admin.from("training_paths").select("id, name").order("name"),
+    admin.from("training_path_courses").select("path_id, course_id"),
+    admin.from("path_assignments").select("path_id, learner_id").is("unassigned_at", null),
   ]);
 
   return {
@@ -57,5 +61,13 @@ export async function loadReportInput(): Promise<ReportInput> {
       submittedAt: a.submitted_at,
     })),
     videoActivity: video.map((v) => ({ enrolmentId: v.enrolment_id, updatedAt: v.updated_at })),
+    paths: pathRows.error
+      ? []
+      : (pathRows.data ?? []).map((p) => ({
+          id: p.id,
+          name: p.name,
+          courseIds: (pathCourses.data ?? []).filter((c) => c.path_id === p.id).map((c) => c.course_id),
+          memberIds: (pathMembers.data ?? []).filter((m) => m.path_id === p.id).map((m) => m.learner_id),
+        })),
   };
 }

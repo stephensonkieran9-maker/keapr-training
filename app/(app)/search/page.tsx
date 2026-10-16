@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata = { title: "Search · Keapr Training" };
 
 const kindIcon: Record<SearchKind, IconName> = {
-  page: "grid", course: "book", lesson: "play", resource: "pdf", help: "help", person: "users", "admin-course": "stack",
+  page: "grid", course: "book", lesson: "play", resource: "pdf", help: "help", person: "users", "admin-course": "stack", path: "list",
 };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {

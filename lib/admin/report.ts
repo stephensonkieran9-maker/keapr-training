@@ -10,6 +10,8 @@ export interface ReportInput {
   completions: { enrolmentId: string; lessonId: string; completedAt: string }[];
   attempts: { enrolmentId: string; lessonId: string; correct: number; total: number; passRatio: number; passed: boolean; submittedAt: string }[];
   videoActivity: { enrolmentId: string; updatedAt: string }[];
+  /** Training paths, for the path filter (optional). */
+  paths?: { id: string; name: string; courseIds: string[]; memberIds: string[] }[];
 }
 
 export interface ReportRow {
@@ -53,6 +55,7 @@ export interface ReportFilters {
   course?: string; // courseId
   status?: ReportStatus | "";
   inactive?: boolean; // include deactivated people
+  path?: string; // path id: people on the path, courses in the path
 }
 
 const latest = (a: string | null, b: string | null) => (!a ? b : !b ? a : a > b ? a : b);
@@ -112,10 +115,12 @@ export function buildReport(input: ReportInput): ReportRow[] {
   return rows.sort((x, y) => x.name.localeCompare(y.name) || x.courseTitle.localeCompare(y.courseTitle));
 }
 
-export function filterReport(rows: ReportRow[], f: ReportFilters): ReportRow[] {
+export function filterReport(rows: ReportRow[], f: ReportFilters, paths: ReportInput["paths"] = []): ReportRow[] {
   const q = (f.q ?? "").trim().toLowerCase();
+  const path = f.path ? paths?.find((p) => p.id === f.path) : undefined;
   return rows.filter(
     (r) =>
+      (!f.path || (path !== undefined && path.memberIds.includes(r.personId) && path.courseIds.includes(r.courseId))) &&
       (f.inactive || r.isActive) &&
       (!f.course || r.courseId === f.course) &&
       (!f.status || r.status === f.status) &&
@@ -208,6 +213,7 @@ export function parseFilters(sp: Record<string, string | string[] | undefined>):
     course: one("course"),
     status: status === "not_started" || status === "in_progress" || status === "completed" ? status : "",
     inactive: one("inactive") === "1",
+    path: one("path"),
   };
 }
 
@@ -217,6 +223,7 @@ export function filtersToQuery(f: ReportFilters): string {
   if (f.course) p.set("course", f.course);
   if (f.status) p.set("status", f.status);
   if (f.inactive) p.set("inactive", "1");
+  if (f.path) p.set("path", f.path);
   const s = p.toString();
   return s ? `?${s}` : "";
 }
