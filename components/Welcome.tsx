@@ -42,7 +42,7 @@ export function Welcome({ data }: { data: DashboardData }) {
           <Icon name="folder" />
           Resources
         </Link>
-        <Link className="btn btn-primary" href="#">
+        <Link className="btn btn-primary" href="/help">
           <Icon name="help" />
           Ask for help
         </Link>

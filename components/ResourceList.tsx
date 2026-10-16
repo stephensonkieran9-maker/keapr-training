@@ -16,7 +16,6 @@ export function ResourceList({ resources }: { resources: Resource[] }) {
           <h2 id="res-title">Supporting resources</h2>
           <p>Handbooks and checklists attached to your courses.</p>
         </div>
-        <Link className="link" href="#">View all files →</Link>
       </div>
       {resources.length === 0 ? (
         <p style={{ color: "var(--muted)" }}>No resources yet.</p>

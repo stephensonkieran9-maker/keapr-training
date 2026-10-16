@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "./Icons";
 import { NotificationsMenu } from "./NotificationsMenu";
+import { SearchBox } from "./SearchBox";
 
 type Mode = "light" | "dark";
 
@@ -29,10 +30,7 @@ export function TopBar({ demoMode = false }: { demoMode?: boolean }) {
   return (
     <header className="top">
       <span className="portal">Keapr Training</span>
-      <label className="search">
-        <Icon name="search" />
-        <input id="search" type="search" placeholder="Search lessons and resources" aria-label="Search lessons and resources" />
-      </label>
+      <SearchBox demoMode={demoMode} />
       <button
         className="iconbtn modebtn"
         onClick={toggle}
