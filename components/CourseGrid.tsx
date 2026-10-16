@@ -55,7 +55,9 @@ function CourseCard({ course }: { course: CourseSummary }) {
   const href = `/courses/${course.courseId}`;
 
   const status =
-    course.status === "completed" ? (
+    course.lockedBy ? (
+      <span className="status none"><Icon name="lock" />Locked</span>
+    ) : course.status === "completed" ? (
       <span className="status done">Completed{course.completedOn ? ` ${formatShortDate(course.completedOn)}` : ""}</span>
     ) : course.status === "in_progress" ? (
       <span className="status prog">In progress</span>
@@ -64,7 +66,9 @@ function CourseCard({ course }: { course: CourseSummary }) {
     );
 
   const action =
-    course.status === "completed" ? (
+    course.lockedBy ? (
+      <span className="hint course-lock">Finish &ldquo;{course.lockedBy}&rdquo; first</span>
+    ) : course.status === "completed" ? (
       <Link className="btn btn-soft" href={href}>Review<Icon name="redo" /></Link>
     ) : course.status === "in_progress" ? (
       <Link className="btn btn-primary" href={href}>Continue<Icon name="arrow" /></Link>

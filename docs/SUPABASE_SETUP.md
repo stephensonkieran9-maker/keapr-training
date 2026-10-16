@@ -64,6 +64,14 @@ SQL Editor → paste `supabase/migrations/0008_notifications.sql` → Run. Turns
 
 SQL Editor → paste `supabase/migrations/0009_watch_only_lessons.sql` → Run. Lets a lesson have no quiz: untick **This lesson has a quiz** in the course builder and the lesson completes once the video has been watched (100% by default; skipping ahead doesn't count).
 
+## 13. Run the tenth migration (training path, archive and delete)
+
+SQL Editor → paste `supabase/migrations/0010_course_path_archive_delete.sql` → Run (after 0009). Adds:
+
+- **Training path** on the Courses page: put courses in order and each stays locked until the earlier ones (that the person is assigned) are finished. Checked on the server, not just in the page.
+- **Archive** a course from the bottom of its builder page: hidden from the list, assigning and search, all history kept, restorable.
+- **Delete** a course permanently, only if it has never been assigned to anyone. Its videos are removed too.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

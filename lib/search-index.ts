@@ -58,6 +58,7 @@ export async function buildSearchIndex(): Promise<SearchItem[]> {
       items.push({ kind: "person", title: s.fullName, subtitle: `${s.email}${s.status === "deactivated" ? " · deactivated" : s.status === "invited" ? " · invited" : ""}`, href: `/admin/staff/${s.id}` });
     }
     for (const c of courses) {
+      if (c.archivedAt) continue;
       items.push({
         kind: "admin-course",
         title: c.title,

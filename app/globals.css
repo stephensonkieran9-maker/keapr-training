@@ -539,3 +539,13 @@ a.side-link:hover{background:var(--surface-2)}
 .search-results li a{display:flex;gap:12px;align-items:center;padding:10px 18px;color:var(--fg);text-decoration:none}
 .search-results li a:hover,.search-results li a:focus-visible{background:var(--surface-2)}
 .search-results .search-title,.search-results .search-sub{white-space:normal}
+.status svg{width:12px;height:12px;margin-right:4px;vertical-align:-1px}
+.course-lock{font-size:13px;color:var(--muted)}
+
+/* Training path */
+.path-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.path-list li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.path-num{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-weight:700;font-size:13px}
+.path-title{flex:1;min-width:0;font-weight:600;font-size:14px}
+.path-title small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.danger-zone{border-color:color-mix(in srgb,#c4483d 35%,var(--line))}

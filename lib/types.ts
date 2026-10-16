@@ -23,6 +23,8 @@ export interface CourseSummary {
   lessonsPassed: number;
   durationMinutes: number;
   completedOn?: string; // ISO date
+  /** Training path: title of the course to finish first. */
+  lockedBy?: string;
 }
 
 export interface LessonStep {

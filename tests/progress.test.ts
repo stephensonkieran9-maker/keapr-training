@@ -84,3 +84,15 @@ test("locked reason after a watch-only lesson says to finish watching", async ()
   const steps = lessonSteps(e, { enrolments: [e], completedLessonKeys: new Set(), attempts: [], watchedSeconds: new Map() });
   assert.equal(steps[1].lockedReason, "Finish watching lesson 1 to unlock");
 });
+
+test("a course waiting on an earlier path course is fully locked and skipped for Next lesson", async () => {
+  const { computeProgress } = await import("../lib/progress.ts");
+  const lesson = (id: string, position: number) => ({ id, position, title: id, videoSeconds: 60, requiredWatchRatio: 0.9, passRatio: 0.8, isRequired: true, estimatedMinutes: null, objectives: [] });
+  const a = { enrolmentId: "ea", courseId: "A", title: "Welcome", description: "", isDemo: false, completedAt: null, assignedAt: "2026-10-02", lessons: [lesson("a1", 1)] };
+  const b = { enrolmentId: "eb", courseId: "B", title: "Arbitrage", description: "", isDemo: false, completedAt: null, assignedAt: "2026-10-01", lessons: [lesson("b1", 1)], lockedBy: "Welcome" };
+  const r = computeProgress({ enrolments: [a, b], completedLessonKeys: new Set(), attempts: [], watchedSeconds: new Map() });
+  assert.equal(r.stepsByEnrolment.get("eb")![0].state, "locked");
+  assert.equal(r.stepsByEnrolment.get("eb")![0].lockedReason, 'Finish "Welcome" first');
+  assert.equal(r.courses[1].lockedBy, "Welcome");
+  assert.equal(r.nextLesson?.lessonId, "a1"); // B is older but locked
+});

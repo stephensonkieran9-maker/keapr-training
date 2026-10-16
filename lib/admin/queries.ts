@@ -120,6 +120,24 @@ export async function getStaffMember(id: string) {
   };
 }
 
+/** Archive date and training-path position per course. Read separately and
+ * empty until migration 0010 is run, so pages keep working before then. */
+async function courseMeta(): Promise<{ archived: Map<string, string>; path: Map<string, number> }> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("courses").select("id, archived_at, path_position");
+  if (error) return { archived: new Map(), path: new Map() };
+  const archived = new Map<string, string>();
+  const path = new Map<string, number>();
+  for (const c of data ?? []) {
+    if (c.archived_at) archived.set(c.id, c.archived_at);
+    else if (c.path_position != null) path.set(c.id, c.path_position);
+  }
+  return { archived, path };
+}
+async function archivedDates(): Promise<Map<string, string>> {
+  return (await courseMeta()).archived;
+}
+
 export interface CourseRow {
   id: string;
   title: string;
@@ -130,14 +148,20 @@ export interface CourseRow {
   assignedCount: number;
   updatedAt: string;
   hasUnpublishedChanges: boolean;
+  archivedAt: string | null;
+  /** Position in the training path (1 = first), or null if not in it. */
+  pathPosition: number | null;
+  /** Ever assigned to anyone (including since unassigned): can't be deleted. */
+  everAssigned: boolean;
 }
 
 export async function listCourses(): Promise<CourseRow[]> {
   const admin = createAdminClient();
-  const [coursesRes, versionsRes, enrolmentsRes] = await Promise.all([
+  const [coursesRes, versionsRes, enrolmentsRes, meta] = await Promise.all([
     admin.from("courses").select("id, title, description, is_demo, updated_at, draft").order("updated_at", { ascending: false }),
     admin.from("course_versions").select("id, course_id, version, status, published_at, lessons(count)"),
-    admin.from("enrolments").select("course_version_id").is("unassigned_at", null),
+    admin.from("enrolments").select("course_version_id, unassigned_at"),
+    courseMeta(),
   ]);
   const courses = check("courses", coursesRes);
   const versions = check("course versions", versionsRes);
@@ -155,7 +179,10 @@ export async function listCourses(): Promise<CourseRow[]> {
       isDemo: c.is_demo,
       latestVersion: latest?.version ?? null,
       lessonCount,
-      assignedCount: (enrolments ?? []).filter((e) => versionIds.has(e.course_version_id)).length,
+      assignedCount: (enrolments ?? []).filter((e) => versionIds.has(e.course_version_id) && !e.unassigned_at).length,
+      everAssigned: (enrolments ?? []).some((e) => versionIds.has(e.course_version_id)),
+      archivedAt: meta.archived.get(c.id) ?? null,
+      pathPosition: meta.path.get(c.id) ?? null,
       updatedAt: c.updated_at,
       hasUnpublishedChanges: !latest || new Date(c.updated_at).getTime() > new Date(latest.published_at).getTime() + 1000,
     };
@@ -164,8 +191,11 @@ export async function listCourses(): Promise<CourseRow[]> {
 
 export async function publishedCourseOptions(): Promise<{ id: string; title: string }[]> {
   const admin = createAdminClient();
-  const { data } = await admin.from("course_versions").select("course_id, title, version").eq("status", "published").order("title");
-  return (data ?? []).map((v) => ({ id: v.course_id, title: v.title }));
+  const [{ data }, archived] = await Promise.all([
+    admin.from("course_versions").select("course_id, title, version").eq("status", "published").order("title"),
+    archivedDates(),
+  ]);
+  return (data ?? []).filter((v) => !archived.has(v.course_id)).map((v) => ({ id: v.course_id, title: v.title }));
 }
 
 /** The course plus an editable draft. Courses created before the builder
@@ -185,6 +215,17 @@ export async function getCourseForEditor(id: string) {
   let draft: CourseDraft = normaliseDraft(c.draft);
   if (draft.lessons.length === 0 && latest) draft = await draftFromVersion(latest.id);
 
+  const versionIds = (versions ?? []).map((v) => v.id);
+  const [{ count: everCount }, { count: activeCount }, archived] = await Promise.all([
+    versionIds.length
+      ? admin.from("enrolments").select("id", { count: "exact", head: true }).in("course_version_id", versionIds)
+      : Promise.resolve({ count: 0 }),
+    versionIds.length
+      ? admin.from("enrolments").select("id", { count: "exact", head: true }).in("course_version_id", versionIds).is("unassigned_at", null)
+      : Promise.resolve({ count: 0 }),
+    archivedDates(),
+  ]);
+
   return {
     id: c.id as string,
     title: c.title as string,
@@ -193,6 +234,9 @@ export async function getCourseForEditor(id: string) {
     latestVersion: latest?.version ?? null,
     publishedAt: latest?.published_at ?? null,
     draft,
+    archivedAt: archived.get(c.id) ?? null,
+    everAssigned: (everCount ?? 0) > 0,
+    activeAssignments: activeCount ?? 0,
   };
 }
 

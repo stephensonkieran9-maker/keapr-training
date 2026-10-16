@@ -40,6 +40,10 @@ export async function saveVideoProgress(lessonId: string, ranges: Range[], posit
     .maybeSingle();
   if (!enrolment) return { ok: false, error: "This lesson isn't assigned to you." };
 
+  // Training path: earlier courses must be finished first (migration 0010).
+  const { data: lockedBy, error: lockErr } = await admin.rpc("course_lock_reason", { p_learner: profile.id, p_version: lesson.course_version_id });
+  if (!lockErr && lockedBy) return { ok: false, error: `Finish "${lockedBy}" first. This course is still locked.` };
+
   // Earlier required lessons must be passed.
   const [{ data: earlier }, { data: done }] = await Promise.all([
     admin.from("lessons").select("id").eq("course_version_id", lesson.course_version_id).eq("is_required", true).lt("position", lesson.position),
@@ -130,6 +134,7 @@ export interface QuizResult {
 
 const errorMessages: Record<string, string> = {
   NOT_ENROLLED: "This lesson isn't assigned to you.",
+  COURSE_LOCKED: "Finish the earlier course in your training first. This one is still locked.",
   LESSON_LOCKED: "Pass the earlier lessons first. This one is still locked.",
   QUIZ_LOCKED: "Watch more of the video to unlock the quiz.",
   INCOMPLETE_ANSWERS: "Answer every question before submitting.",

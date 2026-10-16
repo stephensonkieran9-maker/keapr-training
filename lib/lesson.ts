@@ -72,13 +72,17 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
   ]);
   if (!version || !enrolment || !allLessons) return null;
 
-  const [{ data: completions }, { data: progressRows }, { data: attempts }, { data: questions }, { data: resources }] = await Promise.all([
+  const [{ data: completions }, { data: progressRows }, { data: attempts }, { data: questions }, { data: resources }, { data: locks }] = await Promise.all([
     supabase.from("lesson_completions").select("lesson_id").eq("enrolment_id", enrolment.id).is("revoked_at", null),
     supabase.from("video_progress").select("lesson_id, position_seconds, watched_ranges, watched_seconds, quiz_unlocked_at").eq("enrolment_id", enrolment.id),
     supabase.from("quiz_attempts").select("lesson_id, correct_count, question_count").eq("enrolment_id", enrolment.id),
     supabase.from("quiz_questions").select("id, position, prompt, quiz_options(id, position, label)").eq("lesson_id", lessonId).order("position"),
     supabase.from("lesson_resources").select("id, title, kind").eq("lesson_id", lessonId),
+    supabase.rpc("course_locks", { p_learner: profile.id }), // errors (before migration 0010) just mean no locks
   ]);
+  const lockedBy = Array.isArray(locks)
+    ? ((locks as { course_version_id: string; locked_by: string | null }[]).find((l) => l.course_version_id === version.id)?.locked_by ?? undefined)
+    : undefined;
 
   const row: EnrolmentRow = {
     enrolmentId: enrolment.id,
@@ -88,6 +92,7 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
     isDemo: version.is_demo,
     completedAt: enrolment.completed_at,
     assignedAt: enrolment.assigned_at,
+    lockedBy,
     lessons: allLessons.map((l) => ({
       id: l.id,
       position: l.position,

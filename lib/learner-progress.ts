@@ -65,6 +65,19 @@ export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: s
     })
     .filter((e): e is EnrolmentRow => e !== null);
 
+  // Training path (migration 0010): which courses are locked, and their order.
+  // Path courses come first, in path order; the rest keep assignment order.
+  const { data: locks, error: lockError } = await supabase.rpc("course_locks", { p_learner: learnerId });
+  if (!lockError && Array.isArray(locks)) {
+    const byVersion = new Map((locks as { course_version_id: string; path_position: number | null; locked_by: string | null }[]).map((l) => [l.course_version_id, l]));
+    enrolments.forEach((e) => {
+      const l = e.versionId ? byVersion.get(e.versionId) : undefined;
+      if (l?.locked_by) e.lockedBy = l.locked_by;
+    });
+    const pos = (e: EnrolmentRow) => (e.versionId ? byVersion.get(e.versionId)?.path_position : null) ?? Number.POSITIVE_INFINITY;
+    enrolments.sort((a, b) => pos(a) - pos(b));
+  }
+
   const enrolmentIds = enrolments.map((e) => e.enrolmentId);
   const lessonIds = enrolments.flatMap((e) => e.lessons.map((l) => l.id));
 

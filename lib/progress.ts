@@ -27,6 +27,8 @@ export interface EnrolmentRow {
   completedAt: string | null;
   assignedAt: string;
   lessons: LessonRow[];
+  /** Training path: title of the course to finish first, if this one is locked. */
+  lockedBy?: string;
 }
 
 export interface AttemptRow {
@@ -72,6 +74,10 @@ export function lessonSteps(e: EnrolmentRow, input: ProgressInput): LessonStep[]
 
     if (input.completedLessonKeys.has(k)) {
       return { lessonId: lesson.id, position: lesson.position, title: lesson.title, state: "passed", bestScorePercent: best };
+    }
+    // The whole course waits for an earlier course in the training path.
+    if (e.lockedBy) {
+      return { lessonId: lesson.id, position: lesson.position, title: lesson.title, state: "locked", lockedReason: `Finish "${e.lockedBy}" first` };
     }
     // Optional lessons never block the ones after them.
     if (!foundAvailable) {
@@ -135,6 +141,7 @@ export function computeProgress(input: ProgressInput): ComputedProgress {
       lessonsPassed: steps.filter((s) => s.state === "passed").length,
       durationMinutes: minutes,
       completedOn: status === "completed" && e.completedAt ? e.completedAt.slice(0, 10) : undefined,
+      lockedBy: status === "completed" ? undefined : e.lockedBy,
     };
   });
 
@@ -142,7 +149,7 @@ export function computeProgress(input: ProgressInput): ComputedProgress {
   const rank: Record<CourseStatus, number> = { in_progress: 0, not_started: 1, completed: 2 };
   const candidates = input.enrolments
     .map((e, i) => ({ e, c: courses[i] }))
-    .filter(({ c }) => c.status !== "completed")
+    .filter(({ c }) => c.status !== "completed" && !c.lockedBy)
     .sort((a, b) => rank[a.c.status] - rank[b.c.status] || a.e.assignedAt.localeCompare(b.e.assignedAt));
 
   let nextLesson: NextLesson | null = null;

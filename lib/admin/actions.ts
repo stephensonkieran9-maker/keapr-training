@@ -149,6 +149,8 @@ export async function assignCourse(_prev: ActionState, formData: FormData): Prom
     .limit(1)
     .maybeSingle();
   if (!version) return { error: "That course hasn't been published yet." };
+  const { data: courseRow, error: archErr } = await admin.from("courses").select("archived_at").eq("id", courseId).maybeSingle();
+  if (!archErr && courseRow?.archived_at) return { error: "That course is archived. Restore it before assigning it." };
 
   // Already actively assigned to any version of this course?
   const { data: versionIds } = await admin.from("course_versions").select("id").eq("course_id", courseId);
@@ -379,4 +381,106 @@ export async function markLessonComplete(_prev: ActionState, formData: FormData)
   revalidatePath("/admin/reports");
   if (r.already_complete) return { ok: true, message: "That lesson was already complete." };
   return { ok: true, message: r.course_completed ? "Marked complete. That finishes the course." : "Marked complete. The next lesson is now unlocked for them." };
+}
+
+// ─── Archive and delete ──────────────────────────────────────────────────
+
+const MIGRATION_0010 = "Run migration 0010_course_path_archive_delete.sql in Supabase first.";
+
+/** Hides a course from the builder, assigning and search. Optionally removes
+ * it from everyone currently assigned (their history is kept). */
+export async function archiveCourse(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { profile: me } = await requireAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const removeFromEveryone = formData.get("removeFromEveryone") === "yes";
+  const admin = createAdminClient();
+
+  const { data: course, error } = await admin.from("courses").update({ archived_at: new Date().toISOString() }).eq("id", courseId).select("id, title").maybeSingle();
+  if (error) return { error: /archived_at/.test(error.message) ? MIGRATION_0010 : `The course couldn't be archived: ${error.message}` };
+  if (!course) return { error: "Course not found." };
+
+  let removed = 0;
+  if (removeFromEveryone) {
+    const { data: versions } = await admin.from("course_versions").select("id").eq("course_id", courseId);
+    const ids = (versions ?? []).map((v) => v.id);
+    if (ids.length) {
+      const { data: rows } = await admin
+        .from("enrolments")
+        .update({ unassigned_at: new Date().toISOString() })
+        .in("course_version_id", ids)
+        .is("unassigned_at", null)
+        .select("learner_id");
+      removed = rows?.length ?? 0;
+      await notify((rows ?? []).map((r) => r.learner_id), {
+        kind: "course_removed",
+        title: `${course.title} was removed from your training`,
+        body: "Your progress is kept in your training history.",
+      });
+    }
+  }
+
+  await audit(me.id, "archive_course", "course", courseId, { title: course.title, removed_from: removed });
+  revalidatePath("/admin/courses");
+  revalidatePath(`/admin/courses/${courseId}`);
+  revalidatePath("/admin");
+  return { ok: true, message: removed ? `Archived and removed from ${removed} ${removed === 1 ? "person" : "people"}.` : "Archived." };
+}
+
+export async function restoreCourse(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { profile: me } = await requireAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  const admin = createAdminClient();
+  const { error } = await admin.from("courses").update({ archived_at: null }).eq("id", courseId);
+  if (error) return { error: /archived_at/.test(error.message) ? MIGRATION_0010 : `The course couldn't be restored: ${error.message}` };
+  await audit(me.id, "restore_course", "course", courseId);
+  revalidatePath("/admin/courses");
+  revalidatePath(`/admin/courses/${courseId}`);
+  return { ok: true, message: "Restored. It can be assigned again." };
+}
+
+/** Permanent. Only for courses never assigned to anyone; also removes their videos. */
+export async function deleteCourse(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { profile: me } = await requireAdmin();
+  const courseId = String(formData.get("courseId") ?? "");
+  if (formData.get("confirm") !== "yes") return { error: "Tick the box to confirm." };
+  const admin = createAdminClient();
+
+  const { error } = await admin.rpc("admin_delete_course", { p_course: courseId, p_actor: me.id });
+  if (error) {
+    if (error.message.includes("HAS_HISTORY")) return { error: "This course has been assigned to people, so it can't be deleted. Archive it instead." };
+    if (/admin_delete_course|Could not find the function/i.test(error.message)) return { error: MIGRATION_0010 };
+    return { error: `The course couldn't be deleted: ${error.message}` };
+  }
+
+  // Remove its uploaded videos (stored under the course id).
+  const { data: files } = await admin.storage.from("lesson-videos").list(courseId, { limit: 1000 });
+  if (files?.length) {
+    const { error: rmErr } = await admin.storage.from("lesson-videos").remove(files.map((f) => `${courseId}/${f.name}`));
+    if (rmErr) console.warn(`[admin] course ${courseId} deleted but its videos weren't removed: ${rmErr.message}`);
+  }
+
+  revalidatePath("/admin/courses");
+  redirect("/admin/courses?deleted=1");
+}
+
+// ─── Training path ───────────────────────────────────────────────────────
+
+/** Sets the order courses open in. Courses not listed are taken out of the path. */
+export async function saveTrainingPath(courseIds: string[]): Promise<ActionState> {
+  const { profile: me } = await requireAdmin();
+  const ids = [...new Set(courseIds.filter((id) => /^[0-9a-f-]{36}$/i.test(id)))].slice(0, 100);
+  const admin = createAdminClient();
+
+  const { error } = await admin.from("courses").update({ path_position: null }).not("path_position", "is", null);
+  if (error) return { error: /path_position/.test(error.message) ? MIGRATION_0010 : `The order couldn't be saved: ${error.message}` };
+  for (let i = 0; i < ids.length; i++) {
+    const { error: e } = await admin.from("courses").update({ path_position: i + 1 }).eq("id", ids[i]);
+    if (e) return { error: `The order couldn't be saved: ${e.message}` };
+  }
+
+  await audit(me.id, "training_path", "course", null, { order: ids });
+  revalidatePath("/admin/courses");
+  revalidatePath("/dashboard");
+  revalidatePath("/courses", "layout");
+  return { ok: true, message: ids.length ? "Order saved. Courses now open in this order." : "Training path cleared. All courses are open." };
 }

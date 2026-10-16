@@ -46,7 +46,17 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         )}
       </div>
 
-      {summary.status === "completed" && (
+      {summary.lockedBy && (
+        <section className="card quiz quiz-locked" aria-label="Course locked">
+          <span className="lock-badge" aria-hidden="true"><Icon name="lock" /></span>
+          <div>
+            <h2>This course opens next</h2>
+            <p className="muted">Finish &ldquo;{summary.lockedBy}&rdquo; first. Your courses open in order.</p>
+          </div>
+        </section>
+      )}
+
+            {summary.status === "completed" && (
         <section className="card completion" aria-label="Completion record">
           <span className="lock-badge done" aria-hidden="true"><Icon name="award" /></span>
           <div>
