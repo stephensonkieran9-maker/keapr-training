@@ -558,3 +558,4 @@ a.path-card:hover{border-color:var(--accent)}
 .path-inline{margin:10px 0 0;padding-left:20px;font-size:14px;color:var(--fg);display:flex;flex-direction:column;gap:2px}
 .path-member-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
 .path-member-list li{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.notes-link{color:var(--accent);font-weight:600;word-break:break-all}

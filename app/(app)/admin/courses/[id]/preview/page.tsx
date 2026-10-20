@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkedText } from "@/components/LinkedText";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icons";
 import { LessonClient } from "@/components/lesson/LessonClient";
@@ -105,7 +106,7 @@ export default async function PreviewPage({
               {view.lesson.notes && (
                 <>
                   <h2>Notes</h2>
-                  <p className="notes">{view.lesson.notes}</p>
+                  <p className="notes"><LinkedText text={view.lesson.notes} /></p>
                 </>
               )}
             </section>

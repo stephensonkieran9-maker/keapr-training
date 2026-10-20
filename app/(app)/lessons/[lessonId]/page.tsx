@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkedText } from "@/components/LinkedText";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icons";
 import { LessonClient } from "@/components/lesson/LessonClient";
@@ -57,7 +58,7 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
               {lesson.notes && (
                 <>
                   <h2>Notes</h2>
-                  <p className="notes">{lesson.notes}</p>
+                  <p className="notes"><LinkedText text={lesson.notes} /></p>
                 </>
               )}
               {view.resources.length > 0 && (
