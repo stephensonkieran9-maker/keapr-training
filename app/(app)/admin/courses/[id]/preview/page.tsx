@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LinkedText } from "@/components/LinkedText";
+import { LessonLinks } from "@/components/LessonLinks";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icons";
 import { LessonClient } from "@/components/lesson/LessonClient";
@@ -92,6 +93,7 @@ export default async function PreviewPage({
 
       <div className="lesson-layout">
         <div className="lesson-col">
+          <LessonLinks notes={view.lesson.notes} />
           {/* key resets the player and quiz when moving between lessons */}
           <LessonClient key={index} view={view} preview={{ courseId: id, lessonIndex: index }} />
 

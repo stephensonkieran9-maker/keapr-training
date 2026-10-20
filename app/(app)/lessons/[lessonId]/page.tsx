@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LinkedText } from "@/components/LinkedText";
+import { LessonLinks } from "@/components/LessonLinks";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icons";
 import { LessonClient } from "@/components/lesson/LessonClient";
@@ -34,6 +35,7 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
 
       <div className="lesson-layout">
         <div className="lesson-col">
+          {view.state !== "locked" && <LessonLinks notes={lesson.notes} />}
           {view.state === "locked" ? (
             <section className="card quiz quiz-locked">
               <span className="lock-badge" aria-hidden="true"><Icon name="lock" /></span>
