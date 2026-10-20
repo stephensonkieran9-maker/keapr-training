@@ -161,12 +161,12 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
       quizUnlocked: Boolean(mine?.quiz_unlocked_at) || meetsWatchRequirement(watched, lessonRow.video_seconds, requiredRatio),
     },
     // Questions and options only: correct answers never reach the browser.
+    // Options are shuffled on every load so the right answer isn't always in
+    // the same place (scoring uses option ids, so order doesn't matter).
     questions: (questions ?? []).map((q) => ({
       id: q.id,
       prompt: q.prompt,
-      options: ((q.quiz_options ?? []) as { id: string; position: number; label: string }[])
-        .sort((a, b) => a.position - b.position)
-        .map((o) => ({ id: o.id, label: o.label })),
+      options: shuffle(((q.quiz_options ?? []) as { id: string; position: number; label: string }[]).map((o) => ({ id: o.id, label: o.label }))),
     })),
     attempts: {
       count: lessonAttempts.length,
@@ -188,4 +188,13 @@ export async function resolveVideo(ref: string | null): Promise<LessonView["vide
   }
   if (/^https:\/\/.+\.(mp4|webm|mov|m4v)(\?.*)?$/i.test(value)) return { kind: "file", src: value };
   return { kind: "placeholder" };
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
