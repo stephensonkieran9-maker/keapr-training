@@ -561,3 +561,4 @@ a.path-card:hover{border-color:var(--accent)}
 .notes-link{color:var(--accent);font-weight:600;word-break:break-all}
 .lesson-links{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
 .lesson-links .btn{max-width:100%;white-space:normal;text-align:left}
+.lesson-link-meta{font-weight:400;opacity:.8;font-size:12px;margin-left:4px}

@@ -68,3 +68,17 @@ test("watch-only lessons publish without questions; quiz lessons still need one"
   assert.ok(publishProblems({ lessons: [quiz] }).some((p) => p.includes("quiz question")));
   assert.equal(normaliseDraft({ lessons: [{ title: "Old" }] }).lessons[0].hasQuiz, true);
 });
+
+test("downloads survive normalising; blank labels fall back to the file name", async () => {
+  const { normaliseDraft, cleanDraft, downloadKind } = await import("../lib/admin/draft.ts");
+  const d = normaliseDraft({ lessons: [{ title: "Invoices", downloads: [
+    { key: "f1", title: "", ref: "course/1760000000000-inv-0844.pdf", sizeBytes: 52000, kind: "pdf" },
+    { title: "No file" }, // dropped: no ref
+  ] }] });
+  assert.equal(d.lessons[0].downloads.length, 1);
+  assert.equal(cleanDraft(d).lessons[0].downloads[0].title, "inv-0844.pdf");
+  assert.equal(downloadKind("Invoice.PDF"), "pdf");
+  assert.equal(downloadKind("rates.xlsx"), "doc");
+  assert.equal(downloadKind("photo.png"), "other");
+  assert.deepEqual(normaliseDraft({ lessons: [{ title: "Old" }] }).lessons[0].downloads, []);
+});

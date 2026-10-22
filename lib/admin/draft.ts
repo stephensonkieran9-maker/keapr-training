@@ -10,6 +10,23 @@ export interface DraftQuestion {
   explanation: string;
 }
 
+/** A file attached to a lesson (stored in the private lesson-files bucket). */
+export interface DraftDownload {
+  key: string;
+  title: string;
+  /** Path inside the lesson-files bucket. */
+  ref: string;
+  sizeBytes: number | null;
+  kind: "pdf" | "doc" | "checklist" | "other";
+}
+
+export function downloadKind(fileName: string): DraftDownload["kind"] {
+  const ext = fileName.toLowerCase().split(".").pop() ?? "";
+  if (ext === "pdf") return "pdf";
+  if (["doc", "docx", "txt", "rtf", "odt", "xls", "xlsx", "csv", "ppt", "pptx"].includes(ext)) return "doc";
+  return "other";
+}
+
 export interface DraftLesson {
   key: string;
   title: string;
@@ -24,6 +41,7 @@ export interface DraftLesson {
   /** false = watch-only: the lesson completes once the video has been watched. */
   hasQuiz: boolean;
   questions: DraftQuestion[];
+  downloads: DraftDownload[];
 }
 
 export interface CourseDraft {
@@ -57,6 +75,7 @@ export function emptyLesson(): DraftLesson {
     estimatedMinutes: null,
     hasQuiz: true,
     questions: [emptyQuestion()],
+    downloads: [],
   };
 }
 
@@ -75,6 +94,15 @@ export function normaliseDraft(raw: unknown): CourseDraft {
       requiredWatchPercent: clampPercent(l.requiredWatchPercent, DEFAULT_WATCH_PERCENT),
       isRequired: l.isRequired !== false,
       hasQuiz: l.hasQuiz !== false,
+      downloads: (Array.isArray(l.downloads) ? l.downloads : [])
+        .filter((f) => f && typeof f.ref === "string" && f.ref)
+        .map((f) => ({
+          key: typeof f.key === "string" && f.key ? f.key : newKey("f"),
+          title: String(f.title ?? "").slice(0, 120),
+          ref: String(f.ref),
+          sizeBytes: Number.isFinite(Number(f.sizeBytes)) && f.sizeBytes !== null ? Number(f.sizeBytes) : null,
+          kind: (["pdf", "doc", "checklist", "other"] as const).includes(f.kind) ? f.kind : "other",
+        })),
       estimatedMinutes: l.estimatedMinutes == null || l.estimatedMinutes === ("" as unknown) ? null : Math.max(1, Math.round(Number(l.estimatedMinutes))),
       questions: (Array.isArray(l.questions) ? l.questions : []).map((q) => {
         const options = Array.isArray(q.options) ? q.options.map(String) : [];
@@ -103,6 +131,7 @@ export function cleanDraft(draft: CourseDraft): CourseDraft {
       ...l,
       title: l.title.trim(),
       objectives: l.objectives.map((o) => o.trim()).filter(Boolean),
+      downloads: (l.downloads ?? []).map((f) => ({ ...f, title: f.title.trim() || f.ref.split("/").pop()?.replace(/^\d+-/, "") || "Download" })),
       // Watch-only lessons publish with no questions.
       questions: (l.hasQuiz ? l.questions : []).map((q) => {
         const kept = q.options.map((o, i) => ({ text: o.trim(), i })).filter((o) => o.text);

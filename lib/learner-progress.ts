@@ -87,7 +87,7 @@ export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: s
         supabase.from("quiz_attempts").select("enrolment_id, lesson_id, correct_count, question_count").in("enrolment_id", enrolmentIds),
         supabase.from("video_progress").select("enrolment_id, lesson_id, watched_seconds").in("enrolment_id", enrolmentIds),
         lessonIds.length
-          ? supabase.from("lesson_resources").select("id, title, kind, size_bytes").in("lesson_id", lessonIds)
+          ? supabase.from("lesson_resources").select("id, title, kind, size_bytes, lesson_id").in("lesson_id", lessonIds)
           : Promise.resolve({ data: [], error: null }),
       ])
     : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }];
@@ -113,7 +113,7 @@ export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: s
         title: r.title,
         kind: r.kind === "pdf" || r.kind === "doc" || r.kind === "checklist" ? r.kind : "doc",
         sizeLabel: r.size_bytes ? `${r.kind.toUpperCase()} · ${(r.size_bytes / 1_048_576).toFixed(1)} MB` : undefined,
-        href: "#", // signed download links come with the resources feature
+        href: `/lessons/${r.lesson_id}`, // the lesson page makes the signed download link
       }),
     ),
   };

@@ -334,6 +334,21 @@ export async function publishCourse(courseId: string, details: { title: string; 
   };
 }
 
+// ─── Lesson downloads ────────────────────────────────────────────────────
+
+/** A one-time upload URL into the private lesson-files bucket. */
+export async function createFileUpload(courseId: string, fileName: string): Promise<UploadTicket> {
+  await requireAdmin();
+  const safe = fileName.toLowerCase().replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "").slice(-80) || "file";
+  const path = `${courseId}/${Date.now()}-${safe}`;
+  const { data, error } = await createAdminClient().storage.from("lesson-files").createSignedUploadUrl(path);
+  if (error || !data) {
+    const missing = /bucket|not found/i.test(error?.message ?? "");
+    return { ok: false, error: missing ? "Run migration 0012_lesson_downloads.sql in Supabase first." : `Upload couldn't start: ${error?.message ?? "unknown error"}` };
+  }
+  return { ok: true, path: data.path, token: data.token };
+}
+
 // ─── Video uploads ───────────────────────────────────────────────────────
 
 export interface UploadTicket {
@@ -472,11 +487,13 @@ export async function deleteCourse(_prev: ActionState, formData: FormData): Prom
     return { error: `The course couldn't be deleted: ${error.message}` };
   }
 
-  // Remove its uploaded videos (stored under the course id).
-  const { data: files } = await admin.storage.from("lesson-videos").list(courseId, { limit: 1000 });
-  if (files?.length) {
-    const { error: rmErr } = await admin.storage.from("lesson-videos").remove(files.map((f) => `${courseId}/${f.name}`));
-    if (rmErr) console.warn(`[admin] course ${courseId} deleted but its videos weren't removed: ${rmErr.message}`);
+  // Remove its uploaded videos and downloads (stored under the course id).
+  for (const bucket of ["lesson-videos", "lesson-files"]) {
+    const { data: files } = await admin.storage.from(bucket).list(courseId, { limit: 1000 });
+    if (files?.length) {
+      const { error: rmErr } = await admin.storage.from(bucket).remove(files.map((f) => `${courseId}/${f.name}`));
+      if (rmErr) console.warn(`[admin] course ${courseId} deleted but files in ${bucket} weren't removed: ${rmErr.message}`);
+    }
   }
 
   revalidatePath("/admin/courses");

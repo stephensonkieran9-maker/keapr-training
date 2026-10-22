@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { createVideoUpload, publishCourse, saveCourseDraft, type ActionState } from "@/lib/admin/actions";
+import { createFileUpload, createVideoUpload, publishCourse, saveCourseDraft, type ActionState } from "@/lib/admin/actions";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import {
   correctNeeded,
+  downloadKind,
   emptyLesson,
+  newKey,
   emptyQuestion,
   publishProblems,
   type CourseDraft,
@@ -255,6 +257,12 @@ function LessonEditor({
         <div className="field">
           <label htmlFor={id("notes")}>Lesson notes</label>
           <textarea id={id("notes")} rows={3} value={lesson.notes} onChange={(e) => onChange({ notes: e.target.value })} />
+          <p className="hint">Web links here become buttons at the top of the lesson. Put a short label on the line above the link.</p>
+        </div>
+
+        <div className="field">
+          <span className="label">Downloads</span>
+          <DownloadsEditor courseId={courseId} lesson={lesson} onChange={(downloads) => onChange({ downloads })} />
         </div>
 
         <label className="check">
@@ -410,6 +418,58 @@ function VideoUpload({ courseId, lesson, onUploaded }: { courseId: string; lesso
           onChange={(e) => { const f = e.target.files?.[0]; if (f) void handle(f); e.target.value = ""; }} />
       </div>
       {status && !error && <p className="hint">{status}</p>}
+      {error && <p className="hint" style={{ color: "#9a3326" }} role="alert">{error}</p>}
+    </div>
+  );
+}
+
+const ACCEPT_FILES = ".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.png,.jpg,.jpeg";
+
+/** Files learners can download from the top of the lesson (an invoice, a checklist). */
+function DownloadsEditor({ courseId, lesson, onChange }: { courseId: string; lesson: DraftLesson; onChange: (d: DraftLesson["downloads"]) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const id = `${lesson.key}-download`;
+  const downloads = lesson.downloads ?? [];
+
+  async function handle(file: File) {
+    setError(null);
+    if (file.size > MAX_UPLOAD_MB * 1024 * 1024) return setError(`That file is ${(file.size / 1048576).toFixed(0)} MB. Files need to be under ${MAX_UPLOAD_MB} MB.`);
+    setBusy(true);
+    const ticket = await createFileUpload(courseId, file.name);
+    if (!ticket.ok || !ticket.path || !ticket.token) {
+      setBusy(false);
+      return setError(ticket.error ?? "Upload couldn't start.");
+    }
+    const { error: upErr } = await getBrowserClient().storage.from("lesson-files").uploadToSignedUrl(ticket.path, ticket.token, file, { contentType: file.type || undefined });
+    setBusy(false);
+    if (upErr) return setError(`Upload failed: ${upErr.message}`);
+    const title = file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+    onChange([...downloads, { key: newKey("f"), title, ref: ticket.path, sizeBytes: file.size, kind: downloadKind(file.name) }]);
+  }
+
+  return (
+    <div className="form-stack" style={{ gap: 8 }}>
+      {downloads.map((f) => (
+        <div key={f.key} className="option-row">
+          <input
+            className="input"
+            aria-label="Button label"
+            value={f.title}
+            onChange={(e) => onChange(downloads.map((d) => (d.key === f.key ? { ...d, title: e.target.value } : d)))}
+          />
+          <span className="hint" style={{ whiteSpace: "nowrap" }}>{f.sizeBytes ? `${Math.max(1, Math.round(f.sizeBytes / 1024))} KB` : ""}</span>
+          <button type="button" className="mini danger" onClick={() => onChange(downloads.filter((d) => d.key !== f.key))}>Remove</button>
+        </div>
+      ))}
+      <div className="option-row">
+        <label htmlFor={id} className={`btn btn-ghost btn-sm${busy ? " disabled" : ""}`} style={{ cursor: busy ? "wait" : "pointer" }}>
+          {busy ? "Uploading…" : "+ Upload file"}
+        </label>
+        <input id={id} type="file" accept={ACCEPT_FILES} className="sr-only" disabled={busy}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) void handle(f); e.target.value = ""; }} />
+        <span className="hint">{downloads.length ? "Shown as Download buttons at the top of the lesson. Edit the label if you like." : "PDF, Word, Excel or images. Shown as a Download button at the top of the lesson."}</span>
+      </div>
       {error && <p className="hint" style={{ color: "#9a3326" }} role="alert">{error}</p>}
     </div>
   );

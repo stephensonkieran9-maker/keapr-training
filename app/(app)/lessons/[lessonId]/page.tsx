@@ -35,7 +35,7 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
 
       <div className="lesson-layout">
         <div className="lesson-col">
-          {view.state !== "locked" && <LessonLinks notes={lesson.notes} />}
+          {view.state !== "locked" && <LessonLinks notes={lesson.notes} downloads={view.resources} />}
           {view.state === "locked" ? (
             <section className="card quiz quiz-locked">
               <span className="lock-badge" aria-hidden="true"><Icon name="lock" /></span>
@@ -66,7 +66,14 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
               {view.resources.length > 0 && (
                 <>
                   <h2>Downloads</h2>
-                  <ul className="objectives">{view.resources.map((r) => <li key={r.id}>{r.title}</li>)}</ul>
+                  <ul className="objectives">
+                    {view.resources.map((r) => (
+                      <li key={r.id}>
+                        {r.href ? <a className="notes-link" href={r.href} download>{r.title}</a> : r.title}
+                        {r.sizeLabel && <span className="muted"> · {r.sizeLabel}</span>}
+                      </li>
+                    ))}
+                  </ul>
                 </>
               )}
             </section>

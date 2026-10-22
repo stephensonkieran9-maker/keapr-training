@@ -9,6 +9,7 @@ import { getCourseForEditor } from "@/lib/admin/queries";
 import { cleanDraft } from "@/lib/admin/draft";
 import { previewQuestions } from "@/lib/admin/preview";
 import { resolveVideo, type LessonView } from "@/lib/lesson";
+import { signDownloads } from "@/lib/downloads";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Preview · Keapr Training" };
@@ -73,7 +74,7 @@ export default async function PreviewPage({
     questions: previewQuestions(l),
     attempts: { count: 0, bestPercent: null },
     nextLessonId: index + 1 < total ? String(index + 1) : null,
-    resources: [],
+    resources: await signDownloads(l.downloads.map((f) => ({ id: f.key, title: f.title, kind: f.kind, path: f.ref, sizeBytes: f.sizeBytes }))),
   };
   const href = (i: number) => `/admin/courses/${id}/preview?lesson=${i + 1}`;
 
@@ -93,7 +94,7 @@ export default async function PreviewPage({
 
       <div className="lesson-layout">
         <div className="lesson-col">
-          <LessonLinks notes={view.lesson.notes} />
+          <LessonLinks notes={view.lesson.notes} downloads={view.resources} />
           {/* key resets the player and quiz when moving between lessons */}
           <LessonClient key={index} view={view} preview={{ courseId: id, lessonIndex: index }} />
 

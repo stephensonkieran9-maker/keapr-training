@@ -243,7 +243,8 @@ async function draftFromVersion(versionId: string): Promise<CourseDraft> {
     .from("lessons")
     .select(
       `id, position, title, objectives, notes, video_ref, video_seconds, required_watch_ratio, pass_ratio, is_required, estimated_minutes,
-       quiz_questions ( id, position, prompt, explanation, quiz_options ( id, position, label ), quiz_answer_keys ( correct_option_id ) )`,
+       quiz_questions ( id, position, prompt, explanation, quiz_options ( id, position, label ), quiz_answer_keys ( correct_option_id ) ),
+       lesson_resources ( id, title, kind, storage_path, size_bytes )`,
     )
     .eq("course_version_id", versionId)
     .order("position");
@@ -264,6 +265,13 @@ async function draftFromVersion(versionId: string): Promise<CourseDraft> {
       isRequired: l.is_required,
       estimatedMinutes: l.estimated_minutes,
       hasQuiz: ((l.quiz_questions ?? []) as unknown as Q[]).length > 0,
+      downloads: ((l.lesson_resources ?? []) as unknown as { id: string; title: string; kind: string; storage_path: string; size_bytes: number | null }[]).map((r) => ({
+        key: newKey("f"),
+        title: r.title,
+        ref: r.storage_path,
+        sizeBytes: r.size_bytes,
+        kind: r.kind,
+      })),
       questions: ((l.quiz_questions ?? []) as unknown as Q[])
         .sort((a, b) => a.position - b.position)
         .map((q) => {

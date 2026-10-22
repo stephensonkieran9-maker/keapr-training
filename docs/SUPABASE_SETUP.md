@@ -75,6 +75,10 @@ SQL Editor → paste `supabase/migrations/0010_course_path_archive_delete.sql` �
 
 SQL Editor → paste `supabase/migrations/0011_training_paths.sql` → Run (after 0010). Turns on **Admin → Paths**: named, ordered sets of courses (for example one per team). Assign a path to someone, from the path page or their Staff page, and they get its published courses, each locked until the earlier ones are finished. Someone can be on several paths. Courses added to a path later, or published later, are assigned to everyone on it. Locks are checked on the server.
 
+## 15. Run the twelfth migration (lesson downloads)
+
+SQL Editor → paste `supabase/migrations/0012_lesson_downloads.sql` → Run (after 0011). Adds a private `lesson-files` storage bucket and a **Downloads** section to each lesson in the course builder. Uploaded files show as **Download** buttons at the top of the lesson. Download links are made per person, last an hour, and only for lessons they've unlocked.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

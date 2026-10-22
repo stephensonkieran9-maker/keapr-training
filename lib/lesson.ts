@@ -4,6 +4,7 @@ import { createAdminClient } from "./supabase/admin";
 import { lessonSteps, key, type EnrolmentRow } from "./progress.ts";
 import { meetsWatchRequirement, type Range } from "./video-ranges.ts";
 import type { LessonStep } from "./types";
+import { signDownloads, type SignedDownload } from "./downloads";
 
 export interface LessonQuestion {
   id: string;
@@ -37,7 +38,8 @@ export interface LessonView {
   questions: LessonQuestion[];
   attempts: { count: number; bestPercent: number | null };
   nextLessonId: string | null;
-  resources: { id: string; title: string; kind: string }[];
+  /** Download links are only created for unlocked lessons. */
+  resources: SignedDownload[];
 }
 
 const SIGNED_URL_SECONDS = 4 * 60 * 60;
@@ -77,7 +79,7 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
     supabase.from("video_progress").select("lesson_id, position_seconds, watched_ranges, watched_seconds, quiz_unlocked_at").eq("enrolment_id", enrolment.id),
     supabase.from("quiz_attempts").select("lesson_id, correct_count, question_count").eq("enrolment_id", enrolment.id),
     supabase.from("quiz_questions").select("id, position, prompt, quiz_options(id, position, label)").eq("lesson_id", lessonId).order("position"),
-    supabase.from("lesson_resources").select("id, title, kind").eq("lesson_id", lessonId),
+    supabase.from("lesson_resources").select("id, title, kind, storage_path, size_bytes").eq("lesson_id", lessonId),
     supabase.rpc("course_locks", { p_learner: profile.id }), // errors (before migration 0010) just mean no locks
   ]);
   const lockedBy = Array.isArray(locks)
@@ -173,7 +175,10 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
       bestPercent: lessonAttempts.length ? Math.max(...lessonAttempts.map((a) => Math.floor((a.correctCount / a.questionCount) * 100))) : null,
     },
     nextLessonId: next?.id ?? null,
-    resources: resources ?? [],
+    resources:
+      step.state === "locked"
+        ? (resources ?? []).map((r) => ({ id: r.id, title: r.title, kind: r.kind, href: null }))
+        : await signDownloads((resources ?? []).map((r) => ({ id: r.id, title: r.title, kind: r.kind, path: r.storage_path, sizeBytes: r.size_bytes }))),
   };
 }
 
