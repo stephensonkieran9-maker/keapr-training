@@ -231,7 +231,9 @@ function Quiz({ view, unlocked, preview }: { view: LessonView; unlocked: boolean
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<QuizResult | null>(null);
   const [pending, start] = useTransition();
-  const { questions, lesson } = view;
+  // Options arrive shuffled from the server; Retry reshuffles them (not in admin preview).
+  const [questions, setQuestions] = useState(view.questions);
+  const { lesson } = view;
   const answered = questions.filter((q) => answers[q.id]).length;
   const needed = Math.ceil((questions.length * lesson.passPercent) / 100 - 1e-9);
   const alreadyPassed = view.state === "passed";
@@ -253,7 +255,18 @@ function Quiz({ view, unlocked, preview }: { view: LessonView; unlocked: boolean
   }
 
   if (result?.ok) {
-    return <QuizResults view={view} result={result} preview={preview} onRetry={() => { setResult(null); setAnswers({}); }} />;
+    return (
+      <QuizResults
+        view={view}
+        result={result}
+        preview={preview}
+        onRetry={() => {
+          setResult(null);
+          setAnswers({});
+          if (!preview) setQuestions((qs) => qs.map((q) => ({ ...q, options: shuffled(q.options) })));
+        }}
+      />
+    );
   }
 
   return (
@@ -375,4 +388,13 @@ function QuizResults({ view, result, onRetry, preview }: { view: LessonView; res
       </div>
     </section>
   );
+}
+
+function shuffled<T>(items: T[]): T[] {
+  const a = [...items];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
