@@ -75,6 +75,18 @@ export function LessonClient({ view, preview }: { view: LessonView; preview?: Pr
 
 type Tracker = ReturnType<typeof useWatchTracker>;
 
+/** "Next course" after finishing a course, plus a way back to the course. */
+function NextCourseActions({ nextCourse, courseId }: { nextCourse: { courseId: string; title: string; lessonId: string | null }; courseId: string }) {
+  return (
+    <>
+      <Link className="btn btn-primary" href={nextCourse.lessonId ? `/lessons/${nextCourse.lessonId}` : `/courses/${nextCourse.courseId}`}>
+        Next course: {nextCourse.title}<Icon name="arrow" />
+      </Link>
+      <Link className="btn btn-ghost" href={`/courses/${courseId}`}>Back to course</Link>
+    </>
+  );
+}
+
 /** Watch-only lessons: no quiz; the lesson completes once the video is watched. */
 function WatchToComplete({ view, tracker, preview }: { view: LessonView; tracker: Tracker; preview?: PreviewMode }) {
   const router = useRouter();
@@ -116,6 +128,8 @@ function WatchToComplete({ view, tracker, preview }: { view: LessonView; tracker
       <div className="actions-row">
         {nextId ? (
           <Link className="btn btn-primary" href={lessonHref(nextId, preview)}>Continue to next lesson<Icon name="arrow" /></Link>
+        ) : !preview && tracker.completion?.nextCourse ? (
+          <NextCourseActions nextCourse={tracker.completion.nextCourse} courseId={view.courseId} />
         ) : (
           <Link className="btn btn-primary" href={preview ? `/admin/courses/${preview.courseId}` : `/courses/${view.courseId}`}>
             {preview ? "Back to course builder" : "Back to course"}<Icon name="arrow" />
@@ -233,6 +247,8 @@ function Quiz({ view, unlocked, preview }: { view: LessonView; unlocked: boolean
   const [pending, start] = useTransition();
   // Options arrive shuffled from the server; Retry reshuffles them (not in admin preview).
   const [questions, setQuestions] = useState(view.questions);
+  // When this attempt started (first answer picked), for admin reporting.
+  const startedAt = useRef<string | null>(null);
   const { lesson } = view;
   const answered = questions.filter((q) => answers[q.id]).length;
   const needed = Math.ceil((questions.length * lesson.passPercent) / 100 - 1e-9);
@@ -263,6 +279,7 @@ function Quiz({ view, unlocked, preview }: { view: LessonView; unlocked: boolean
         onRetry={() => {
           setResult(null);
           setAnswers({});
+          startedAt.current = null;
           if (!preview) setQuestions((qs) => qs.map((q) => ({ ...q, options: shuffled(q.options) })));
         }}
       />
@@ -288,13 +305,23 @@ function Quiz({ view, unlocked, preview }: { view: LessonView; unlocked: boolean
         onSubmit={(e) => {
           e.preventDefault();
           if (answered < questions.length) return;
+          const began = startedAt.current;
           start(async () =>
-            setResult(preview ? await previewQuiz(preview.courseId, preview.lessonIndex, answers) : await submitQuiz(lesson.id, answers)),
+            setResult(preview ? await previewQuiz(preview.courseId, preview.lessonIndex, answers) : await submitQuiz(lesson.id, answers, began)),
           );
         }}
       >
         {questions.map((q, i) => (
-          <QuestionField key={q.id} q={q} index={i} value={answers[q.id]} onChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))} />
+          <QuestionField
+            key={q.id}
+            q={q}
+            index={i}
+            value={answers[q.id]}
+            onChange={(v) => {
+              if (!startedAt.current) startedAt.current = new Date().toISOString();
+              setAnswers((a) => ({ ...a, [q.id]: v }));
+            }}
+          />
         ))}
         {result && !result.ok && <p className="form-error" role="alert">{result.error}</p>}
         <div className="quiz-submit">
@@ -376,6 +403,8 @@ function QuizResults({ view, result, onRetry, preview }: { view: LessonView; res
         {passed ? (
           result.nextLessonId ? (
             <Link className="btn btn-primary" href={lessonHref(result.nextLessonId, preview)}>Continue to next lesson<Icon name="arrow" /></Link>
+          ) : !preview && result.nextCourse ? (
+            <NextCourseActions nextCourse={result.nextCourse} courseId={view.courseId} />
           ) : (
             <Link className="btn btn-primary" href={preview ? `/admin/courses/${preview.courseId}` : `/courses/${view.courseId}`}>{preview ? "Back to course builder" : "Back to course"}<Icon name="arrow" /></Link>
           )

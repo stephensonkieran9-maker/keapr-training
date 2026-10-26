@@ -30,8 +30,13 @@ export async function loadReportInput(): Promise<ReportInput> {
       admin.from("enrolments").select("id, learner_id, course_version_id, assigned_at, completed_at").is("unassigned_at", null).order("id").range(a, b),
     ),
     all("completions", (a, b) => admin.from("lesson_completions").select("enrolment_id, lesson_id, completed_at").is("revoked_at", null).order("id").range(a, b)),
+    // started_at arrives with migration 0013; fall back without it.
     all("quiz attempts", (a, b) =>
-      admin.from("quiz_attempts").select("enrolment_id, lesson_id, correct_count, question_count, pass_ratio_used, passed, submitted_at").order("id").range(a, b),
+      admin.from("quiz_attempts").select("enrolment_id, lesson_id, correct_count, question_count, pass_ratio_used, passed, submitted_at, submitted_answers, started_at").order("id").range(a, b),
+    ).catch(() =>
+      all("quiz attempts", (a, b) =>
+        admin.from("quiz_attempts").select("enrolment_id, lesson_id, correct_count, question_count, pass_ratio_used, passed, submitted_at, submitted_answers").order("id").range(a, b),
+      ),
     ),
     all("video progress", (a, b) => admin.from("video_progress").select("enrolment_id, lesson_id, updated_at").order("enrolment_id").order("lesson_id").range(a, b)),
     // Training paths (migration 0011); empty if not there yet.
@@ -39,6 +44,9 @@ export async function loadReportInput(): Promise<ReportInput> {
     admin.from("training_path_courses").select("path_id, course_id"),
     admin.from("path_assignments").select("path_id, learner_id").is("unassigned_at", null),
   ]);
+  const keys = await all("answer keys", (a, b) =>
+    admin.from("quiz_questions").select("id, lesson_id, position, quiz_answer_keys(correct_option_id)").order("id").range(a, b),
+  );
 
   return {
     people: people.map((p) => ({ id: p.id, name: p.full_name, email: p.email, isActive: p.is_active })),
@@ -59,7 +67,15 @@ export async function loadReportInput(): Promise<ReportInput> {
       passRatio: Number(a.pass_ratio_used),
       passed: a.passed,
       submittedAt: a.submitted_at,
+      startedAt: (a as { started_at?: string | null }).started_at ?? null,
+      answers: (a as { submitted_answers?: Record<string, string> }).submitted_answers ?? undefined,
     })),
+    answerKeys: (keys as unknown as { id: string; lesson_id: string; position: number; quiz_answer_keys: { correct_option_id: string } | { correct_option_id: string }[] | null }[])
+      .map((q) => {
+        const k = Array.isArray(q.quiz_answer_keys) ? q.quiz_answer_keys[0] : q.quiz_answer_keys;
+        return k ? { lessonId: q.lesson_id, questionId: q.id, position: q.position, correctOptionId: k.correct_option_id } : null;
+      })
+      .filter((k): k is NonNullable<typeof k> => k !== null),
     videoActivity: video.map((v) => ({ enrolmentId: v.enrolment_id, updatedAt: v.updated_at })),
     paths: pathRows.error
       ? []

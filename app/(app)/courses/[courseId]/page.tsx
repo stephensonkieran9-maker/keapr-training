@@ -7,6 +7,7 @@ import { requireProfile } from "@/lib/auth";
 import { loadLearnerProgress } from "@/lib/learner-progress";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatShortDate, percent } from "@/lib/format";
+import { nextCourseAfter } from "@/lib/progress";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
   const minutes = summary.durationMinutes;
   const pct = percent(summary.lessonsPassed, summary.lessonCount);
   const completedOn = enrolment.completedAt;
+  const nextCourse = summary.status === "completed" ? nextCourseAfter(computed, courseId) : null;
 
   return (
     <div className="ov">
@@ -67,6 +69,15 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
               {completedOn ? `, completed ${formatShortDate(completedOn)} ${new Date(completedOn).getFullYear()}` : ""}.
               Lessons stay available if you want to review them.
             </p>
+            {nextCourse && (
+              <Link
+                className="btn btn-primary btn-sm"
+                style={{ marginTop: 10 }}
+                href={nextCourse.lessonId ? `/lessons/${nextCourse.lessonId}` : `/courses/${nextCourse.courseId}`}
+              >
+                Next course: {nextCourse.title}<Icon name="arrow" />
+              </Link>
+            )}
           </div>
         </section>
       )}

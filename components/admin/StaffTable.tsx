@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { StaffRow, StaffStatus } from "@/lib/admin/queries";
-import { formatShortDate } from "@/lib/format";
+import { formatWhen } from "@/lib/format";
 
 const statusLabel: Record<StaffStatus, string> = { active: "Active", invited: "Invited", deactivated: "Deactivated" };
 
@@ -36,7 +36,7 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
       ) : (
         <table className="table">
           <thead>
-            <tr><th>Name</th><th>Role</th><th>Status</th><th>Courses</th><th>Last sign-in</th></tr>
+            <tr><th>Name</th><th>Role</th><th>Status</th><th>Courses</th><th>Last active</th></tr>
           </thead>
           <tbody>
             {shown.map((s) => (
@@ -48,7 +48,7 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
                 <td><span className={`badge ${s.role}`}>{s.role === "admin" ? "Admin" : "Learner"}</span></td>
                 <td><span className={`badge ${s.status}`}>{statusLabel[s.status]}</span></td>
                 <td>{s.assignedCount ? `${s.completedCount} of ${s.assignedCount} done` : "None"}</td>
-                <td>{s.lastSignInAt ? formatShortDate(s.lastSignInAt) : "Never"}</td>
+                <td>{s.lastSignInAt ? formatWhen(s.lastSignInAt) : "Never"}</td>
               </tr>
             ))}
           </tbody>

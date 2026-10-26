@@ -79,6 +79,10 @@ SQL Editor → paste `supabase/migrations/0011_training_paths.sql` → Run (afte
 
 SQL Editor → paste `supabase/migrations/0012_lesson_downloads.sql` → Run (after 0011). Adds a private `lesson-files` storage bucket and a **Downloads** section to each lesson in the course builder. Uploaded files show as **Download** buttons at the top of the lesson. Download links are made per person, last an hour, and only for lessons they've unlocked.
 
+## 16. Run the thirteenth migration (last active and timings)
+
+SQL Editor → paste `supabase/migrations/0013_activity_and_timings.sql` → Run (after 0012). Records **last active** as people use the app (not just when they type their password), when each quiz attempt was started (so reports show time taken), and when each lesson's video was first opened. Older activity has no timings.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

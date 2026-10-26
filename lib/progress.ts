@@ -178,3 +178,19 @@ export function computeProgress(input: ProgressInput): ComputedProgress {
 
   return { courses, stepsByEnrolment, nextLesson, passMarkPercent };
 }
+
+export interface NextCourse {
+  courseId: string;
+  title: string;
+  /** First lesson they can start, if any. */
+  lessonId: string | null;
+}
+
+/** The course to go to after finishing `currentCourseId`: the first course in
+ * their order (training-path order first) that isn't complete or locked. */
+export function nextCourseAfter(computed: ComputedProgress, currentCourseId: string): NextCourse | null {
+  const c = computed.courses.find((x) => x.courseId !== currentCourseId && x.status !== "completed" && !x.lockedBy);
+  if (!c) return null;
+  const step = computed.stepsByEnrolment.get(c.enrolmentId)?.find((s) => s.state === "available");
+  return { courseId: c.courseId, title: c.title, lessonId: step?.lessonId ?? null };
+}

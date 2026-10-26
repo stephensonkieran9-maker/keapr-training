@@ -30,6 +30,20 @@ async function authUserMap() {
   return map;
 }
 
+/** When each person last used the app (migration 0013). Empty before then. */
+async function lastSeenMap(): Promise<Map<string, string>> {
+  const { data, error } = await createAdminClient().from("profiles").select("id, last_seen_at").not("last_seen_at", "is", null);
+  if (error) return new Map();
+  return new Map((data ?? []).map((p) => [p.id as string, p.last_seen_at as string]));
+}
+
+/** The later of two timestamps (either may be missing). */
+function later(a: string | null | undefined, b: string | null | undefined): string | null {
+  if (!a) return b ?? null;
+  if (!b) return a;
+  return a > b ? a : b;
+}
+
 function statusOf(isActive: boolean, auth?: { lastSignInAt: string | null; confirmed: boolean }): StaffStatus {
   if (!isActive) return "deactivated";
   return auth?.lastSignInAt ? "active" : "invited";
@@ -39,7 +53,7 @@ export async function listStaff(): Promise<StaffRow[]> {
   const admin = createAdminClient();
 
   // Fast path: one database query (migration 0004).
-  const { data: rows, error } = await admin.rpc("admin_staff_overview");
+  const [{ data: rows, error }, seen] = await Promise.all([admin.rpc("admin_staff_overview"), lastSeenMap()]);
   if (!error && rows) {
     type Row = {
       id: string; full_name: string; email: string; role: "learner" | "admin"; is_active: boolean;
@@ -51,7 +65,7 @@ export async function listStaff(): Promise<StaffRow[]> {
       email: r.email,
       role: r.role,
       status: statusOf(r.is_active, { lastSignInAt: r.last_sign_in_at, confirmed: Boolean(r.email_confirmed_at) }),
-      lastSignInAt: r.last_sign_in_at,
+      lastSignInAt: later(r.last_sign_in_at, seen.get(r.id)),
       assignedCount: Number(r.assigned_count),
       completedCount: Number(r.completed_count),
     }));
@@ -76,7 +90,7 @@ export async function listStaff(): Promise<StaffRow[]> {
       email: p.email,
       role: p.role,
       status: statusOf(p.is_active, auth),
-      lastSignInAt: auth?.lastSignInAt ?? null,
+      lastSignInAt: later(auth?.lastSignInAt, seen.get(p.id)),
       assignedCount: mine.length,
       completedCount: mine.filter((e) => e.completed_at).length,
     };
@@ -87,6 +101,7 @@ export async function getStaffMember(id: string) {
   const admin = createAdminClient();
   const { data: p } = await admin.from("profiles").select("id, full_name, email, role, is_active, created_at").eq("id", id).maybeSingle();
   if (!p) return null;
+  const seen = await lastSeenMap();
   const [{ data: authData }, progress] = await Promise.all([admin.auth.admin.getUserById(id), loadLearnerProgress(admin, id)]);
   const enrolmentIds = progress.computed.courses.map((c) => c.enrolmentId);
   const { data: overrideRows } = enrolmentIds.length
@@ -109,7 +124,7 @@ export async function getStaffMember(id: string) {
     isActive: p.is_active as boolean,
     createdAt: p.created_at as string,
     status: statusOf(p.is_active, auth),
-    lastSignInAt: auth?.lastSignInAt ?? null,
+    lastSignInAt: later(auth?.lastSignInAt, seen.get(p.id)),
     courses: progress.computed.courses.map((c) => ({
       ...c,
       lessons: (progress.computed.stepsByEnrolment.get(c.enrolmentId) ?? []).map((s) => ({

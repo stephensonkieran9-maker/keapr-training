@@ -8,7 +8,14 @@ export interface ReportInput {
   courses: { versionId: string; courseId: string; title: string; version: number; lessons: { id: string; title: string; position: number; isRequired: boolean }[] }[];
   enrolments: { id: string; learnerId: string; versionId: string; assignedAt: string; completedAt: string | null }[];
   completions: { enrolmentId: string; lessonId: string; completedAt: string }[];
-  attempts: { enrolmentId: string; lessonId: string; correct: number; total: number; passRatio: number; passed: boolean; submittedAt: string }[];
+  attempts: {
+    enrolmentId: string; lessonId: string; correct: number; total: number; passRatio: number; passed: boolean; submittedAt: string;
+    /** Optional detail for the attempts export. */
+    startedAt?: string | null;
+    answers?: Record<string, string>;
+  }[];
+  /** Correct answers by question, for listing wrong questions (optional). */
+  answerKeys?: { lessonId: string; questionId: string; position: number; correctOptionId: string }[];
   videoActivity: { enrolmentId: string; updatedAt: string }[];
   /** Training paths, for the path filter (optional). */
   paths?: { id: string; name: string; courseIds: string[]; memberIds: string[] }[];
@@ -48,6 +55,9 @@ export interface AttemptRow {
   passMarkPercent: number;
   passed: boolean;
   submittedAt: string;
+  durationSeconds: number | null;
+  /** e.g. "Q2, Q5". Empty when all correct or not known. */
+  wrongQuestions: string;
 }
 
 export interface ReportFilters {
@@ -134,6 +144,8 @@ export function buildAttempts(input: ReportInput, enrolmentIds: Set<string>): At
   const courses = new Map(input.courses.map((c) => [c.versionId, c]));
   const enrolments = new Map(input.enrolments.map((e) => [e.id, e]));
   const counter = new Map<string, number>();
+  const keysByLesson = new Map<string, { questionId: string; position: number; correctOptionId: string }[]>();
+  (input.answerKeys ?? []).forEach((k) => keysByLesson.set(k.lessonId, [...(keysByLesson.get(k.lessonId) ?? []), k]));
   return input.attempts
     .filter((a) => enrolmentIds.has(a.enrolmentId))
     .sort((x, y) => x.submittedAt.localeCompare(y.submittedAt))
@@ -160,6 +172,14 @@ export function buildAttempts(input: ReportInput, enrolmentIds: Set<string>): At
         passMarkPercent: Math.round(a.passRatio * 100),
         passed: a.passed,
         submittedAt: a.submittedAt,
+        durationSeconds: a.startedAt ? Math.max(0, Math.round((Date.parse(a.submittedAt) - Date.parse(a.startedAt)) / 1000)) : null,
+        wrongQuestions: a.answers
+          ? (keysByLesson.get(a.lessonId) ?? [])
+              .filter((k) => a.answers![k.questionId] !== k.correctOptionId)
+              .sort((x, y) => x.position - y.position)
+              .map((k) => `Q${k.position}`)
+              .join(", ")
+          : "",
       }];
     })
     .sort((x, y) => x.name.localeCompare(y.name) || x.courseTitle.localeCompare(y.courseTitle) || x.lessonPosition - y.lessonPosition || x.attemptNumber - y.attemptNumber);
@@ -193,10 +213,10 @@ export function reportCsv(rows: ReportRow[]): string {
 
 export function attemptsCsv(rows: AttemptRow[]): string {
   return toCsv(
-    ["Name", "Email", "Course", "Version", "Lesson", "Lesson title", "Attempt", "Correct", "Questions", "Score %", "Pass mark %", "Result", "Submitted (UTC)"],
+    ["Name", "Email", "Course", "Version", "Lesson", "Lesson title", "Attempt", "Correct", "Questions", "Score %", "Pass mark %", "Result", "Wrong questions", "Time taken (seconds)", "Submitted (UTC)"],
     rows.map((r) => [
       r.name, r.email, r.courseTitle, r.version, r.lessonPosition, r.lessonTitle, r.attemptNumber, r.correct, r.total, r.scorePercent,
-      r.passMarkPercent, r.passed ? "Passed" : "Not passed", stamp(r.submittedAt),
+      r.passMarkPercent, r.passed ? "Passed" : "Not passed", r.wrongQuestions, r.durationSeconds, stamp(r.submittedAt),
     ]),
   );
 }

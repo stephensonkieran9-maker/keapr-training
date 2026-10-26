@@ -11,7 +11,7 @@ import { UnassignControls } from "@/components/admin/UnassignControls";
 import { LessonOverrides } from "@/components/admin/LessonOverrides";
 import { AssignPathForm, RemoveFromPath } from "@/components/admin/PathForms";
 import { listPaths, pathsForPerson } from "@/lib/admin/paths";
-import { formatShortDate, percent } from "@/lib/format";
+import { formatShortDate, formatWhen, percent } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +75,7 @@ export default async function StaffMemberPage({
                       </span>
                     </div>
                     <ProgressBar label="Lessons passed" value={pct} valueLabel={`${c.lessonsPassed} of ${c.lessonCount}`} />
+                    <Link className="mini detail-link" href={`/admin/staff/${person.id}/courses/${c.enrolmentId}`}>Attempts, scores and timings →</Link>
                     <LessonOverrides enrolmentId={c.enrolmentId} userId={person.id} lessons={c.lessons} />
                     <UnassignControls enrolmentId={c.enrolmentId} userId={person.id} courseTitle={c.title} />
                   </div>
@@ -109,7 +110,7 @@ export default async function StaffMemberPage({
           <section className="card">
             <h2>Sign-in</h2>
             <dl className="kv">
-              <dt>Last sign-in</dt><dd>{person.lastSignInAt ? formatShortDate(person.lastSignInAt) : "Never"}</dd>
+              <dt>Last active</dt><dd>{person.lastSignInAt ? formatWhen(person.lastSignInAt) : "Never"}</dd>
               <dt>Added</dt><dd>{formatShortDate(person.createdAt)}</dd>
             </dl>
             <div style={{ marginTop: 14 }}>

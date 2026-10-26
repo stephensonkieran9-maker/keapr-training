@@ -80,3 +80,20 @@ test("path filter keeps only people on the path and courses in it", () => {
   assert.equal(filterReport(rows, { path: "missing" }, paths).length, 0);
   assert.equal(parseFilters({ path: "p" }).path, "p");
 });
+
+test("attempts export lists wrong questions and time taken when known", () => {
+  const withDetail = {
+    ...input,
+    attempts: [{ ...input.attempts[0], startedAt: "2026-10-02T09:57:30Z", answers: { qa: "right", qb: "wrong" } }],
+    answerKeys: [
+      { lessonId: "l1", questionId: "qa", position: 1, correctOptionId: "right" },
+      { lessonId: "l1", questionId: "qb", position: 2, correctOptionId: "right" },
+    ],
+  };
+  const [row] = buildAttempts(withDetail, new Set(["e1"]));
+  assert.equal(row.wrongQuestions, "Q2");
+  assert.equal(row.durationSeconds, 150);
+  const [plain] = buildAttempts(input, new Set(["e1"]));
+  assert.equal(plain.wrongQuestions, "");
+  assert.equal(plain.durationSeconds, null);
+});

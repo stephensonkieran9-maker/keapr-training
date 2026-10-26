@@ -16,11 +16,17 @@ export async function loadOverviewInput(): Promise<OverviewInput> {
     admin.from("video_progress").select("enrolment_id, lesson_id, updated_at").gte("updated_at", since),
     admin.rpc("admin_staff_overview"),
   ]);
+  // "Last active" (migration 0013) beats last sign-in when it's later.
+  const { data: seenRows } = await admin.from("profiles").select("id, last_seen_at").not("last_seen_at", "is", null);
 
   const lastSignIn = new Map<string, string | null>();
   if (!staffRes.error && Array.isArray(staffRes.data)) {
     (staffRes.data as { id: string; last_sign_in_at: string | null }[]).forEach((r) => lastSignIn.set(r.id, r.last_sign_in_at));
   }
+  (seenRows ?? []).forEach((r) => {
+    const prev = lastSignIn.get(r.id);
+    if (!prev || r.last_seen_at > prev) lastSignIn.set(r.id, r.last_seen_at);
+  });
 
   type Version = { id: string; course_id: string; title: string; lessons: { id: string; title: string; position: number; is_required: boolean }[] | null };
 

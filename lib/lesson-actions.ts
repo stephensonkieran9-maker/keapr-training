@@ -4,6 +4,15 @@ import { revalidatePath } from "next/cache";
 import { requireProfile } from "./auth";
 import { createAdminClient } from "./supabase/admin";
 import { notifyAdmins } from "./notifications";
+import { findNextCourse } from "./next-course";
+import type { NextCourse } from "./progress.ts";
+
+/** Course id for a lesson (for the Next course button). */
+async function courseIdOfLesson(lessonId: string): Promise<string | null> {
+  const { data } = await createAdminClient().from("lessons").select("course_versions(course_id)").eq("id", lessonId).maybeSingle();
+  const cv = data?.course_versions as unknown as { course_id: string } | { course_id: string }[] | null;
+  return (Array.isArray(cv) ? cv[0]?.course_id : cv?.course_id) ?? null;
+}
 import { meetsWatchRequirement, mergeRanges, watchedSeconds, type Range } from "./video-ranges.ts";
 
 export interface ProgressResult {
@@ -14,6 +23,8 @@ export interface ProgressResult {
   lessonCompleted?: boolean;
   nextLessonId?: string | null;
   courseCompleted?: boolean;
+  /** After finishing a course: the next one to do, if any. */
+  nextCourse?: NextCourse | null;
   error?: string;
 }
 
@@ -109,7 +120,12 @@ async function completeIfWatchOnly(lessonId: string, profile: { id: string; full
       await notifyCourseCompleted(lessonId, profile);
     }
   }
-  return { lessonCompleted: true, nextLessonId: r.next_lesson_id, courseCompleted: r.course_completed };
+  let nextCourse: NextCourse | null = null;
+  if (r.course_completed && !r.next_lesson_id) {
+    const courseId = await courseIdOfLesson(lessonId);
+    if (courseId) nextCourse = await findNextCourse(profile.id, courseId);
+  }
+  return { lessonCompleted: true, nextLessonId: r.next_lesson_id, courseCompleted: r.course_completed, nextCourse };
 }
 
 async function notifyCourseCompleted(lessonId: string, profile: { id: string; fullName: string }) {
@@ -129,6 +145,7 @@ export interface QuizResult {
   passPercent?: number;
   nextLessonId?: string | null;
   courseCompleted?: boolean;
+  nextCourse?: NextCourse | null;
   results?: { questionId: string; selectedOptionId: string; isCorrect: boolean; correctOptionId: string | null; explanation: string }[];
 }
 
@@ -144,15 +161,21 @@ const errorMessages: Record<string, string> = {
 
 /** Scores the quiz on the server (answer keys never leave the database) and
  * records the attempt, completion and course completion in one step. */
-export async function submitQuiz(lessonId: string, answers: Record<string, string>): Promise<QuizResult> {
+export async function submitQuiz(lessonId: string, answers: Record<string, string>, startedAt?: string | null): Promise<QuizResult> {
   const { profile } = await requireProfile();
   const admin = createAdminClient();
 
-  const { data, error } = await admin.rpc("submit_quiz_attempt", {
+  const started = startedAt && !Number.isNaN(Date.parse(startedAt)) ? new Date(startedAt).toISOString() : null;
+  let { data, error } = await admin.rpc("submit_quiz_attempt", {
     p_learner: profile.id,
     p_lesson: lessonId,
     p_answers: answers,
+    p_started_at: started,
   });
+  // Before migration 0013 there's no start-time version: submit without it.
+  if (error && /p_started_at|Could not find the function|function .* does not exist/i.test(error.message)) {
+    ({ data, error } = await admin.rpc("submit_quiz_attempt", { p_learner: profile.id, p_lesson: lessonId, p_answers: answers }));
+  }
   if (error) {
     const code = Object.keys(errorMessages).find((c) => error.message.includes(c));
     if (!code) console.error(`[quiz] submit failed: ${error.message}`);
@@ -174,8 +197,15 @@ export async function submitQuiz(lessonId: string, answers: Record<string, strin
   revalidatePath(`/lessons/${lessonId}`);
   revalidatePath("/courses", "layout");
 
+  let nextCourse: NextCourse | null = null;
+  if (r.passed && r.course_completed && !r.next_lesson_id) {
+    const courseId = await courseIdOfLesson(lessonId);
+    if (courseId) nextCourse = await findNextCourse(profile.id, courseId);
+  }
+
   return {
     ok: true,
+    nextCourse,
     passed: r.passed,
     correct: r.correct,
     total: r.total,

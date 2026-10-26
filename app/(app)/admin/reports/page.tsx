@@ -102,7 +102,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                     <Link className="rowlink" href={`/admin/staff/${r.personId}`}>{r.name}</Link>
                     <small>{r.email}{!r.isActive && " · deactivated"}</small>
                   </td>
-                  <td>{r.courseTitle}<small>Version {r.version}</small></td>
+                  <td>
+                    <Link className="rowlink" href={`/admin/staff/${r.personId}/courses/${r.enrolmentId}`}>{r.courseTitle}</Link>
+                    <small>Version {r.version} · details</small>
+                  </td>
                   <td><span className={`badge st-${r.status}`}>{statusLabel[r.status]}</span></td>
                   <td>
                     <div className="mini-progress" aria-hidden="true"><i style={{ width: `${r.percent}%` }} /></div>

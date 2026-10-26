@@ -96,3 +96,16 @@ test("a course waiting on an earlier path course is fully locked and skipped for
   assert.equal(r.courses[1].lockedBy, "Welcome");
   assert.equal(r.nextLesson?.lessonId, "a1"); // B is older but locked
 });
+
+test("next course after finishing one skips completed and locked courses, in order", async () => {
+  const { computeProgress, nextCourseAfter } = await import("../lib/progress.ts");
+  const lesson = (id: string) => ({ id, position: 1, title: id, videoSeconds: 60, requiredWatchRatio: 0.9, passRatio: 0.8, isRequired: true, estimatedMinutes: null, objectives: [] });
+  const base = { description: "", isDemo: false, assignedAt: "2026-10-01" };
+  const a = { ...base, enrolmentId: "ea", courseId: "A", title: "Welcome", completedAt: "2026-10-02", lessons: [lesson("a1")] };
+  const b = { ...base, enrolmentId: "eb", courseId: "B", title: "Bookings Hunter", completedAt: null, lessons: [lesson("b1")] };
+  const c = { ...base, enrolmentId: "ec", courseId: "C", title: "SPRINT", completedAt: null, lessons: [lesson("c1")], lockedBy: "Bookings Hunter" };
+  const computed = computeProgress({ enrolments: [a, b, c], completedLessonKeys: new Set(["ea:a1"]), attempts: [], watchedSeconds: new Map() });
+  assert.deepEqual(nextCourseAfter(computed, "A"), { courseId: "B", title: "Bookings Hunter", lessonId: "b1" });
+  const done = computeProgress({ enrolments: [a, { ...b, completedAt: "2026-10-03" }], completedLessonKeys: new Set(["ea:a1", "eb:b1"]), attempts: [], watchedSeconds: new Map() });
+  assert.equal(nextCourseAfter(done, "B"), null);
+});
