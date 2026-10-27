@@ -28,6 +28,9 @@ export interface LessonView {
     passPercent: number;
     /** false = watch-only: completes once the video is watched. */
     hasQuiz: boolean;
+    /** "reading" = no video: read the text, confirm, then the quiz. */
+    kind: "video" | "reading";
+    readingBody: string | null;
   };
   video: { kind: "file"; src: string } | { kind: "placeholder" };
   state: LessonStep["state"];
@@ -50,12 +53,17 @@ const SIGNED_URL_SECONDS = 4 * 60 * 60;
 export async function getLessonView(lessonId: string): Promise<LessonView | null> {
   const { profile, supabase } = await requireProfile();
 
-  const { data: lessonRow } = await supabase
-    .from("lessons")
-    .select("id, course_version_id, position, title, objectives, notes, video_ref, video_seconds, required_watch_ratio, pass_ratio")
-    .eq("id", lessonId)
-    .maybeSingle();
+  const baseColumns = "id, course_version_id, position, title, objectives, notes, video_ref, video_seconds, required_watch_ratio, pass_ratio";
+  let lessonRes = await supabase.from("lessons").select(`${baseColumns}, kind, reading_body`).eq("id", lessonId).maybeSingle();
+  // Before migration 0014 there are no reading lessons: read without those columns.
+  if (lessonRes.error) lessonRes = await supabase.from("lessons").select(baseColumns).eq("id", lessonId).maybeSingle();
+  const lessonRow = lessonRes.data as
+    | ({ id: string; course_version_id: string; position: number; title: string; objectives: string[] | null; notes: string | null;
+        video_ref: string | null; video_seconds: number; required_watch_ratio: number | string; pass_ratio: number | string;
+        kind?: string; reading_body?: string | null })
+    | null;
   if (!lessonRow) return null;
+  const isReading = lessonRow.kind === "reading";
 
   const [{ data: version }, { data: allLessons }, { data: enrolment }] = await Promise.all([
     supabase.from("course_versions").select("id, course_id, title, is_demo").eq("id", lessonRow.course_version_id).maybeSingle(),
@@ -150,8 +158,10 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
       requiredWatchPercent: Math.round(requiredRatio * 100),
       passPercent: Math.round(Number(lessonRow.pass_ratio) * 100),
       hasQuiz,
+      kind: isReading ? "reading" : "video",
+      readingBody: isReading ? (lessonRow.reading_body ?? "") : null,
     },
-    video: await resolveVideo(lessonRow.video_ref),
+    video: isReading ? { kind: "placeholder" } : await resolveVideo(lessonRow.video_ref),
     state: step.state,
     lockedReason: step.lockedReason,
     steps,
@@ -160,7 +170,7 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
       positionSeconds: Number(mine?.position_seconds ?? 0),
       ranges: (mine?.watched_ranges as Range[] | null) ?? [],
       watchedSeconds: watched,
-      quizUnlocked: Boolean(mine?.quiz_unlocked_at) || meetsWatchRequirement(watched, lessonRow.video_seconds, requiredRatio),
+      quizUnlocked: Boolean(mine?.quiz_unlocked_at) || (!isReading && meetsWatchRequirement(watched, lessonRow.video_seconds, requiredRatio)),
     },
     // Questions and options only: correct answers never reach the browser.
     // Options are shuffled on every load so the right answer isn't always in

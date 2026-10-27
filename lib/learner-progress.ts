@@ -13,22 +13,28 @@ export interface LearnerProgress {
 // (row-level security applies) or, for admin screens, the service client
 // after checking the caller is an admin.
 export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: string): Promise<LearnerProgress> {
-  const { data: enrolmentRows, error } = await supabase
-    .from("enrolments")
-    .select(
-      `id, assigned_at, completed_at,
+  const query = (lessonExtra: string) =>
+    supabase
+      .from("enrolments")
+      .select(
+        `id, assigned_at, completed_at,
        course_versions ( id, course_id, version, title, description, is_demo,
-         lessons ( id, position, title, objectives, video_seconds, required_watch_ratio, pass_ratio, is_required, estimated_minutes, quiz_questions ( count ) ) )`,
-    )
-    .eq("learner_id", learnerId)
-    .is("unassigned_at", null)
-    .order("assigned_at", { ascending: true });
+         lessons ( id, position, title, objectives, video_seconds, required_watch_ratio, pass_ratio, is_required, estimated_minutes,${lessonExtra} quiz_questions ( count ) ) )`,
+      )
+      .eq("learner_id", learnerId)
+      .is("unassigned_at", null)
+      .order("assigned_at", { ascending: true });
+  let res = await query(" kind,");
+  // Before migration 0014 there's no lesson kind column: every lesson is a video.
+  if (res.error && /kind/.test(res.error.message)) res = await query("");
+  const { data: enrolmentRows, error } = res;
 
   if (error) throw new Error(`Couldn't load your training: ${error.message}`);
 
   type LessonDb = {
     id: string; position: number; title: string; objectives: string[] | null; video_seconds: number;
     required_watch_ratio: number | string; pass_ratio: number | string; is_required: boolean; estimated_minutes: number | null;
+    kind?: string;
     quiz_questions?: { count: number }[] | null;
   };
   type VersionDb = { id: string; course_id: string; version: number; title: string; description: string; is_demo: boolean; lessons: LessonDb[] | null };
@@ -58,6 +64,7 @@ export async function loadLearnerProgress(supabase: SupabaseClient, learnerId: s
           isRequired: l.is_required,
           estimatedMinutes: l.estimated_minutes,
           objectives: l.objectives ?? [],
+          kind: l.kind === "reading" ? "reading" : "video",
           // If the count can't be read, assume a quiz (the safer default).
           hasQuiz: Array.isArray(l.quiz_questions) && l.quiz_questions.length ? Number(l.quiz_questions[0].count) > 0 : true,
         })),

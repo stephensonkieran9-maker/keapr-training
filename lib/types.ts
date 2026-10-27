@@ -51,6 +51,8 @@ export interface NextLesson {
   requiredWatchPercent: number;
   /** false = watch-only lesson: completes when watched, no quiz. */
   hasQuiz?: boolean;
+  /** "reading" = no video: read, confirm, then the quiz. */
+  kind?: "video" | "reading";
 }
 
 export interface Resource {

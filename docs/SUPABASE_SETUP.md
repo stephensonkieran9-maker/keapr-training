@@ -83,6 +83,10 @@ SQL Editor → paste `supabase/migrations/0012_lesson_downloads.sql` → Run (af
 
 SQL Editor → paste `supabase/migrations/0013_activity_and_timings.sql` → Run (after 0012). Records **last active** as people use the app (not just when they type their password), when each quiz attempt was started (so reports show time taken), and when each lesson's video was first opened. Older activity has no timings.
 
+## 17. Run the fourteenth migration (reading lessons)
+
+SQL Editor → paste `supabase/migrations/0014_reading_lessons.sql` → Run (after 0013). Adds a **Lesson type** choice to each lesson in the course builder: **Video** or **Reading (no video)**. A reading lesson shows its text; staff tick **I've read this** to unlock the quiz (or to finish the lesson if it has no quiz). The tick is checked on the server, like the video gate. Set a reading time so the dashboard shows how long it takes.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

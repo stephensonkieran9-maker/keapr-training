@@ -581,3 +581,11 @@ a.path-card:hover{border-color:var(--accent)}
 .missed-list li{display:flex;gap:10px;align-items:baseline}
 .missed-count{flex:none;min-width:30px;font-weight:700;color:#9a3326}
 .detail-link{align-self:flex-start;text-decoration:none;color:var(--accent);font-weight:600}
+
+/* Reading lessons */
+.reading .tag{display:inline-block;margin-bottom:12px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--bg);color:var(--muted);padding:4px 8px;border-radius:4px}
+.reading-text{display:flex;flex-direction:column;gap:12px;line-height:1.6}
+.reading-text p{margin:0;white-space:pre-wrap}
+.reading-text h3{font-size:17px;font-weight:700;margin:10px 0 0}
+.reading-text h3:first-child{margin-top:0}
+.reading-text ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}

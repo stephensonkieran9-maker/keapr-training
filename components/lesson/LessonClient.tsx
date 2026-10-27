@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Icon } from "@/components/Icons";
-import { submitQuiz, type QuizResult } from "@/lib/lesson-actions";
+import { confirmReading, submitQuiz, type QuizResult } from "@/lib/lesson-actions";
+import { LinkedText } from "@/components/LinkedText";
 import { previewQuiz } from "@/lib/admin/preview-actions";
 import { formatDuration } from "@/lib/format";
 import type { LessonQuestion, LessonView } from "@/lib/lesson";
@@ -21,6 +22,11 @@ function lessonHref(id: string, preview?: PreviewMode) {
 }
 
 export function LessonClient({ view, preview }: { view: LessonView; preview?: PreviewMode }) {
+  if (view.lesson.kind === "reading") return <ReadingLesson view={view} preview={preview} />;
+  return <VideoLesson view={view} preview={preview} />;
+}
+
+function VideoLesson({ view, preview }: { view: LessonView; preview?: PreviewMode }) {
   const { lesson } = view;
   const tracker = useWatchTracker({
     preview: Boolean(preview),
@@ -74,6 +80,81 @@ export function LessonClient({ view, preview }: { view: LessonView; preview?: Pr
 }
 
 type Tracker = ReturnType<typeof useWatchTracker>;
+type Completion = Tracker["completion"];
+
+/** Reading lessons: the text, an "I've read this" confirmation (checked on the
+ * server), then the quiz. With no quiz, confirming completes the lesson. */
+function ReadingLesson({ view, preview }: { view: LessonView; preview?: PreviewMode }) {
+  const { lesson } = view;
+  const [confirmed, setConfirmed] = useState(view.progress.quizUnlocked || view.state === "passed");
+  const [completion, setCompletion] = useState<Completion>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  function confirm() {
+    setError(null);
+    if (preview) {
+      setConfirmed(true);
+      return;
+    }
+    start(async () => {
+      const r = await confirmReading(lesson.id);
+      if (!r.ok) {
+        setError(r.error ?? "That didn't save. Try again.");
+        return;
+      }
+      setConfirmed(true);
+      if (r.lessonCompleted) {
+        setCompletion({ nextLessonId: r.nextLessonId ?? null, courseCompleted: Boolean(r.courseCompleted), nextCourse: r.nextCourse ?? null });
+      }
+    });
+  }
+
+  return (
+    <div className="lesson-main">
+      <article className="card reading" aria-label="Reading">
+        <span className="tag">Reading · about {Math.max(1, Math.round(lesson.videoSeconds / 60))} min</span>
+        <ReadingText text={lesson.readingBody ?? ""} />
+      </article>
+
+      {!confirmed ? (
+        <section className="card quiz quiz-locked" aria-live="polite">
+          <span className="lock-badge" aria-hidden="true"><Icon name="lock" /></span>
+          <div>
+            <h2>{lesson.hasQuiz ? "Read everything above to unlock the quiz" : "Read everything above to finish this lesson"}</h2>
+            <p className="muted">Include any downloads attached to this lesson. Confirm once you&apos;ve read it all.</p>
+            {error && <p className="form-error" role="alert" style={{ marginTop: 8 }}>{error}</p>}
+            <button type="button" className="btn btn-primary btn-sm" style={{ marginTop: 10 }} onClick={confirm} disabled={pending}>
+              {pending ? "Saving…" : "I've read this"}
+            </button>
+          </div>
+        </section>
+      ) : lesson.hasQuiz ? (
+        <Quiz view={view} unlocked preview={preview} />
+      ) : (
+        <WatchToComplete view={view} tracker={{ unlocked: true, completion }} preview={preview} />
+      )}
+    </div>
+  );
+}
+
+/** Reading text: blank lines split paragraphs, "# " lines are headings and
+ * lines starting "- " are bullet lists. Web links become links. */
+function ReadingText({ text }: { text: string }) {
+  const blocks = text.replace(/\r\n/g, "\n").split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+  return (
+    <div className="reading-text">
+      {blocks.map((b, i) => {
+        const lines = b.split("\n");
+        if (lines.length === 1 && /^#{1,3}\s/.test(b)) return <h3 key={i}>{b.replace(/^#{1,3}\s+/, "")}</h3>;
+        if (lines.every((l) => /^\s*[-•]\s/.test(l))) {
+          return <ul key={i}>{lines.map((l, j) => <li key={j}><LinkedText text={l.replace(/^\s*[-•]\s+/, "")} /></li>)}</ul>;
+        }
+        return <p key={i}><LinkedText text={b} /></p>;
+      })}
+    </div>
+  );
+}
 
 /** "Next course" after finishing a course, plus a way back to the course. */
 function NextCourseActions({ nextCourse, courseId }: { nextCourse: { courseId: string; title: string; lessonId: string | null }; courseId: string }) {
@@ -88,7 +169,7 @@ function NextCourseActions({ nextCourse, courseId }: { nextCourse: { courseId: s
 }
 
 /** Watch-only lessons: no quiz; the lesson completes once the video is watched. */
-function WatchToComplete({ view, tracker, preview }: { view: LessonView; tracker: Tracker; preview?: PreviewMode }) {
+function WatchToComplete({ view, tracker, preview }: { view: LessonView; tracker: Pick<Tracker, "unlocked" | "completion">; preview?: PreviewMode }) {
   const router = useRouter();
   const { lesson } = view;
   const done = view.state === "passed" || Boolean(tracker.completion) || (Boolean(preview) && tracker.unlocked);

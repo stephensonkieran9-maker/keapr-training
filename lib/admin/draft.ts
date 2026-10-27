@@ -27,9 +27,15 @@ export function downloadKind(fileName: string): DraftDownload["kind"] {
   return "other";
 }
 
+export type LessonKind = "video" | "reading";
+
 export interface DraftLesson {
   key: string;
   title: string;
+  /** "reading" = no video: the learner reads readingBody, confirms, then takes the quiz. */
+  kind: LessonKind;
+  /** The text a reading lesson shows. Ignored for video lessons. */
+  readingBody: string;
   objectives: string[];
   notes: string;
   videoRef: string;
@@ -65,6 +71,8 @@ export function emptyLesson(): DraftLesson {
   return {
     key: newKey("l"),
     title: "",
+    kind: "video",
+    readingBody: "",
     objectives: [],
     notes: "",
     videoRef: "",
@@ -86,6 +94,8 @@ export function normaliseDraft(raw: unknown): CourseDraft {
     lessons: lessons.map((l) => ({
       key: typeof l.key === "string" && l.key ? l.key : newKey("l"),
       title: String(l.title ?? ""),
+      kind: l.kind === "reading" ? "reading" : "video",
+      readingBody: String(l.readingBody ?? ""),
       objectives: Array.isArray(l.objectives) ? l.objectives.map(String) : [],
       notes: String(l.notes ?? ""),
       videoRef: String(l.videoRef ?? ""),
@@ -130,6 +140,7 @@ export function cleanDraft(draft: CourseDraft): CourseDraft {
     lessons: draft.lessons.map((l) => ({
       ...l,
       title: l.title.trim(),
+      readingBody: l.readingBody.trim(),
       objectives: l.objectives.map((o) => o.trim()).filter(Boolean),
       downloads: (l.downloads ?? []).map((f) => ({ ...f, title: f.title.trim() || f.ref.split("/").pop()?.replace(/^\d+-/, "") || "Download" })),
       // Watch-only lessons publish with no questions.
@@ -156,7 +167,10 @@ export function publishProblems(draft: CourseDraft): string[] {
   d.lessons.forEach((l, li) => {
     const name = `Lesson ${li + 1}`;
     if (!l.title) problems.push(`${name} needs a title.`);
-    if (!(l.videoSeconds > 0)) problems.push(`${name} needs the video length.`);
+    if (l.kind === "reading") {
+      if (!l.readingBody) problems.push(`${name} needs the reading text.`);
+      if (!l.estimatedMinutes) problems.push(`${name} needs a reading time (time to complete).`);
+    } else if (!(l.videoSeconds > 0)) problems.push(`${name} needs the video length.`);
     if (l.hasQuiz && l.questions.length === 0) problems.push(`${name} needs at least one quiz question, or untick "This lesson has a quiz".`);
     l.questions.forEach((q, qi) => {
       const qn = `${name}, question ${qi + 1}`;

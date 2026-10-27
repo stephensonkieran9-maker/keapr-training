@@ -14,6 +14,8 @@ export interface LessonRow {
   objectives: string[];
   /** false = watch-only lesson (no quiz). Missing means it has a quiz. */
   hasQuiz?: boolean;
+  /** "reading" = no video. Missing means a video lesson. */
+  kind?: "video" | "reading";
 }
 
 export interface EnrolmentRow {
@@ -69,6 +71,7 @@ export function lessonSteps(e: EnrolmentRow, input: ProgressInput): LessonStep[]
       : undefined;
     const prevPosition = i > 0 ? ordered[i - 1].position : null;
     const prevWatchOnly = i > 0 && ordered[i - 1].hasQuiz === false;
+    const prevReading = i > 0 && ordered[i - 1].kind === "reading";
     const prev = previousTitle;
     previousTitle = lesson.title;
 
@@ -100,7 +103,7 @@ export function lessonSteps(e: EnrolmentRow, input: ProgressInput): LessonStep[]
         prevPosition === null
           ? `Pass "${prev}" to unlock`
           : prevWatchOnly
-            ? `Finish watching lesson ${prevPosition} to unlock`
+            ? prevReading ? `Finish reading lesson ${prevPosition} to unlock` : `Finish watching lesson ${prevPosition} to unlock`
             : `Pass the lesson ${prevPosition} quiz to unlock`,
     };
   });
@@ -172,6 +175,7 @@ export function computeProgress(input: ProgressInput): ComputedProgress {
       watchedSeconds: Math.min(lesson.videoSeconds, input.watchedSeconds.get(key(e.enrolmentId, lesson.id)) ?? 0),
       requiredWatchPercent: Math.round(lesson.requiredWatchRatio * 100),
       hasQuiz: lesson.hasQuiz !== false,
+      kind: lesson.kind ?? "video",
     };
     break;
   }

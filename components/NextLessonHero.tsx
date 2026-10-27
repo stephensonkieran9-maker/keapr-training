@@ -9,6 +9,7 @@ export function NextLessonHero({ lesson, isDemo }: { lesson: NextLesson; isDemo:
   const watched = percent(lesson.watchedSeconds, lesson.videoSeconds);
   const minutes = Math.round(lesson.videoSeconds / 60);
   const lessonHref = `/lessons/${lesson.lessonId}`;
+  const reading = lesson.kind === "reading";
 
   return (
     <section className="hero" aria-labelledby="cur-title">
@@ -22,7 +23,7 @@ export function NextLessonHero({ lesson, isDemo }: { lesson: NextLesson; isDemo:
         <p>{lesson.description}</p>
         <div className="meta">
           <span><Icon name="list" />Lesson {lesson.position} of {lesson.lessonCount}</span>
-          <span><Icon name="clock" />{minutes}-minute video</span>
+          <span><Icon name="clock" />{minutes}-minute {reading ? "read" : "video"}</span>
           <span><Icon name="circle-check" />{lesson.lessonsPassed} of {lesson.lessonCount} lessons passed</span>
         </div>
         <ProgressBar label="Course progress" value={courseProgress} />
@@ -38,18 +39,22 @@ export function NextLessonHero({ lesson, isDemo }: { lesson: NextLesson; isDemo:
         </div>
       </div>
 
-      <div className="video" role="img" aria-label={`Video preview for lesson ${lesson.position}`}>
-        <span className="tag">{isDemo ? "Demo video" : "Lesson video"}</span>
+      <div className="video" role="img" aria-label={reading ? `Reading for lesson ${lesson.position}` : `Video preview for lesson ${lesson.position}`}>
+        <span className="tag">{reading ? "Reading" : isDemo ? "Demo video" : "Lesson video"}</span>
         <span className="dur">{formatDuration(lesson.videoSeconds)}</span>
-        <Link className="play" href={lessonHref} aria-label={`Play lesson ${lesson.position} video`}>
+        <Link className="play" href={lessonHref} aria-label={reading ? `Open lesson ${lesson.position}` : `Play lesson ${lesson.position} video`}>
           <Icon name="play" />
         </Link>
         <div className="cap">
           <span>
-            Watched {formatDuration(lesson.watchedSeconds)} of {formatDuration(lesson.videoSeconds)} · {watched}%
+            {reading
+              ? lesson.watchedSeconds > 0 ? "Read" : `About ${minutes} min to read`
+              : <>Watched {formatDuration(lesson.watchedSeconds)} of {formatDuration(lesson.videoSeconds)} · {watched}%</>}
           </span>
           <span>
-            {lesson.hasQuiz === false
+            {reading
+              ? lesson.hasQuiz === false ? "Confirm you've read it to finish" : "Confirm you've read it to unlock the quiz"
+              : lesson.hasQuiz === false
               ? lesson.requiredWatchPercent >= 100 ? "Watch it all to finish" : `${lesson.requiredWatchPercent}% to finish`
               : `${lesson.requiredWatchPercent}% needed for quiz`}
           </span>

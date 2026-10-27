@@ -99,6 +99,24 @@ export async function saveVideoProgress(lessonId: string, ranges: Range[], posit
   return { ok: true, watchedSeconds: watched, quizUnlocked: Boolean(quizUnlockedAt) };
 }
 
+/** Reading lessons: the learner confirms they've read the lesson. Unlocks the
+ * quiz, or completes the lesson if it has no quiz. Checked on the server. */
+export async function confirmReading(lessonId: string): Promise<ProgressResult> {
+  const { profile } = await requireProfile();
+  const { error } = await createAdminClient().rpc("confirm_reading", { p_learner: profile.id, p_lesson: lessonId });
+  if (error) {
+    if (/COURSE_LOCKED/.test(error.message)) return { ok: false, error: "Finish the earlier course in your training first. This one is still locked." };
+    if (/LESSON_LOCKED/.test(error.message)) return { ok: false, error: "Pass the earlier lessons first. This one is still locked." };
+    if (/NOT_ENROLLED/.test(error.message)) return { ok: false, error: "This lesson isn't assigned to you." };
+    console.error(`[lesson] confirm reading failed: ${error.message}`);
+    return { ok: false, error: "That didn't save. Check your connection and try again." };
+  }
+  revalidatePath(`/lessons/${lessonId}`);
+  const done = await completeIfWatchOnly(lessonId, profile);
+  if (done) return { ok: true, quizUnlocked: true, ...done };
+  return { ok: true, quizUnlocked: true };
+}
+
 /** For a lesson with no quiz: records it as complete once watched. Returns
  * null for lessons that have a quiz. Server-only helper (not exported as an action). */
 async function completeIfWatchOnly(lessonId: string, profile: { id: string; fullName: string }) {
@@ -153,7 +171,7 @@ const errorMessages: Record<string, string> = {
   NOT_ENROLLED: "This lesson isn't assigned to you.",
   COURSE_LOCKED: "Finish the earlier course in your training first. This one is still locked.",
   LESSON_LOCKED: "Pass the earlier lessons first. This one is still locked.",
-  QUIZ_LOCKED: "Watch more of the video to unlock the quiz.",
+  QUIZ_LOCKED: "Finish the lesson (watch the video or confirm you've read it) to unlock the quiz.",
   INCOMPLETE_ANSWERS: "Answer every question before submitting.",
   NO_QUESTIONS: "This lesson doesn't have a quiz yet.",
   LESSON_NOT_FOUND: "Lesson not found.",

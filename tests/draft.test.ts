@@ -82,3 +82,17 @@ test("downloads survive normalising; blank labels fall back to the file name", a
   assert.equal(downloadKind("photo.png"), "other");
   assert.deepEqual(normaliseDraft({ lessons: [{ title: "Old" }] }).lessons[0].downloads, []);
 });
+
+test("reading lessons need text and a reading time, not a video", async () => {
+  const { publishProblems, normaliseDraft, emptyLesson } = await import("../lib/admin/draft.ts");
+  const reading = { ...emptyLesson(), title: "Read the script", kind: "reading" as const, readingBody: "The script.", estimatedMinutes: 15 };
+  reading.questions = [{ key: "q", prompt: "P", options: ["A", "B"], correctIndex: 0, explanation: "" }];
+  assert.deepEqual(publishProblems({ lessons: [reading] }), []);
+  const empty = { ...reading, readingBody: "  ", estimatedMinutes: null };
+  const problems = publishProblems({ lessons: [empty] });
+  assert.ok(problems.some((p) => p.includes("reading text")));
+  assert.ok(problems.some((p) => p.includes("reading time")));
+  assert.ok(!problems.some((p) => p.includes("video length")));
+  assert.equal(normaliseDraft({ lessons: [{ title: "Old" }] }).lessons[0].kind, "video");
+  assert.equal(normaliseDraft({ lessons: [{ title: "R", kind: "reading", readingBody: "x" }] }).lessons[0].kind, "reading");
+});

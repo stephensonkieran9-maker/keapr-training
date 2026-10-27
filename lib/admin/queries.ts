@@ -254,15 +254,14 @@ export async function getCourseForEditor(id: string) {
 
 async function draftFromVersion(versionId: string): Promise<CourseDraft> {
   const admin = createAdminClient();
-  const { data: lessons } = await admin
-    .from("lessons")
-    .select(
-      `id, position, title, objectives, notes, video_ref, video_seconds, required_watch_ratio, pass_ratio, is_required, estimated_minutes,
+  const columns = (extra: string) =>
+    `id, position, title, objectives, notes, video_ref, video_seconds, required_watch_ratio, pass_ratio, is_required, estimated_minutes,${extra}
        quiz_questions ( id, position, prompt, explanation, quiz_options ( id, position, label ), quiz_answer_keys ( correct_option_id ) ),
-       lesson_resources ( id, title, kind, storage_path, size_bytes )`,
-    )
-    .eq("course_version_id", versionId)
-    .order("position");
+       lesson_resources ( id, title, kind, storage_path, size_bytes )`;
+  let res = await admin.from("lessons").select(columns(" kind, reading_body,")).eq("course_version_id", versionId).order("position");
+  // Before migration 0014 there are no reading lessons: read without those columns.
+  if (res.error) res = await admin.from("lessons").select(columns("")).eq("course_version_id", versionId).order("position");
+  const lessons = res.data as unknown as ({ kind?: string; reading_body?: string | null } & Record<string, unknown>)[] | null;
 
   type Opt = { id: string; position: number; label: string };
   type Q = { id: string; position: number; prompt: string; explanation: string; quiz_options: Opt[]; quiz_answer_keys: { correct_option_id: string } | { correct_option_id: string }[] | null };
@@ -271,6 +270,8 @@ async function draftFromVersion(versionId: string): Promise<CourseDraft> {
     lessons: (lessons ?? []).map((l) => ({
       key: newKey("l"),
       title: l.title,
+      kind: l.kind === "reading" ? "reading" : "video",
+      readingBody: l.reading_body ?? "",
       objectives: l.objectives ?? [],
       notes: l.notes ?? "",
       videoRef: l.video_ref ?? "",
