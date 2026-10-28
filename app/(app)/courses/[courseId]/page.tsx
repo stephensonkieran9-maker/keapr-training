@@ -129,7 +129,9 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
                   <span className="st" aria-hidden="true"><Icon name="check" /></span>
                   <div><div className="n">Lesson {s.position} <span className="pill">Passed</span></div><div className="t">{s.title}</div></div>
                   <div className="right">
-                    {s.bestScorePercent !== undefined && <span className="score">Best score {s.bestScorePercent}%</span>}
+                    {s.bestScorePercent !== undefined && (
+                      <Link className="score" href={`/lessons/${s.lessonId}#attempts`}>Best score {s.bestScorePercent}% · see attempts</Link>
+                    )}
                     <Link className="link" href={`/lessons/${s.lessonId}`}>Review</Link>
                   </div>
                 </li>
@@ -141,6 +143,9 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
                 <div><div className="n">Lesson {s.position} <span className="pill cur">Available</span></div><div className="t">{s.title}</div></div>
                 <div className="right">
                   {mins && <span className="muted">About {mins} min</span>}
+                  {s.bestScorePercent !== undefined && (
+                    <Link className="link" href={`/lessons/${s.lessonId}#attempts`}>Past attempts ({s.bestScorePercent}% best)</Link>
+                  )}
                   <Link className="btn btn-primary btn-sm" href={`/lessons/${s.lessonId}`}>{s.bestScorePercent !== undefined ? "Retry" : "Start"}</Link>
                 </div>
               </li>

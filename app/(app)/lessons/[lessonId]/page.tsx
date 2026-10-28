@@ -10,6 +10,8 @@ import { ComingSoon } from "@/components/ComingSoon";
 import { CourseChecklist } from "@/components/CourseChecklist";
 import { groupChecklist, loadChecklist } from "@/lib/checklist";
 import { createClient } from "@/lib/supabase/server";
+import { AttemptHistory } from "@/components/AttemptHistory";
+import { getAttemptHistory } from "@/lib/attempt-history";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +26,8 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
   // This lesson's checklist items (tracking only, never locks anything).
   const checklist = (await loadChecklist(await createClient(), view.courseVersionId, view.enrolmentId)).filter((i) => i.lessonId === lesson.id);
   lesson.hasChecklist = checklist.length > 0;
+  // Past quiz attempts, so they can look back at their scores and answers.
+  const history = lesson.hasQuiz && view.attempts.count > 0 ? await getAttemptHistory(view.enrolmentId, lesson.id, view.state === "passed") : [];
 
   return (
     <div className="lesson-page" id="lesson-top">
@@ -54,6 +58,8 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
           ) : (
             <LessonClient view={view} />
           )}
+
+          {history.length > 0 && <AttemptHistory attempts={history} passMark={lesson.passPercent} revealed={view.state === "passed"} />}
 
           {view.state !== "locked" && checklist.length > 0 && (
             <section className="card" aria-labelledby="lesson-checklist-title">

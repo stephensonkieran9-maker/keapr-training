@@ -7,6 +7,71 @@
 
 alter table public.lessons add column if not exists is_task boolean not null default false;
 
+-- The checklist tables from 0015, repeated here (safe to run twice) so this
+-- migration works even if 0015 was skipped.
+create table if not exists public.course_checklist_items (
+  id                uuid primary key default gen_random_uuid(),
+  course_version_id uuid not null references public.course_versions (id) on delete cascade,
+  position          integer not null check (position > 0),
+  section           text not null default '',
+  label             text not null check (length(trim(label)) > 0),
+  lesson_id         uuid references public.lessons (id) on delete cascade,
+  unique (course_version_id, position)
+);
+alter table public.course_checklist_items add column if not exists lesson_id uuid references public.lessons (id) on delete cascade;
+
+create table if not exists public.checklist_ticks (
+  enrolment_id uuid not null references public.enrolments (id) on delete cascade,
+  item_id      uuid not null references public.course_checklist_items (id) on delete cascade,
+  ticked_at    timestamptz not null default now(),
+  primary key (enrolment_id, item_id)
+);
+
+alter table public.course_checklist_items enable row level security;
+alter table public.checklist_ticks enable row level security;
+
+drop policy if exists "learners read enrolled checklist" on public.course_checklist_items;
+create policy "learners read enrolled checklist" on public.course_checklist_items
+  for select using (course_version_id in (select public.my_course_version_ids()) or public.is_admin());
+drop policy if exists "admins manage checklist" on public.course_checklist_items;
+create policy "admins manage checklist" on public.course_checklist_items
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- Ticks: read own (admins read all). Writes go through set_checklist_tick.
+drop policy if exists "read own ticks" on public.checklist_ticks;
+create policy "read own ticks" on public.checklist_ticks
+  for select using (
+    public.is_admin() or enrolment_id in (select id from public.enrolments where learner_id = auth.uid()));
+
+-- Ticks or unticks one item for a learner. Checks the item belongs to a
+-- course they're currently assigned. Called by the server only.
+create or replace function public.set_checklist_tick(p_learner uuid, p_item uuid, p_ticked boolean)
+returns void
+language plpgsql security definer set search_path = public
+as $$
+declare
+  v_enrolment uuid;
+begin
+  select e.id into v_enrolment
+  from public.course_checklist_items i
+  join public.enrolments e on e.course_version_id = i.course_version_id
+  join public.profiles p on p.id = e.learner_id and p.is_active
+  where i.id = p_item and e.learner_id = p_learner and e.unassigned_at is null;
+  if v_enrolment is null then raise exception 'NOT_ENROLLED'; end if;
+
+  if p_ticked then
+    insert into public.checklist_ticks (enrolment_id, item_id) values (v_enrolment, p_item)
+    on conflict (enrolment_id, item_id) do nothing;
+  else
+    delete from public.checklist_ticks where enrolment_id = v_enrolment and item_id = p_item;
+  end if;
+end;
+$$;
+
+revoke all on function public.set_checklist_tick(uuid, uuid, boolean) from public, anon, authenticated;
+grant execute on function public.set_checklist_tick(uuid, uuid, boolean) to service_role;
+
+
 -- Publishing now also copies the "I've done this" setting.
 create or replace function public.publish_course(p_course_id uuid, p_actor uuid)
 returns uuid
