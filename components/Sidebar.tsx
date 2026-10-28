@@ -6,12 +6,13 @@ import { Icon, type IconName } from "./Icons";
 import type { Learner } from "@/lib/types";
 import { signOut } from "@/app/auth/actions";
 
-export type NavKey = "dashboard" | "training" | "resources" | "help" | "overview" | "staff" | "courses" | "paths" | "reports";
+export type NavKey = "dashboard" | "training" | "resources" | "results" | "help" | "overview" | "staff" | "courses" | "paths" | "reports";
 
 const learningLinks: { key: NavKey; label: string; href: string; icon: IconName }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "grid" },
   { key: "training", label: "My training", href: "/dashboard#my-training", icon: "cap" },
   { key: "resources", label: "Resources", href: "/dashboard#resources", icon: "folder" },
+  { key: "results", label: "My results", href: "/results", icon: "award" },
   { key: "help", label: "Help", href: "/help", icon: "help" },
 ];
 
@@ -29,12 +30,16 @@ export function Sidebar({ learner, demoMode = false, canSignOut = false }: { lea
       ? "reports"
       : pathname.startsWith("/help")
       ? "help"
+      : pathname.startsWith("/results")
+      ? "results"
       : pathname.startsWith("/lessons") || pathname.startsWith("/courses")
         ? "training"
         : "dashboard";
   const base = demoMode ? "/demo" : "/dashboard";
   const links = learningLinks
     .filter((l) => !(demoMode && l.key === "help"))
+    // My results is for learners: admins don't see it.
+    .filter((l) => !(l.key === "results" && (demoMode || learner.isAdmin)))
     .map((l) => ({ ...l, href: l.href.replace("/dashboard", base) }));
   return (
     <aside className="side" aria-label="Main navigation">

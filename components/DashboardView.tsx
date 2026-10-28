@@ -4,7 +4,6 @@ import { StatTiles } from "./StatTiles";
 import { LessonSteps } from "./LessonSteps";
 import { CourseGrid } from "./CourseGrid";
 import { ResourceList } from "./ResourceList";
-import { QuizResults } from "./QuizResults";
 import type { DashboardData } from "@/lib/types";
 
 export function DashboardView({ data }: { data: DashboardData }) {
@@ -24,7 +23,6 @@ export function DashboardView({ data }: { data: DashboardData }) {
         />
       )}
       <CourseGrid courses={data.courses} />
-      {data.quizResults && data.quizResults.length > 0 && <QuizResults results={data.quizResults} />}
       {data.resources.length > 0 && <ResourceList resources={data.resources} />}
     </>
   );

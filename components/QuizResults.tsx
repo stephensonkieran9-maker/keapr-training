@@ -5,10 +5,7 @@ import { formatDateTime } from "@/lib/format";
 /** Dashboard: every quiz they've taken, with a link back to their attempts. */
 export function QuizResults({ results }: { results: QuizResultSummary[] }) {
   return (
-    <section className="panel" aria-labelledby="quiz-results-title">
-      <div className="panel-head">
-        <h2 id="quiz-results-title">Your quiz results</h2>
-      </div>
+    <section className="panel" aria-label="Quiz results">
       <ul className="quiz-results">
         {results.map((r) => (
           <li key={r.lessonId}>

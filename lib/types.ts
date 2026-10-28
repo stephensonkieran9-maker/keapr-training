@@ -72,8 +72,6 @@ export interface DashboardData {
   passMarkPercent: number;
   courses: CourseSummary[];
   resources: Resource[];
-  /** Quizzes they've taken, most recent first, for looking back at attempts. */
-  quizResults?: QuizResultSummary[];
 }
 
 export interface QuizResultSummary {
