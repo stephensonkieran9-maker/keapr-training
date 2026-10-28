@@ -82,6 +82,7 @@ export default async function PreviewPage({
       kind: l.kind,
       readingBody: l.kind === "reading" ? l.readingBody : null,
       hasChecklist: lessonChecklist.length > 0,
+      isTask: l.kind === "reading" && l.isTask,
     },
     video: l.kind === "reading" ? { kind: "placeholder" } : await resolveVideo(l.videoRef),
     state: "available",

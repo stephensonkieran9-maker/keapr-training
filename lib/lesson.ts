@@ -35,6 +35,8 @@ export interface LessonView {
     readingBody: string | null;
     /** Has its own checklist items (shown under the lesson). */
     hasChecklist?: boolean;
+    /** Reading lessons: a task done outside the app ("I've done this"). */
+    isTask?: boolean;
   };
   video: { kind: "file"; src: string } | { kind: "placeholder" };
   state: LessonStep["state"];
@@ -58,13 +60,14 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
   const { profile, supabase } = await requireProfile();
 
   const baseColumns = "id, course_version_id, position, title, objectives, notes, video_ref, video_seconds, required_watch_ratio, pass_ratio";
-  let lessonRes = await supabase.from("lessons").select(`${baseColumns}, kind, reading_body`).eq("id", lessonId).maybeSingle();
-  // Before migration 0014 there are no reading lessons: read without those columns.
+  let lessonRes = await supabase.from("lessons").select(`${baseColumns}, kind, reading_body, is_task`).eq("id", lessonId).maybeSingle();
+  // Older databases (before migrations 0014/0016) don't have these columns.
+  if (lessonRes.error) lessonRes = await supabase.from("lessons").select(`${baseColumns}, kind, reading_body`).eq("id", lessonId).maybeSingle();
   if (lessonRes.error) lessonRes = await supabase.from("lessons").select(baseColumns).eq("id", lessonId).maybeSingle();
   const lessonRow = lessonRes.data as
     | ({ id: string; course_version_id: string; position: number; title: string; objectives: string[] | null; notes: string | null;
         video_ref: string | null; video_seconds: number; required_watch_ratio: number | string; pass_ratio: number | string;
-        kind?: string; reading_body?: string | null })
+        kind?: string; reading_body?: string | null; is_task?: boolean })
     | null;
   if (!lessonRow) return null;
   const isReading = lessonRow.kind === "reading";
@@ -165,6 +168,7 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
       hasQuiz,
       kind: isReading ? "reading" : "video",
       readingBody: isReading ? (lessonRow.reading_body ?? "") : null,
+      isTask: isReading && lessonRow.is_task === true,
     },
     video: isReading ? { kind: "placeholder" } : await resolveVideo(lessonRow.video_ref),
     state: step.state,

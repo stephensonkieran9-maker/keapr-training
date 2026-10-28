@@ -92,6 +92,7 @@ function ReadingLesson({ view, preview }: { view: LessonView; preview?: PreviewM
   const [pending, start] = useTransition();
   // A reading lesson with no quiz but its own checklist is a list of tasks.
   const taskLesson = !lesson.hasQuiz && Boolean(lesson.hasChecklist);
+  const isTask = Boolean(lesson.isTask);
 
   function confirm() {
     setError(null);
@@ -115,11 +116,22 @@ function ReadingLesson({ view, preview }: { view: LessonView; preview?: PreviewM
   return (
     <div className="lesson-main">
       <article className="card reading" aria-label="Reading">
-        <span className="tag">Reading · about {Math.max(1, Math.round(lesson.videoSeconds / 60))} min</span>
+        <span className="tag">{isTask ? "Task" : "Reading"} · about {Math.max(1, Math.round(lesson.videoSeconds / 60))} min</span>
         <ReadingText text={lesson.readingBody ?? ""} />
       </article>
 
-      {!confirmed ? (
+      {!confirmed && isTask ? (
+        <section className="card task-tick" aria-live="polite">
+          <label className={`task-check${pending ? " saving" : ""}`}>
+            <input type="checkbox" checked={pending} disabled={pending} onChange={confirm} />
+            <span>
+              <b>{pending ? "Saving…" : "I've done this"}</b>
+              <small>{lesson.hasQuiz ? "Tick when you've done everything above. It unlocks the quiz." : "Tick when you've done everything above. It unlocks the next lesson."}</small>
+            </span>
+          </label>
+          {error && <p className="form-error" role="alert" style={{ marginTop: 8 }}>{error}</p>}
+        </section>
+      ) : !confirmed ? (
         <section className="card quiz quiz-locked" aria-live="polite">
           <span className="lock-badge" aria-hidden="true"><Icon name="lock" /></span>
           <div>

@@ -1,11 +1,13 @@
 -- Keapr Training: "Setter Call Training", rebuilt to follow the Setter Onboarding Plan.
--- Needs migrations 0014 (reading lessons) and 0015 (checklists).
--- One lesson per block of the plan, in its order, each with its checklist:
---   Day 1  1. 11:00 Orientation (Sean's welcome video)   2. 11:30 Script Reps
---          3. 12:30 Training Video (Anatomy of a Pitch)  4. 13:30 Blackout Memorisation
---          5. 14:30 Quiz (50 questions, pass 90% = 45)   6. 15:30 Required Recordings
---   Day 2  7. 11:00 Review   8. 12:00 Live Script Roleplay   9. 13:30 Objection Drills
---          10. 14:30 Notes & Handover   11. 15:30 Certification Roleplays
+-- Needs migrations 0014 (reading lessons) and 0016 (task lessons).
+-- One lesson per block of the plan, in its order. Task lessons end with a
+-- single "I've done this" tick that unlocks the next lesson.
+--   Day 1  1. 11:00 Orientation: Sean's welcome video    2. 11:00 Orientation: read script + objection sheet
+--          3. 11:30 Script Reps (task)                   4. 12:30 Training Video (Anatomy of a Pitch)
+--          5. 13:30 Blackout Memorisation (task)         6. 14:30 Quiz (50 questions, pass 90% = 45)
+--          7. 15:30 Required Recordings (task)
+--   Day 2  8. 11:00 Review   9. 12:00 Live Script Roleplay   10. 13:30 Objection Drills
+--          11. 14:30 Notes & Handover   12. 15:30 Certification Roleplays   (all tasks)
 -- Questions and checklist items come only from the video, the script, the
 -- objection sheet, the original quiz and the onboarding plan.
 --
@@ -26,18 +28,40 @@ declare
    "title": "Day 1 · 11:00 · Orientation: Welcome from Sean",
    "kind": "video",
    "readingBody": "",
+   "isTask": false,
    "objectives": [
     "Sean's Welcome / Role / Expectations video",
     "Your first two days: mastering one call and twelve objections",
     "Your only job: book a clean 20-minute planning call with the closer"
    ],
-   "notes": "Your first two days are about one thing: mastering one call and twelve objections. You are not selling management or tech. Your only job is to book a clean 20-minute planning call with the closer.\n\nIf you follow this plan, by the end of Day 2 you'll know the script and objection sheet cold and be ready for live calls.\n\nThe Final Setter Script and the Objection Sheet are under Downloads. After the video, read both once, top to bottom.",
+   "notes": "Your first two days are about one thing: mastering one call and twelve objections. You are not selling management or tech. Your only job is to book a clean 20-minute planning call with the closer.\n\nIf you follow this plan, by the end of Day 2 you'll know the script and objection sheet cold and be ready for live calls.",
    "videoRef": "",
    "videoSeconds": 0,
    "passPercent": 90,
    "requiredWatchPercent": 100,
    "isRequired": true,
-   "estimatedMinutes": 30,
+   "estimatedMinutes": 10,
+   "hasQuiz": false,
+   "questions": [],
+   "downloads": []
+  },
+  {
+   "key": "sc-read",
+   "title": "Day 1 · 11:00 · Orientation: Read the Script and Objection Sheet",
+   "kind": "reading",
+   "readingBody": "Read the full Final Setter Script once, top to bottom. Then read the Objection Sheet once, top to bottom.\n\n# Final Setter Script (Airbnb-only, long-stay network)\n\n# 1. Opener\n\n\"Hi, is this [First Name]?\nHey [Name], it's [Setter] calling from Keapr.\nYou asked to be added to our landlord database a while back.\nI'm working through a list of places that are mainly on Airbnb or Booking.com.\nIs now a terrible time?\"\n\n# 2. Context & interest check\n\n\"Perfect, I'll be quick.\nI'm looking at your place in [area/street].\nI just wanted to check: would you be interested in some more bookings, or at least some extra enquiries to look at?\"\n\nIf they say NO:\n\"Totally fine, I'll make a note of that and leave you be. If things change and you ever want a few more options, just let us know and we can look at it again.\"\n[End.]\n\nIf they say YES / MAYBE → continue.\n\n# 3. Simple qualification\n\n\"Great, that helps.\nJust so I don't waste your time:\nHow are bookings at the moment – mostly short stays and weekends, or are you pretty well covered midweek too?\nMost of what we see through this is contractor, corporate, and insurance bookings that are usually 28 nights or more. Would those kinds of longer stays be okay for you if the price and dates made sense?\"\n\nIf they say NO to long stays:\n\"Got it, thanks for being straight with me. In that case, this probably isn't the right fit for you right now, because this network is very geared toward 28-plus-night stays. I'll make a note and won't bother you with it.\"\n[End.]\n\nIf they say YES → continue.\n\n# 4. How it works (exclusive network + zero obligation)\n\n\"Let me quickly explain what we're doing and you can tell me if it even makes sense for you.\nWe sit in the middle of a bunch of channels that normal hosts don't touch – insurance databases, corporate and contractor platforms, and some closed networks that route bookings through partners like us rather than directly to hosts.\nA few key points so you're comfortable:\"\n\n- None of this is instant book. Everything is enquiry-only.\n- Every enquiry comes through us first. You're under no obligation to take anything.\n- You set the price each time. If it works for you, great. If it doesn't, we just say no and move on.\n- If the dates don't work, we decline it. No drama.\n\n\"So a typical one might be:\n'We've got a 72-night enquiry starting [date], at about £[X] a week. Do you want it, yes or no?'\nIf yes, we lock in a long booking. If no, nothing changes. There'll be plenty you say no to, and some that are a no-brainer.\"\n\n# 5. Planning-call close (golden bridge)\n\n\"Because we're selective with who we plug in, we do a quick planning call first.\nOn that call we look at:\"\n\n- Your current setup on Airbnb / Booking.com\n- What kind of 28-plus-night bookings would actually work for you\n- How we'd connect you into these enquiry-only channels while you stay in control on price\n\n\"Would you be open to a short 20-minute session to see what that could look like?\nWorst case, you decide you're happier as you are and we take you off the list.\nBest case, you pick up a few extra longer bookings a year, on your terms. Seems fair?\"\n\n\"I've got [Day, Time A] or [Day, Time B] – what's easier?\"\n\n# 6. If they ask \"What's the catch / am I tied in?\"\n\n\"Totally fair question. There's no tie-in and no instant bookings.\nIf at any point you don't like it, we just stop sending enquiries and remove you from that network. Simple as that.\"\n\n# Setter Objection Sheet (for long-stay network calls)\n\nRule:\nAnswer in 1–2 calm sentences, then move back to:\n\"That's exactly what [Closer Name] will run through with you properly on the planning call.\"\n\n# 1. \"Do you charge to onboard?\"\n\n\"Good question. No, there's no onboarding fee to be in the network.\nYou only make a decision when we bring you an actual booking you want.\"\n\n# 2. \"How much do you charge / what's your cut?\"\n\n\"So we don't charge you to join. When an enquiry comes in it's either:\n'They want to pay £150 a night for 61 nights, does that work for you, yes or no?'\nOr we ask you, 'What do you need for this stay?' and if you say '£145 a night for 72 nights,' we just add our commission on top of that.\nSo you get your number, and we make our bit on top.\"\n\n(If they push): \"The detail of that is what [Closer Name] will walk you through on the call, with real examples.\"\n\n# 3. \"When will I get paid?\"\n\n\"Each insurance and corporate client has different payment schedules.\nOn the planning call, [Closer Name] will show you the typical timelines and how it works for each type, so you know roughly when money hits your account before you say yes to anything.\"\n\n# 4. \"Are you speaking to others / do I have to be the cheapest?\"\n\n\"Sometimes, yes, we'll be talking to 3–4 suitable places at once.\nWe're not asking you to be the cheapest, just reasonable. If your price is way above what you already get on Airbnb or Booking.com, the contractors will just laugh and go elsewhere.\nAs long as it's sensible for the stay and the area, that's fine.\"\n\n# 5. \"Am I tied in? Is there a contract?\"\n\n\"There's no long tie-in for this. You're not obliged to take any bookings.\nIf at any point you don't like it, we stop sending enquiries and take you off the list. Simple as that.\"\n\n# 6. \"Do I have to accept every booking you send?\"\n\n\"Not at all. Every enquiry is optional.\nWe'll bring you the dates, length, and rate and you just decide: yes or no.\nIf it doesn't work for you, we decline and move on to the next one.\"\n\n# 7. \"Do I lose control of pricing?\"\n\n\"No, you always control your number.\nWe'll either say, 'They're offering X, does that work?' or 'What do you need for this?'\nIf it doesn't stack for you, we don't do it.\"\n\n# 8. \"What about damages / parties / idiots in my house?\"\n\n\"We're mostly placing contractors, insurance, and corporate stays, not hen parties.\nFor extra peace of mind, we can take a security deposit against damages and we know exactly who is supposed to be in the property.\n[Closer Name] will go through how that's handled in practice on the call.\"\n\n# 9. \"Will this mess with my Airbnb / Booking.com account?\"\n\n\"No, your existing listings stay as they are.\nThese enquiries come through our channels and we manage them separately in the background. You still control your Airbnb/Booking.com the way you do now.\"\n\n# 10. \"Can I still use the property myself or for my own bookings?\"\n\n\"Yes. You still block dates on your side whenever you want to use it or have your own bookings.\nIf it's not available for something we bring you, we just decline it.\"\n\n# 11. \"Why can't you just send me info? Why a call?\"\n\n\"Totally fair. The thing is, every property and owner is different – area, bills, what you're happy with.\nMy job is just to see if it's even worth you speaking with [Closer Name]. He's the one who can actually look at your place properly and run numbers with you.\n\n# 12. \"Is there any upfront cost at all?\"\n\n\"There's no upfront fee to be in the network and no charge just to have the call.\nYou only ever commit if a booking and a price make sense for you.\"\n\n# How to use this with your setter\n\nPrint it and keep it next to the script.\nFirst week: roleplay every one of these objections daily for 15 minutes.\nRule: answer once, then always finish with \"That's exactly what [Closer Name] will run through with you properly on the planning call,\" and go back to booking the time.\nYou do that for 10 working days, he'll stop fearing objections and just see them as checkpoints before handing them to you.",
+   "isTask": false,
+   "objectives": [
+    "Read the full Final Setter Script once, top to bottom",
+    "Read the Objection Sheet once, top to bottom"
+   ],
+   "notes": "",
+   "videoRef": "",
+   "videoSeconds": 0,
+   "passPercent": 90,
+   "requiredWatchPercent": 100,
+   "isRequired": true,
+   "estimatedMinutes": 20,
    "hasQuiz": false,
    "questions": [],
    "downloads": []
@@ -47,6 +71,7 @@ declare
    "title": "Day 1 · 11:30 · Script Reps",
    "kind": "reading",
    "readingBody": "# Day 1 · 11:30–12:30 · Script Reps\n\nRead the full script (sections 1–6) out loud 5 times.\n\nThen focus on:\n\n- Section 1–2 (Opener + Interest Check) – out loud 5 more times.\n- Section 4 (How it works + 4 rules + 72-night example) – out loud 5 more times.\n- Section 5 (Planning-call close + \"two times\" line) – out loud 5 more times.\n\nThe full script is below.\n\n# Final Setter Script (Airbnb-only, long-stay network)\n\n# 1. Opener\n\n\"Hi, is this [First Name]?\nHey [Name], it's [Setter] calling from Keapr.\nYou asked to be added to our landlord database a while back.\nI'm working through a list of places that are mainly on Airbnb or Booking.com.\nIs now a terrible time?\"\n\n# 2. Context & interest check\n\n\"Perfect, I'll be quick.\nI'm looking at your place in [area/street].\nI just wanted to check: would you be interested in some more bookings, or at least some extra enquiries to look at?\"\n\nIf they say NO:\n\"Totally fine, I'll make a note of that and leave you be. If things change and you ever want a few more options, just let us know and we can look at it again.\"\n[End.]\n\nIf they say YES / MAYBE → continue.\n\n# 3. Simple qualification\n\n\"Great, that helps.\nJust so I don't waste your time:\nHow are bookings at the moment – mostly short stays and weekends, or are you pretty well covered midweek too?\nMost of what we see through this is contractor, corporate, and insurance bookings that are usually 28 nights or more. Would those kinds of longer stays be okay for you if the price and dates made sense?\"\n\nIf they say NO to long stays:\n\"Got it, thanks for being straight with me. In that case, this probably isn't the right fit for you right now, because this network is very geared toward 28-plus-night stays. I'll make a note and won't bother you with it.\"\n[End.]\n\nIf they say YES → continue.\n\n# 4. How it works (exclusive network + zero obligation)\n\n\"Let me quickly explain what we're doing and you can tell me if it even makes sense for you.\nWe sit in the middle of a bunch of channels that normal hosts don't touch – insurance databases, corporate and contractor platforms, and some closed networks that route bookings through partners like us rather than directly to hosts.\nA few key points so you're comfortable:\"\n\n- None of this is instant book. Everything is enquiry-only.\n- Every enquiry comes through us first. You're under no obligation to take anything.\n- You set the price each time. If it works for you, great. If it doesn't, we just say no and move on.\n- If the dates don't work, we decline it. No drama.\n\n\"So a typical one might be:\n'We've got a 72-night enquiry starting [date], at about £[X] a week. Do you want it, yes or no?'\nIf yes, we lock in a long booking. If no, nothing changes. There'll be plenty you say no to, and some that are a no-brainer.\"\n\n# 5. Planning-call close (golden bridge)\n\n\"Because we're selective with who we plug in, we do a quick planning call first.\nOn that call we look at:\"\n\n- Your current setup on Airbnb / Booking.com\n- What kind of 28-plus-night bookings would actually work for you\n- How we'd connect you into these enquiry-only channels while you stay in control on price\n\n\"Would you be open to a short 20-minute session to see what that could look like?\nWorst case, you decide you're happier as you are and we take you off the list.\nBest case, you pick up a few extra longer bookings a year, on your terms. Seems fair?\"\n\n\"I've got [Day, Time A] or [Day, Time B] – what's easier?\"\n\n# 6. If they ask \"What's the catch / am I tied in?\"\n\n\"Totally fair question. There's no tie-in and no instant bookings.\nIf at any point you don't like it, we just stop sending enquiries and remove you from that network. Simple as that.\"",
+   "isTask": true,
    "objectives": [
     "Read the full script (sections 1–6) out loud 5 times",
     "Then focus on sections 1–2, 4 and 5, out loud 5 more times each"
@@ -67,6 +92,7 @@ declare
    "title": "Day 1 · 12:30 · Training Video: Anatomy of a Pitch",
    "kind": "video",
    "readingBody": "",
+   "isTask": false,
    "objectives": [
     "Watch the training video once all the way through",
     "Pause and write down the four rules in your own words",
@@ -88,6 +114,7 @@ declare
    "title": "Day 1 · 13:30 · Blackout Memorisation",
    "kind": "reading",
    "readingBody": "# Day 1 · 13:30–14:30 · Blackout Memorisation\n\nPrint the Final Setter Script twice.\n\n- On copy 1 (clean): keep as reference.\n- On copy 2 (working): read the script out loud once.\n- Black out a few words, read it again.\n- Keep blacking out more words and re-reading until you can get through sections 1–5 with most of the page blacked out.",
+   "isTask": true,
    "objectives": [
     "Memorise sections 1–5 by blacking out more and more of the script"
    ],
@@ -107,6 +134,7 @@ declare
    "title": "Day 1 · 14:30 · Quiz",
    "kind": "reading",
    "readingBody": "# Day 1 · 14:30–15:30 · Quiz\n\nTake the 50-question quiz. Target: 90%+.\n\nAny question you miss:\n\n- Find that line in the script or objection sheet.\n- Read that line out loud 5 times.",
+   "isTask": false,
    "objectives": [
     "Take the 50-question quiz. Target: 90%+"
    ],
@@ -727,6 +755,7 @@ declare
    "title": "Day 1 · 15:30 · Required Recordings",
    "kind": "reading",
    "readingBody": "# Day 1 · 15:30–17:00 · Required Recordings (Send by 17:00)\n\nRecord and send three videos (phone is fine):\n\n# 1. Full Script Run-Through\n\nYou reading sections 1–6 word-for-word, start to finish.\n\n# 2. Example Call Roleplay\n\nYou as Setter, imaginary Owner.\nRun a full call where the owner is an \"easy yes\" (no objections, just the core script).\n\n# 3. Objection Gauntlet\n\nYou answering objections 1, 2, 5, 11, and 12 in order.\nEach = one short answer from the sheet, then:\n\"That's exactly what [Closer Name] will run through with you properly on the planning call.\"",
+   "isTask": true,
    "objectives": [
     "Record and send three videos by 17:00"
    ],
@@ -746,6 +775,7 @@ declare
    "title": "Day 2 · 11:00 · Review with Sean",
    "kind": "reading",
    "readingBody": "# Day 2 · Friday 11:00–17:00 (Live With Sean)\n\nObjective: Clean up delivery, pressure-test objections, and certify you on the script.\n\n# 11:00–12:00 · Review\n\nWith Sean:\n\n- Review your quiz result.\n- Watch key parts of your 3 recordings.\n\nFix:\n\n- Any wording errors in sections 1–6.\n- Pacing (3–5 minute target call length).\n- Use of the bridge line.",
+   "isTask": true,
    "objectives": [
     "Clean up delivery with Sean: wording, pacing and the bridge line"
    ],
@@ -765,6 +795,7 @@ declare
    "title": "Day 2 · 12:00 · Live Script Roleplay",
    "kind": "reading",
    "readingBody": "# Day 2 · 12:00–13:00 · Live Script Roleplay\n\nRun the full script multiple times:\n\n- 1x \"easy yes\" call.\n- 1–2x \"maybe\" calls where Sean throws in 2–3 objections (use your sheet).\n\nYou must:\n\n- Stick to the script.\n- Answer each objection once, calmly.\n- Use the bridge line and go back to booking the time.\n\nThen take your break (13:00–13:30).",
+   "isTask": true,
    "objectives": [
     "Run the full script live with Sean: easy-yes and maybe calls"
    ],
@@ -784,6 +815,7 @@ declare
    "title": "Day 2 · 13:30 · Objection Drills",
    "kind": "reading",
    "readingBody": "# Day 2 · 13:30–14:30 · Objection Drills\n\nRapid-fire objection practice:\nSean throws any of the 12 objections in random order.\n\nYour job: one-line answer from the sheet + bridge line, no looking down.\n\nGoal: handle all 12 confidently without the paper.",
+   "isTask": true,
    "objectives": [
     "Handle all 12 objections confidently without the paper"
    ],
@@ -803,6 +835,7 @@ declare
    "title": "Day 2 · 14:30 · Notes & Handover",
    "kind": "reading",
    "readingBody": "# Day 2 · 14:30–15:30 · Notes & Handover\n\nPractice writing handover notes from mock calls:\n\n- Platforms\n- Midweek situation\n- Objections raised\n- Booked time\n\nStandard: Sean can understand the owner and what to lead with in under 10 seconds of reading.",
+   "isTask": true,
    "objectives": [
     "Write handover notes Sean can understand in under 10 seconds"
    ],
@@ -822,6 +855,7 @@ declare
    "title": "Day 2 · 15:30 · Certification Roleplays",
    "kind": "reading",
    "readingBody": "# Day 2 · 15:30–17:00 · Certification Roleplays\n\n2–3 full calls back-to-back (including at least one polite \"not now\").\n\nIf you hit standard on:\n\n- Script accuracy,\n- Objection handling,\n- Handover notes,\n\nthen you're cleared to start live calls next week on this script.",
+   "isTask": true,
    "objectives": [
     "Get certified on script accuracy, objection handling and handover notes"
    ],
@@ -837,248 +871,7 @@ declare
    "downloads": []
   }
  ],
- "checklist": [
-  {
-   "key": "sc-c1",
-   "section": "Day 1 · 11:00–11:30 · Orientation",
-   "label": "Watch Sean's Welcome / Role / Expectations video",
-   "lessonKey": "sc-welcome"
-  },
-  {
-   "key": "sc-c2",
-   "section": "Day 1 · 11:00–11:30 · Orientation",
-   "label": "Read the full Final Setter Script once, top to bottom",
-   "lessonKey": "sc-welcome"
-  },
-  {
-   "key": "sc-c3",
-   "section": "Day 1 · 11:00–11:30 · Orientation",
-   "label": "Read the Objection Sheet once, top to bottom",
-   "lessonKey": "sc-welcome"
-  },
-  {
-   "key": "sc-c4",
-   "section": "Day 1 · 11:30–12:30 · Script Reps",
-   "label": "Read the full script (sections 1–6) out loud 5 times",
-   "lessonKey": "sc-reps"
-  },
-  {
-   "key": "sc-c5",
-   "section": "Day 1 · 11:30–12:30 · Script Reps",
-   "label": "Section 1–2 (Opener + Interest Check) – out loud 5 more times",
-   "lessonKey": "sc-reps"
-  },
-  {
-   "key": "sc-c6",
-   "section": "Day 1 · 11:30–12:30 · Script Reps",
-   "label": "Section 4 (How it works + 4 rules + 72-night example) – out loud 5 more times",
-   "lessonKey": "sc-reps"
-  },
-  {
-   "key": "sc-c7",
-   "section": "Day 1 · 11:30–12:30 · Script Reps",
-   "label": "Section 5 (Planning-call close + \"two times\" line) – out loud 5 more times",
-   "lessonKey": "sc-reps"
-  },
-  {
-   "key": "sc-c8",
-   "section": "Day 1 · 12:30–13:00 · Training Video",
-   "label": "Watch the training video once all the way through",
-   "lessonKey": "sc-pitch"
-  },
-  {
-   "key": "sc-c9",
-   "section": "Day 1 · 12:30–13:00 · Training Video",
-   "label": "Write down the four rules in your own words",
-   "lessonKey": "sc-pitch"
-  },
-  {
-   "key": "sc-c10",
-   "section": "Day 1 · 12:30–13:00 · Training Video",
-   "label": "Write down the bridge line you use after objections",
-   "lessonKey": "sc-pitch"
-  },
-  {
-   "key": "sc-c11",
-   "section": "Day 1 · 13:30–14:30 · Blackout Memorisation",
-   "label": "Print the Final Setter Script twice",
-   "lessonKey": "sc-blackout"
-  },
-  {
-   "key": "sc-c12",
-   "section": "Day 1 · 13:30–14:30 · Blackout Memorisation",
-   "label": "Copy 1 (clean): keep as reference",
-   "lessonKey": "sc-blackout"
-  },
-  {
-   "key": "sc-c13",
-   "section": "Day 1 · 13:30–14:30 · Blackout Memorisation",
-   "label": "Copy 2 (working): read the script out loud once",
-   "lessonKey": "sc-blackout"
-  },
-  {
-   "key": "sc-c14",
-   "section": "Day 1 · 13:30–14:30 · Blackout Memorisation",
-   "label": "Black out a few words, read it again",
-   "lessonKey": "sc-blackout"
-  },
-  {
-   "key": "sc-c15",
-   "section": "Day 1 · 13:30–14:30 · Blackout Memorisation",
-   "label": "Keep blacking out more words and re-reading until you can get through sections 1–5 with most of the page blacked out",
-   "lessonKey": "sc-blackout"
-  },
-  {
-   "key": "sc-c16",
-   "section": "Day 1 · 14:30–15:30 · Quiz",
-   "label": "Took the 50-question quiz",
-   "lessonKey": "sc-quiz"
-  },
-  {
-   "key": "sc-c17",
-   "section": "Day 1 · 14:30–15:30 · Quiz",
-   "label": "Any question I missed: found that line in the script or objection sheet and read it out loud 5 times",
-   "lessonKey": "sc-quiz"
-  },
-  {
-   "key": "sc-c18",
-   "section": "Day 1 · 15:30–17:00 · Required Recordings (Send by 17:00)",
-   "label": "Full Script Run-Through: you reading sections 1–6 word-for-word, start to finish",
-   "lessonKey": "sc-recordings"
-  },
-  {
-   "key": "sc-c19",
-   "section": "Day 1 · 15:30–17:00 · Required Recordings (Send by 17:00)",
-   "label": "Example Call Roleplay: a full \"easy yes\" call, you as Setter, imaginary Owner",
-   "lessonKey": "sc-recordings"
-  },
-  {
-   "key": "sc-c20",
-   "section": "Day 1 · 15:30–17:00 · Required Recordings (Send by 17:00)",
-   "label": "Objection Gauntlet: objections 1, 2, 5, 11 and 12 in order, each one short answer from the sheet, then the bridge line",
-   "lessonKey": "sc-recordings"
-  },
-  {
-   "key": "sc-c21",
-   "section": "Day 1 · 15:30–17:00 · Required Recordings (Send by 17:00)",
-   "label": "Sent all three recordings by 17:00",
-   "lessonKey": "sc-recordings"
-  },
-  {
-   "key": "sc-c22",
-   "section": "Day 2 · 11:00–12:00 · Review",
-   "label": "Reviewed my quiz result with Sean",
-   "lessonKey": "sc-review"
-  },
-  {
-   "key": "sc-c23",
-   "section": "Day 2 · 11:00–12:00 · Review",
-   "label": "Watched key parts of my 3 recordings",
-   "lessonKey": "sc-review"
-  },
-  {
-   "key": "sc-c24",
-   "section": "Day 2 · 11:00–12:00 · Review",
-   "label": "Fixed any wording errors in sections 1–6",
-   "lessonKey": "sc-review"
-  },
-  {
-   "key": "sc-c25",
-   "section": "Day 2 · 11:00–12:00 · Review",
-   "label": "Fixed pacing (3–5 minute target call length)",
-   "lessonKey": "sc-review"
-  },
-  {
-   "key": "sc-c26",
-   "section": "Day 2 · 11:00–12:00 · Review",
-   "label": "Fixed use of the bridge line",
-   "lessonKey": "sc-review"
-  },
-  {
-   "key": "sc-c27",
-   "section": "Day 2 · 12:00–13:00 · Live Script Roleplay",
-   "label": "1x \"easy yes\" call",
-   "lessonKey": "sc-roleplay"
-  },
-  {
-   "key": "sc-c28",
-   "section": "Day 2 · 12:00–13:00 · Live Script Roleplay",
-   "label": "1–2x \"maybe\" calls where Sean throws in 2–3 objections",
-   "lessonKey": "sc-roleplay"
-  },
-  {
-   "key": "sc-c29",
-   "section": "Day 2 · 12:00–13:00 · Live Script Roleplay",
-   "label": "Stuck to the script",
-   "lessonKey": "sc-roleplay"
-  },
-  {
-   "key": "sc-c30",
-   "section": "Day 2 · 12:00–13:00 · Live Script Roleplay",
-   "label": "Answered each objection once, calmly",
-   "lessonKey": "sc-roleplay"
-  },
-  {
-   "key": "sc-c31",
-   "section": "Day 2 · 12:00–13:00 · Live Script Roleplay",
-   "label": "Used the bridge line and went back to booking the time",
-   "lessonKey": "sc-roleplay"
-  },
-  {
-   "key": "sc-c32",
-   "section": "Day 2 · 13:30–14:30 · Objection Drills",
-   "label": "Rapid-fire practice: one-line answer from the sheet + bridge line, no looking down",
-   "lessonKey": "sc-drills"
-  },
-  {
-   "key": "sc-c33",
-   "section": "Day 2 · 13:30–14:30 · Objection Drills",
-   "label": "Handled all 12 objections confidently without the paper",
-   "lessonKey": "sc-drills"
-  },
-  {
-   "key": "sc-c34",
-   "section": "Day 2 · 14:30–15:30 · Notes & Handover",
-   "label": "Practised writing handover notes from mock calls: platforms, midweek situation, objections raised, booked time",
-   "lessonKey": "sc-handover"
-  },
-  {
-   "key": "sc-c35",
-   "section": "Day 2 · 14:30–15:30 · Notes & Handover",
-   "label": "Sean can understand the owner and what to lead with in under 10 seconds of reading",
-   "lessonKey": "sc-handover"
-  },
-  {
-   "key": "sc-c36",
-   "section": "Day 2 · 15:30–17:00 · Certification Roleplays",
-   "label": "2–3 full calls back-to-back (including at least one polite \"not now\")",
-   "lessonKey": "sc-cert"
-  },
-  {
-   "key": "sc-c37",
-   "section": "Day 2 · 15:30–17:00 · Certification Roleplays",
-   "label": "Hit standard on script accuracy",
-   "lessonKey": "sc-cert"
-  },
-  {
-   "key": "sc-c38",
-   "section": "Day 2 · 15:30–17:00 · Certification Roleplays",
-   "label": "Hit standard on objection handling",
-   "lessonKey": "sc-cert"
-  },
-  {
-   "key": "sc-c39",
-   "section": "Day 2 · 15:30–17:00 · Certification Roleplays",
-   "label": "Hit standard on handover notes",
-   "lessonKey": "sc-cert"
-  },
-  {
-   "key": "sc-c40",
-   "section": "Day 2 · 15:30–17:00 · Certification Roleplays",
-   "label": "Cleared to start live calls on this script",
-   "lessonKey": "sc-cert"
-  }
- ]
+ "checklist": []
 }$draft$::jsonb;
   v_pitch jsonb;
   v_welcome jsonb;
@@ -1093,17 +886,17 @@ begin
 
   if v_course is null then
     insert into public.courses (title, description, is_demo, created_by, draft)
-    values ('Setter Call Training', 'Setter Onboarding Plan, Days 1–2: mastering one call and twelve objections. Work through each block in order and tick off the plan as you go.', false, v_admin, v_new);
+    values ('Setter Call Training', 'Setter Onboarding Plan, Days 1–2: mastering one call and twelve objections. Work through each block of the plan in order.', false, v_admin, v_new);
     raise notice 'Created "Setter Call Training" as a draft.';
     return;
   end if;
 
-  -- Keep the uploaded training video (lesson 3) and Sean's welcome video (lesson 1), if uploaded.
+  -- Keep the uploaded training video (lesson 4) and Sean's welcome video (lesson 1), if uploaded.
   select l into v_pitch from jsonb_array_elements(coalesce(v_old->'lessons', '[]'::jsonb)) l
   where l->>'title' ilike '%Anatomy of a Pitch%' and coalesce(l->>'videoRef', '') <> '' limit 1;
   if v_pitch is not null then
-    v_new := jsonb_set(v_new, '{lessons,2,videoRef}', v_pitch->'videoRef');
-    v_new := jsonb_set(v_new, '{lessons,2,videoSeconds}', coalesce(v_pitch->'videoSeconds', '0'::jsonb));
+    v_new := jsonb_set(v_new, '{lessons,3,videoRef}', v_pitch->'videoRef');
+    v_new := jsonb_set(v_new, '{lessons,3,videoSeconds}', coalesce(v_pitch->'videoSeconds', '0'::jsonb));
   end if;
   select l into v_welcome from jsonb_array_elements(coalesce(v_old->'lessons', '[]'::jsonb)) l
   where (l->>'key' = 'sc-welcome' or l->>'title' ilike '%Welcome%') and coalesce(l->>'videoRef', '') <> '' limit 1;
@@ -1112,16 +905,16 @@ begin
     v_new := jsonb_set(v_new, '{lessons,0,videoSeconds}', coalesce(v_welcome->'videoSeconds', '0'::jsonb));
   end if;
 
-  -- Every download already uploaded (e.g. the script PDF) goes on lesson 1, once each.
+  -- Every download already uploaded (e.g. the script PDF) goes on lesson 2 (read the script), once each.
   select coalesce(jsonb_agg(f order by n), '[]'::jsonb) into v_files
   from (select distinct on (f->>'ref') f, n
         from jsonb_array_elements(coalesce(v_old->'lessons', '[]'::jsonb)) with ordinality as l(l, n),
              jsonb_array_elements(coalesce(l->'downloads', '[]'::jsonb)) f
         order by f->>'ref', n) d;
-  v_new := jsonb_set(v_new, '{lessons,0,downloads}', v_files);
+  v_new := jsonb_set(v_new, '{lessons,1,downloads}', v_files);
 
   update public.courses
-  set draft = v_new, description = 'Setter Onboarding Plan, Days 1–2: mastering one call and twelve objections. Work through each block in order and tick off the plan as you go.', updated_at = now()
+  set draft = v_new, description = 'Setter Onboarding Plan, Days 1–2: mastering one call and twelve objections. Work through each block of the plan in order.', updated_at = now()
   where id = v_course;
-  raise notice 'Rebuilt the "Setter Call Training" draft. Check both videos are in place (lessons 1 and 3), preview, then publish.';
+  raise notice 'Rebuilt the "Setter Call Training" draft. Check both videos are in place (lessons 1 and 4), preview, then publish.';
 end $$;

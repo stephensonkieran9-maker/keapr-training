@@ -604,3 +604,12 @@ a.path-card:hover{border-color:var(--accent)}
 .checklist-ticks .mark{width:20px;flex:none;font-weight:800}
 .checklist-ticks .ok .mark{color:var(--ok,#1d7a3e)}
 .checklist-ticks .no{color:var(--muted)}
+
+/* Task lessons: one "I've done this" tick */
+.task-tick{padding:0}
+.task-check{display:flex;gap:16px;align-items:center;padding:20px 22px;cursor:pointer;border-radius:var(--r)}
+.task-check:hover{background:var(--bg)}
+.task-check input{width:28px;height:28px;flex:none;margin:0;accent-color:var(--accent,#1f5c3a);cursor:pointer}
+.task-check b{display:block;font-size:18px}
+.task-check small{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+.task-check.saving{opacity:.7;cursor:progress}

@@ -5,7 +5,7 @@ import type { CourseDraft } from "../lib/admin/draft.ts";
 
 const q = (correctIndex: number, options = ["A", "B", "C"]) => ({ key: "k", prompt: "P", options, correctIndex, explanation: "E" });
 const lesson = (questions: ReturnType<typeof q>[], passPercent = 80) => ({
-  key: "l", title: "L", kind: "video" as const, readingBody: "", objectives: [], notes: "", videoRef: "", videoSeconds: 60, passPercent, requiredWatchPercent: 90,
+  key: "l", title: "L", kind: "video" as const, readingBody: "", isTask: false, objectives: [], notes: "", videoRef: "", videoSeconds: 60, passPercent, requiredWatchPercent: 90,
   isRequired: true, estimatedMinutes: null, hasQuiz: true, questions, downloads: [],
 });
 const draft: CourseDraft = { lessons: [lesson([q(0), q(1), q(2), q(0), q(1)]), lesson([q(1)])] };

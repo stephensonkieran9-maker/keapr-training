@@ -123,3 +123,9 @@ test("checklist items can belong to a lesson; course-level text leaves them alon
   assert.deepEqual(merged.map((i) => [i.label, i.lessonKey ?? null]), [["General item", null], ["New lesson item", "l-2"]]);
   assert.equal(normaliseDraft({ lessons: [], checklist: [{ label: "x", lessonKey: "l-9" }] }).checklist![0].lessonKey, "l-9");
 });
+
+test("task lessons: the flag survives normalising and defaults to off", async () => {
+  const { normaliseDraft } = await import("../lib/admin/draft.ts");
+  assert.equal(normaliseDraft({ lessons: [{ title: "Old" }] }).lessons[0].isTask, false);
+  assert.equal(normaliseDraft({ lessons: [{ title: "Reps", kind: "reading", readingBody: "x", isTask: true }] }).lessons[0].isTask, true);
+});

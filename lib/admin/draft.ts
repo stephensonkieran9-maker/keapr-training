@@ -36,6 +36,9 @@ export interface DraftLesson {
   kind: LessonKind;
   /** The text a reading lesson shows. Ignored for video lessons. */
   readingBody: string;
+  /** Reading lessons only: the learner ticks "I've done this" (a task they
+   * do outside the app) instead of "I've read this". */
+  isTask: boolean;
   objectives: string[];
   notes: string;
   videoRef: string;
@@ -129,6 +132,7 @@ export function emptyLesson(): DraftLesson {
     title: "",
     kind: "video",
     readingBody: "",
+    isTask: false,
     objectives: [],
     notes: "",
     videoRef: "",
@@ -161,6 +165,7 @@ export function normaliseDraft(raw: unknown): CourseDraft {
       title: String(l.title ?? ""),
       kind: l.kind === "reading" ? "reading" : "video",
       readingBody: String(l.readingBody ?? ""),
+      isTask: l.isTask === true,
       objectives: Array.isArray(l.objectives) ? l.objectives.map(String) : [],
       notes: String(l.notes ?? ""),
       videoRef: String(l.videoRef ?? ""),

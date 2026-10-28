@@ -220,9 +220,9 @@ function LessonEditor({
         <span className={`lesson-title${lesson.title ? "" : " placeholder"}`}>{lesson.title || "Untitled lesson"}</span>
         <span className="lesson-meta">
           {isReading
-            ? `Reading${lesson.estimatedMinutes ? `, ${lesson.estimatedMinutes} min` : ""} · `
+            ? `${lesson.isTask ? "Task" : "Reading"}${lesson.estimatedMinutes ? `, ${lesson.estimatedMinutes} min` : ""} · `
             : lesson.videoSeconds ? `${minutes}:${String(seconds).padStart(2, "0")} video · ` : ""}
-          {lesson.hasQuiz ? `${filledQuestions} question${filledQuestions === 1 ? "" : "s"}` : isReading ? "Read only, no quiz" : "Watch only, no quiz"}
+          {lesson.hasQuiz ? `${filledQuestions} question${filledQuestions === 1 ? "" : "s"}` : isReading ? (lesson.isTask ? "Tick when done" : "Read only, no quiz") : "Watch only, no quiz"}
         </span>
       </summary>
 
@@ -265,6 +265,11 @@ function LessonEditor({
             <label htmlFor={id("reading")}>Reading text</label>
             <textarea id={id("reading")} rows={14} value={lesson.readingBody} onChange={(e) => onChange({ readingBody: e.target.value })} />
             <p className="hint">Leave a blank line between paragraphs. Start a line with &quot;# &quot; for a heading, or &quot;- &quot; for a bullet point.</p>
+            <label className="check" style={{ marginTop: 8 }}>
+              <input type="checkbox" checked={lesson.isTask} onChange={(e) => onChange({ isTask: e.target.checked })} />
+              This is a task: staff tick &quot;I&apos;ve done this&quot; instead of &quot;I&apos;ve read this&quot;
+            </label>
+            <p className="hint">Use it for things done outside the app, like reading the script out loud, recordings or roleplays.</p>
           </div>
         )}
 
