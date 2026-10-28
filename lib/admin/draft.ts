@@ -50,8 +50,64 @@ export interface DraftLesson {
   downloads: DraftDownload[];
 }
 
+/** One tick box on the course checklist (e.g. an onboarding plan). Learners
+ * tick these themselves; ticks are tracked but don't block progress. */
+export interface DraftChecklistItem {
+  key: string;
+  /** Heading the item sits under, e.g. "Day 1 · 11:00–11:30 · Orientation". */
+  section: string;
+  label: string;
+  /** Key of the draft lesson this item shows in. Missing = course page only. */
+  lessonKey?: string;
+}
+
 export interface CourseDraft {
   lessons: DraftLesson[];
+  /** Optional course checklist. Missing or empty = no checklist. */
+  checklist?: DraftChecklistItem[];
+}
+
+/** Checklist as editable text: "# " lines are headings, other lines are items. */
+export function checklistToText(items: DraftChecklistItem[] = []): string {
+  const out: string[] = [];
+  let section: string | null = null;
+  for (const it of items) {
+    if (it.section !== section) {
+      if (out.length) out.push("");
+      if (it.section) out.push(`# ${it.section}`);
+      section = it.section;
+    }
+    out.push(it.label);
+  }
+  return out.join("\n");
+}
+
+/** Parses checklist text back into items. Keeps keys for unchanged items. */
+export function checklistFromText(text: string, previous: DraftChecklistItem[] = [], lessonKey?: string): DraftChecklistItem[] {
+  const items: DraftChecklistItem[] = [];
+  let section = "";
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith("#")) {
+      section = line.replace(/^#+\s*/, "").slice(0, 160);
+      continue;
+    }
+    const label = line.replace(/^[-•*]\s+/, "").slice(0, 300);
+    const same = previous.find((p) => p.section === section && p.label === label && !items.some((i) => i.key === p.key));
+    items.push({ key: same?.key ?? newKey("c"), section, label, ...(lessonKey ? { lessonKey } : {}) });
+  }
+  return items;
+}
+
+/** Replaces the items for one lesson (or, with lessonKey undefined, the
+ * course-level items), keeping everything else in place. */
+export function mergeChecklist(all: DraftChecklistItem[] = [], lessonKey: string | undefined, replacement: DraftChecklistItem[]): DraftChecklistItem[] {
+  const belongs = (i: DraftChecklistItem) => (lessonKey ? i.lessonKey === lessonKey : !i.lessonKey);
+  const firstIndex = all.findIndex(belongs);
+  const others = all.filter((i) => !belongs(i));
+  const at = firstIndex < 0 ? others.length : all.slice(0, firstIndex).filter((i) => !belongs(i)).length;
+  return [...others.slice(0, at), ...replacement, ...others.slice(at)];
 }
 
 export const DEFAULT_PASS_PERCENT = 80;
@@ -90,7 +146,16 @@ export function emptyLesson(): DraftLesson {
 /** Coerces stored JSON (possibly old or partial) into a valid draft shape. */
 export function normaliseDraft(raw: unknown): CourseDraft {
   const lessons = Array.isArray((raw as CourseDraft | null)?.lessons) ? (raw as CourseDraft).lessons : [];
+  const checklist = Array.isArray((raw as CourseDraft | null)?.checklist) ? (raw as CourseDraft).checklist! : [];
   return {
+    checklist: checklist
+      .filter((c) => c && String(c.label ?? "").trim())
+      .map((c) => ({
+        key: typeof c.key === "string" && c.key ? c.key : newKey("c"),
+        section: String(c.section ?? "").trim().slice(0, 160),
+        label: String(c.label).trim().slice(0, 300),
+        ...(typeof c.lessonKey === "string" && c.lessonKey ? { lessonKey: c.lessonKey } : {}),
+      })),
     lessons: lessons.map((l) => ({
       key: typeof l.key === "string" && l.key ? l.key : newKey("l"),
       title: String(l.title ?? ""),
@@ -137,6 +202,10 @@ function clampPercent(v: unknown, fallback: number): number {
 /** Removes blank options and objectives, keeping the correct answer pointed at the same text. */
 export function cleanDraft(draft: CourseDraft): CourseDraft {
   return {
+    // Items tied to a lesson that's been removed are dropped with it.
+    checklist: (draft.checklist ?? [])
+      .map((c) => ({ ...c, section: c.section.trim(), label: c.label.trim() }))
+      .filter((c) => c.label && (!c.lessonKey || draft.lessons.some((l) => l.key === c.lessonKey))),
     lessons: draft.lessons.map((l) => ({
       ...l,
       title: l.title.trim(),

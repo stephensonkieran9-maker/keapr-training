@@ -14,6 +14,8 @@ export interface LessonQuestion {
 
 export interface LessonView {
   enrolmentId: string;
+  /** Published course version (for the checklist). Empty in admin preview. */
+  courseVersionId: string;
   courseId: string;
   courseTitle: string;
   isDemo: boolean;
@@ -31,6 +33,8 @@ export interface LessonView {
     /** "reading" = no video: read the text, confirm, then the quiz. */
     kind: "video" | "reading";
     readingBody: string | null;
+    /** Has its own checklist items (shown under the lesson). */
+    hasChecklist?: boolean;
   };
   video: { kind: "file"; src: string } | { kind: "placeholder" };
   state: LessonStep["state"];
@@ -145,6 +149,7 @@ export async function getLessonView(lessonId: string): Promise<LessonView | null
 
   return {
     enrolmentId: enrolment.id,
+    courseVersionId: version.id,
     courseId: version.course_id,
     courseTitle: version.title,
     isDemo: version.is_demo,

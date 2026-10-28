@@ -266,9 +266,17 @@ async function draftFromVersion(versionId: string): Promise<CourseDraft> {
   type Opt = { id: string; position: number; label: string };
   type Q = { id: string; position: number; prompt: string; explanation: string; quiz_options: Opt[]; quiz_answer_keys: { correct_option_id: string } | { correct_option_id: string }[] | null };
 
+  // Course checklist (migration 0015); none before then.
+  const { data: checklistRows } = await admin
+    .from("course_checklist_items")
+    .select("section, label, position, lesson_id")
+    .eq("course_version_id", versionId)
+    .order("position");
+  const lessonKeys = new Map<string, string>();
+
   return normaliseDraft({
     lessons: (lessons ?? []).map((l) => ({
-      key: newKey("l"),
+      key: lessonKeys.set(String(l.id), newKey("l")).get(String(l.id))!,
       title: l.title,
       kind: l.kind === "reading" ? "reading" : "video",
       readingBody: l.reading_body ?? "",
@@ -301,6 +309,13 @@ async function draftFromVersion(versionId: string): Promise<CourseDraft> {
             correctIndex: Math.max(0, opts.findIndex((o) => o.id === keyRow?.correct_option_id)),
           };
         }),
+    })),
+    // After lessons, so each item can find its lesson's new key.
+    checklist: (checklistRows ?? []).map((c) => ({
+      key: newKey("c"),
+      section: c.section ?? "",
+      label: c.label,
+      ...(c.lesson_id && lessonKeys.has(String(c.lesson_id)) ? { lessonKey: lessonKeys.get(String(c.lesson_id)) } : {}),
     })),
   });
 }

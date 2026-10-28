@@ -10,6 +10,18 @@ import { cleanDraft } from "@/lib/admin/draft";
 import { previewQuestions } from "@/lib/admin/preview";
 import { resolveVideo, type LessonView } from "@/lib/lesson";
 import { signDownloads } from "@/lib/downloads";
+import { CourseChecklist, type ChecklistSectionView } from "@/components/CourseChecklist";
+
+function groupDraft(items: { key: string; section: string; label: string }[]): ChecklistSectionView[] {
+  const out: ChecklistSectionView[] = [];
+  for (const i of items) {
+    const last = out[out.length - 1];
+    const item = { id: i.key, label: i.label, ticked: false };
+    if (last && last.title === i.section) last.items.push(item);
+    else out.push({ title: i.section, items: [item] });
+  }
+  return out;
+}
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Preview · Keapr Training" };
@@ -50,8 +62,10 @@ export default async function PreviewPage({
 
   const index = Math.min(total, Math.max(1, Number(sp.lesson) || 1)) - 1;
   const l = draft.lessons[index];
+  const lessonChecklist = (draft.checklist ?? []).filter((c) => c.lessonKey === l.key);
   const view: LessonView = {
     enrolmentId: "preview",
+    courseVersionId: "",
     courseId: id,
     courseTitle: course.title,
     isDemo: course.isDemo,
@@ -67,6 +81,7 @@ export default async function PreviewPage({
       hasQuiz: l.hasQuiz && l.questions.length > 0,
       kind: l.kind,
       readingBody: l.kind === "reading" ? l.readingBody : null,
+      hasChecklist: lessonChecklist.length > 0,
     },
     video: l.kind === "reading" ? { kind: "placeholder" } : await resolveVideo(l.videoRef),
     state: "available",
@@ -99,6 +114,16 @@ export default async function PreviewPage({
           <LessonLinks notes={view.lesson.notes} downloads={view.resources} />
           {/* key resets the player and quiz when moving between lessons */}
           <LessonClient key={index} view={view} preview={{ courseId: id, lessonIndex: index }} />
+
+          {lessonChecklist.length > 0 && (
+            <section className="card" aria-labelledby="lesson-checklist-title">
+              <div className="ov-card-head">
+                <h2 id="lesson-checklist-title" style={{ fontSize: 18 }}>Checklist</h2>
+                <span className="hint">Preview: ticks aren&apos;t saved.</span>
+              </div>
+              <CourseChecklist key={`c${index}`} preview sections={groupDraft(lessonChecklist)} />
+            </section>
+          )}
 
           {(view.lesson.objectives.length > 0 || view.lesson.notes) && (
             <section className="card lesson-info">

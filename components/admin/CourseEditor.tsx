@@ -4,6 +4,9 @@ import { useEffect, useState, useTransition } from "react";
 import { createFileUpload, createVideoUpload, publishCourse, saveCourseDraft, type ActionState } from "@/lib/admin/actions";
 import { getBrowserClient } from "@/lib/supabase/browser";
 import {
+  checklistFromText,
+  checklistToText,
+  mergeChecklist,
   correctNeeded,
   downloadKind,
   emptyLesson,
@@ -11,6 +14,7 @@ import {
   emptyQuestion,
   publishProblems,
   type CourseDraft,
+  type DraftChecklistItem,
   type DraftLesson,
   type DraftQuestion,
 } from "@/lib/admin/draft";
@@ -46,10 +50,11 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
   }
 
   const updateLesson = (key: string, patch: Partial<DraftLesson>) =>
-    change((d) => ({ lessons: d.lessons.map((l) => (l.key === key ? { ...l, ...patch } : l)) }));
+    change((d) => ({ ...d, lessons: d.lessons.map((l) => (l.key === key ? { ...l, ...patch } : l)) }));
 
   const updateQuestion = (lessonKey: string, qKey: string, patch: Partial<DraftQuestion>) =>
     change((d) => ({
+      ...d,
       lessons: d.lessons.map((l) =>
         l.key === lessonKey ? { ...l, questions: l.questions.map((q) => (q.key === qKey ? { ...q, ...patch } : q)) } : l,
       ),
@@ -57,7 +62,7 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
 
   function addLesson() {
     const l = emptyLesson();
-    change((d) => ({ lessons: [...d.lessons, l] }));
+    change((d) => ({ ...d, lessons: [...d.lessons, l] }));
     setOpenKey(l.key);
   }
 
@@ -68,7 +73,7 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
       if (i < 0 || j < 0 || j >= d.lessons.length) return d;
       const lessons = [...d.lessons];
       [lessons[i], lessons[j]] = [lessons[j], lessons[i]];
-      return { lessons };
+      return { ...d, lessons };
     });
   }
 
@@ -76,7 +81,7 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
     const l = draft.lessons.find((x) => x.key === key);
     const label = l?.title ? `"${l.title}"` : "this lesson";
     if (!window.confirm(`Remove ${label}? Its quiz questions are removed too.`)) return;
-    change((d) => ({ lessons: d.lessons.filter((x) => x.key !== key) }));
+    change((d) => ({ ...d, lessons: d.lessons.filter((x) => x.key !== key) }));
   }
 
   function save() {
@@ -114,7 +119,7 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
       <div className="sec-head" style={{ marginBottom: 0 }}>
         <div>
           <h2>Lessons</h2>
-          <p>Learners take these in order. Each has a video and a quiz they must pass to unlock the next.</p>
+          <p>Learners take these in order. Each has a video or reading, and usually a quiz they must pass to unlock the next.</p>
         </div>
         <button type="button" className="btn btn-ghost" onClick={addLesson}>+ Add lesson</button>
       </div>
@@ -136,8 +141,27 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
           onRemoveQuestion={(qKey) => updateLesson(lesson.key, { questions: lesson.questions.filter((q) => q.key !== qKey) })}
           onMove={(dir) => moveLesson(lesson.key, dir)}
           onRemove={() => removeLesson(lesson.key)}
+          checklist={(draft.checklist ?? []).filter((c) => c.lessonKey === lesson.key)}
+          onChecklistChange={(items) => change((d) => ({ ...d, checklist: mergeChecklist(d.checklist, lesson.key, items) }))}
         />
       ))}
+
+      <section className="card form-stack" aria-labelledby="checklist-title">
+        <div>
+          <h2 id="checklist-title" style={{ fontSize: 18, margin: 0 }}>Checklist (optional)</h2>
+          <p className="hint" style={{ margin: "4px 0 0" }}>
+            Tick boxes for things done outside the app (reading out loud, recordings, roleplays). Every item shows on the course page;
+            items added inside a lesson also show on that lesson. Learners tick them off themselves; you can see their ticks on their
+            Staff page. Ticks don&apos;t lock or unlock anything.
+          </p>
+        </div>
+        <ChecklistField
+          id="courseChecklist"
+          label="Course page checklist items"
+          items={(draft.checklist ?? []).filter((c) => !c.lessonKey)}
+          onChange={(items) => change((d) => ({ ...d, checklist: mergeChecklist(d.checklist, undefined, items) }))}
+        />
+      </section>
 
       {result?.error && (
         <div className="notice error" role="alert">
@@ -165,7 +189,10 @@ export function CourseEditor({ courseId, initialTitle, initialDescription, initi
 
 function LessonEditor({
   courseId, lesson, index, count, open, onToggle, onChange, onQuestionChange, onAddQuestion, onRemoveQuestion, onMove, onRemove,
+  checklist, onChecklistChange,
 }: {
+  checklist: DraftChecklistItem[];
+  onChecklistChange: (items: DraftChecklistItem[]) => void;
   courseId: string;
   lesson: DraftLesson;
   index: number;
@@ -297,6 +324,14 @@ function LessonEditor({
           <DownloadsEditor courseId={courseId} lesson={lesson} onChange={(downloads) => onChange({ downloads })} />
         </div>
 
+        <ChecklistField
+          id={id("checklist")}
+          label="Checklist for this lesson (optional)"
+          items={checklist}
+          lessonKey={lesson.key}
+          onChange={onChecklistChange}
+        />
+
         <label className="check">
           <input
             type="checkbox"
@@ -407,6 +442,32 @@ function LessonEditor({
 }
 
 const MAX_UPLOAD_MB = 50;
+
+/** Checklist edited as text: one item per line, "# " lines are headings. */
+function ChecklistField({ id, label, items, lessonKey, onChange }: {
+  id: string; label: string; items: DraftChecklistItem[]; lessonKey?: string; onChange: (items: DraftChecklistItem[]) => void;
+}) {
+  const [text, setText] = useState(() => checklistToText(items));
+  return (
+    <div className="field">
+      <label htmlFor={id}>{label}</label>
+      <textarea
+        id={id}
+        rows={lessonKey ? 5 : 8}
+        value={text}
+        placeholder={"# Day 1 · Orientation\nRead the full script once, top to bottom"}
+        onChange={(e) => {
+          setText(e.target.value);
+          onChange(checklistFromText(e.target.value, items, lessonKey));
+        }}
+      />
+      <p className="hint">
+        One tick box per line. Start a line with &quot;# &quot; for a heading. {items.length} item{items.length === 1 ? "" : "s"}.
+        {lessonKey ? " Shown on this lesson and the course page; ticks don't lock anything." : ""}
+      </p>
+    </div>
+  );
+}
 
 function VideoUpload({ courseId, lesson, onUploaded }: { courseId: string; lesson: DraftLesson; onUploaded: (ref: string, seconds: number) => void }) {
   const [status, setStatus] = useState<string | null>(null);

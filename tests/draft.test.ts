@@ -56,7 +56,7 @@ test("normalising junk produces a safe draft", () => {
   assert.equal(d.lessons[0].title, "5");
   assert.equal(d.lessons[0].passPercent, 80);
   assert.equal(d.lessons[0].questions[0].correctIndex, 0);
-  assert.deepEqual(normaliseDraft(null), { lessons: [] });
+  assert.deepEqual(normaliseDraft(null), { checklist: [], lessons: [] });
 });
 
 test("watch-only lessons publish without questions; quiz lessons still need one", async () => {
@@ -95,4 +95,31 @@ test("reading lessons need text and a reading time, not a video", async () => {
   assert.ok(!problems.some((p) => p.includes("video length")));
   assert.equal(normaliseDraft({ lessons: [{ title: "Old" }] }).lessons[0].kind, "video");
   assert.equal(normaliseDraft({ lessons: [{ title: "R", kind: "reading", readingBody: "x" }] }).lessons[0].kind, "reading");
+});
+
+test("checklist text round-trips: headings group items and keys survive edits", async () => {
+  const { checklistFromText, checklistToText, normaliseDraft, cleanDraft } = await import("../lib/admin/draft.ts");
+  const items = checklistFromText("# Day 1 · Orientation\nWatch the welcome video\n- Read the script once\n\n# Day 2\nCertification roleplays\n");
+  assert.deepEqual(items.map((i) => [i.section, i.label]), [
+    ["Day 1 · Orientation", "Watch the welcome video"],
+    ["Day 1 · Orientation", "Read the script once"],
+    ["Day 2", "Certification roleplays"],
+  ]);
+  assert.equal(checklistToText(items), "# Day 1 · Orientation\nWatch the welcome video\nRead the script once\n\n# Day 2\nCertification roleplays");
+  const edited = checklistFromText("# Day 1 · Orientation\nWatch the welcome video\nNew item", items);
+  assert.equal(edited[0].key, items[0].key);
+  assert.deepEqual(normaliseDraft({ lessons: [] }).checklist, []);
+  assert.equal(cleanDraft({ lessons: [], checklist: [{ key: "k", section: " S ", label: "  " }] }).checklist!.length, 0);
+});
+
+test("checklist items can belong to a lesson; course-level text leaves them alone", async () => {
+  const { checklistFromText, checklistToText, mergeChecklist, normaliseDraft } = await import("../lib/admin/draft.ts");
+  const lessonItems = checklistFromText("# Day 1 · Recordings\nFull script run-through", [], "l-2");
+  assert.equal(lessonItems[0].lessonKey, "l-2");
+  const course = checklistFromText("General item", []);
+  const all = [...course, ...lessonItems];
+  assert.equal(checklistToText(all.filter((i) => !i.lessonKey)), "General item");
+  const merged = mergeChecklist(all, "l-2", checklistFromText("New lesson item", [], "l-2"));
+  assert.deepEqual(merged.map((i) => [i.label, i.lessonKey ?? null]), [["General item", null], ["New lesson item", "l-2"]]);
+  assert.equal(normaliseDraft({ lessons: [], checklist: [{ label: "x", lessonKey: "l-9" }] }).checklist![0].lessonKey, "l-9");
 });

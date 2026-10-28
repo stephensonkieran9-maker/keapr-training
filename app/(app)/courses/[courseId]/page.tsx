@@ -8,6 +8,8 @@ import { loadLearnerProgress } from "@/lib/learner-progress";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatShortDate, percent } from "@/lib/format";
 import { nextCourseAfter } from "@/lib/progress";
+import { groupChecklist, loadChecklist } from "@/lib/checklist";
+import { CourseChecklist } from "@/components/CourseChecklist";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,7 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
   const pct = percent(summary.lessonsPassed, summary.lessonCount);
   const completedOn = enrolment.completedAt;
   const nextCourse = summary.status === "completed" ? nextCourseAfter(computed, courseId) : null;
+  const checklist = enrolment.versionId ? await loadChecklist(supabase, enrolment.versionId, enrolment.enrolmentId) : [];
 
   return (
     <div className="ov">
@@ -89,6 +92,18 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
         </div>
         <ProgressBar label="Lessons passed" value={pct} valueLabel={`${summary.lessonsPassed} of ${summary.lessonCount}`} />
       </section>
+
+      {checklist.length > 0 && (
+        <section className="card" aria-labelledby="checklist-title">
+          <div className="ov-card-head">
+            <h2 id="checklist-title">Checklist</h2>
+            <span className="hint">Tick things off as you do them. This doesn&apos;t lock or unlock lessons.</span>
+          </div>
+          <CourseChecklist
+            sections={groupChecklist(checklist).map((sec) => ({ title: sec.title, items: sec.items.map((i) => ({ id: i.id, label: i.label, ticked: Boolean(i.tickedAt) })) }))}
+          />
+        </section>
+      )}
 
       <section className="panel" aria-labelledby="lessons-title">
         <div className="panel-head">

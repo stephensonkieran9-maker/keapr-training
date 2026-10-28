@@ -87,6 +87,10 @@ SQL Editor → paste `supabase/migrations/0013_activity_and_timings.sql` → Run
 
 SQL Editor → paste `supabase/migrations/0014_reading_lessons.sql` → Run (after 0013). Adds a **Lesson type** choice to each lesson in the course builder: **Video** or **Reading (no video)**. A reading lesson shows its text; staff tick **I've read this** to unlock the quiz (or to finish the lesson if it has no quiz). The tick is checked on the server, like the video gate. Set a reading time so the dashboard shows how long it takes.
 
+## 18. Run the fifteenth migration (checklists)
+
+SQL Editor → paste `supabase/migrations/0015_course_checklists.sql` → Run (after 0014). Adds **checklists**: tick boxes for things done outside the app, like reading out loud, recordings and roleplays. Add them in the course builder, either for the whole course (bottom of the page) or inside a lesson. Every item shows on the course page, and lesson items also show on that lesson. Staff tick them off themselves and you can see their ticks on their course detail page under Staff. Ticks are for tracking only: they never lock or unlock anything. A reading lesson with no quiz but its own checklist shows **Mark lesson as done** instead of **I've read this**.
+
 ## Inviting staff
 
 Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).

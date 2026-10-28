@@ -7,6 +7,9 @@ import { LessonClient } from "@/components/lesson/LessonClient";
 import { getLessonView } from "@/lib/lesson";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { ComingSoon } from "@/components/ComingSoon";
+import { CourseChecklist } from "@/components/CourseChecklist";
+import { groupChecklist, loadChecklist } from "@/lib/checklist";
+import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +21,9 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
   const view = await getLessonView(lessonId);
   if (!view) notFound();
   const { lesson } = view;
+  // This lesson's checklist items (tracking only, never locks anything).
+  const checklist = (await loadChecklist(await createClient(), view.courseVersionId, view.enrolmentId)).filter((i) => i.lessonId === lesson.id);
+  lesson.hasChecklist = checklist.length > 0;
 
   return (
     <div className="lesson-page" id="lesson-top">
@@ -47,6 +53,18 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
             </section>
           ) : (
             <LessonClient view={view} />
+          )}
+
+          {view.state !== "locked" && checklist.length > 0 && (
+            <section className="card" aria-labelledby="lesson-checklist-title">
+              <div className="ov-card-head">
+                <h2 id="lesson-checklist-title" style={{ fontSize: 18 }}>Checklist</h2>
+                <span className="hint">Tick things off as you do them. This doesn&apos;t lock or unlock anything.</span>
+              </div>
+              <CourseChecklist
+                sections={groupChecklist(checklist).map((sec) => ({ title: sec.title, items: sec.items.map((i) => ({ id: i.id, label: i.label, ticked: Boolean(i.tickedAt) })) }))}
+              />
+            </section>
           )}
 
           {(lesson.objectives.length > 0 || lesson.notes || view.resources.length > 0) && (

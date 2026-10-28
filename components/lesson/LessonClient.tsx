@@ -90,6 +90,8 @@ function ReadingLesson({ view, preview }: { view: LessonView; preview?: PreviewM
   const [completion, setCompletion] = useState<Completion>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  // A reading lesson with no quiz but its own checklist is a list of tasks.
+  const taskLesson = !lesson.hasQuiz && Boolean(lesson.hasChecklist);
 
   function confirm() {
     setError(null);
@@ -121,11 +123,15 @@ function ReadingLesson({ view, preview }: { view: LessonView; preview?: PreviewM
         <section className="card quiz quiz-locked" aria-live="polite">
           <span className="lock-badge" aria-hidden="true"><Icon name="lock" /></span>
           <div>
-            <h2>{lesson.hasQuiz ? "Read everything above to unlock the quiz" : "Read everything above to finish this lesson"}</h2>
-            <p className="muted">Include any downloads attached to this lesson. Confirm once you&apos;ve read it all.</p>
+            <h2>{lesson.hasQuiz ? "Read everything above to unlock the quiz" : taskLesson ? "Mark this lesson as done when you've finished" : "Read everything above to finish this lesson"}</h2>
+            <p className="muted">
+              {taskLesson
+                ? "Tick off the checklist below as you go, then mark the lesson as done."
+                : "Include any downloads attached to this lesson. Confirm once you've read it all."}
+            </p>
             {error && <p className="form-error" role="alert" style={{ marginTop: 8 }}>{error}</p>}
             <button type="button" className="btn btn-primary btn-sm" style={{ marginTop: 10 }} onClick={confirm} disabled={pending}>
-              {pending ? "Saving…" : "I've read this"}
+              {pending ? "Saving…" : taskLesson ? "Mark lesson as done" : "I've read this"}
             </button>
           </div>
         </section>
