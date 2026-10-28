@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AssignCourseForm } from "@/components/admin/AssignCourseForm";
 import { SignInLinkForm } from "@/components/admin/SignInLinkForm";
+import { SetPasswordForm } from "@/components/admin/SetPasswordForm";
+import { DeleteStaffForm } from "@/components/admin/DeleteStaffForm";
 import { ProgressBar } from "@/components/ProgressBar";
 import { requireAdmin } from "@/lib/auth";
 import { timed } from "@/lib/timing";
@@ -115,7 +117,10 @@ export default async function StaffMemberPage({
             </dl>
             <div style={{ marginTop: 14 }}>
               {person.isActive ? (
-                <SignInLinkForm userId={person.id} invited={person.status === "invited"} />
+                <div className="form-stack">
+                  <SignInLinkForm userId={person.id} invited={person.status === "invited"} />
+                  <SetPasswordForm userId={person.id} />
+                </div>
               ) : (
                 <p className="hint" style={{ margin: 0 }}>Reactivate the account to send a sign-in link.</p>
               )}
@@ -144,6 +149,13 @@ export default async function StaffMemberPage({
               </p>
             </div>
           </section>
+
+          {!isMe && (
+            <section className="card danger-zone">
+              <h2>Delete account</h2>
+              <DeleteStaffForm userId={person.id} email={person.email} name={person.fullName} />
+            </section>
+          )}
         </div>
       </div>
     </>

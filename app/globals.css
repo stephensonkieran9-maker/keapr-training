@@ -631,3 +631,10 @@ a.path-card:hover{border-color:var(--accent)}
 .qr-sub{font-size:13px;margin-top:2px}
 .qr-score{font-weight:700;white-space:nowrap}
 .qr-score small{font-weight:500;color:var(--muted)}
+
+/* Staff page: delete account */
+.danger-zone{border-color:#e3b9b2}
+:root[data-mode="dark"] .danger-zone{border-color:#7a3a30}
+.danger-zone h2{color:#9a3326}
+:root[data-mode="dark"] .danger-zone h2{color:#f2b8ae}
+.btn-danger:disabled{opacity:.5;cursor:not-allowed}

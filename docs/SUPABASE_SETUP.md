@@ -95,9 +95,13 @@ SQL Editor → paste `supabase/migrations/0015_course_checklists.sql` → Run (a
 
 SQL Editor → paste `supabase/migrations/0016_task_lessons.sql` → Run (after 0015). The course builder's **Lesson type** gets a third choice, **Task** (next to Video and Reading). A task lesson ends with one **I've done this** tick instead of **I've read this**, for things done outside the app like reading out loud, recordings or roleplays. Ticking it completes the lesson (or unlocks its quiz) and opens the next one, and you can see when it was ticked on their course detail page.
 
+## 20. Run the seventeenth migration (deleting people)
+
+SQL Editor → paste `supabase/migrations/0017_delete_user.sql` → Run (after 0016). Adds **Delete account** to each person's Staff page. It removes their sign-in account and all their training (assignments, progress, quiz attempts, results, checklist ticks), so they no longer appear on Staff or in reports. Courses they created or published stay, credited to you. The audit log keeps a record of who was deleted and by whom. You can't delete yourself or the only active admin. To keep someone's history instead, deactivate them.
+
 ## Inviting staff
 
-Admin → Staff → **Add someone** creates the account and gives you a one-time link to send them (email, WhatsApp, Slack). No email service is needed. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).
+Admin → Staff → **Add someone** creates the account. Either get a one-time link to send them (email, WhatsApp, Slack) so they choose their own password, or choose **Set a password for them now** and give them the password yourself. No email service is needed. You can also set a new password for anyone from their Staff page. Links expire after the time set in Authentication → Providers → Email → *Email OTP Expiration* (1 hour by default; set it to 86400 for 24 hours).
 
 ## Optional: password reset emails
 

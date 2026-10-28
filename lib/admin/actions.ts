@@ -42,9 +42,40 @@ export async function inviteStaff(_prev: ActionState, formData: FormData): Promi
   if (!fullName) return { error: "Enter the person's full name." };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Enter a valid email address." };
 
+  const setPasswordNow = formData.get("method") === "password";
+  const password = String(formData.get("password") ?? "");
+  if (setPasswordNow) {
+    const problem = passwordProblem(password);
+    if (problem) return { error: problem };
+  }
+
   const admin = createAdminClient();
   const { data: existing } = await admin.from("profiles").select("id").eq("email", email).maybeSingle();
   if (existing) return { error: "Someone with that email already has an account. Open them in the staff list instead." };
+
+  if (setPasswordNow) {
+    // Account ready to use straight away with the password the admin chose.
+    const { data, error } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName },
+    });
+    if (error || !data?.user) return { error: `The account couldn't be created: ${error?.message ?? "unknown error"}` };
+    await admin.from("profiles").update({ full_name: fullName, role }).eq("id", data.user.id);
+    await audit(me.id, "create_with_password", "profile", data.user.id, { email, role });
+    await notify(data.user.id, {
+      kind: "welcome",
+      title: "Welcome to Keapr Training",
+      body: "Your courses appear on your dashboard. The Help page explains how lessons and quizzes work.",
+      link: "/help",
+    });
+    revalidatePath("/admin/staff");
+    return {
+      ok: true,
+      message: `${fullName} can sign in now at ${siteUrl() || "the app"}/login with ${email} and the password you set. Send them the password separately, and they can change it later with a reset link.`,
+    };
+  }
 
   // Creates the account without sending an email and returns a one-time link
   // the admin can send however they like.
@@ -98,6 +129,66 @@ export async function createSignInLink(_prev: ActionState, formData: FormData): 
     message: "Send this link. It lets them choose a password and sign in. It works once and expires.",
     link: signInLink(data.properties.hashed_token, type),
   };
+}
+
+/** Minimum rules for a password an admin sets. */
+function passwordProblem(password: string): string | null {
+  if (password.length < 8) return "The password needs at least 8 characters.";
+  if (password.length > 72) return "The password can be at most 72 characters.";
+  return null;
+}
+
+/** Sets a new password for someone, so they can sign in straight away. */
+export async function setStaffPassword(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { profile: me } = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const problem = passwordProblem(password);
+  if (problem) return { error: problem };
+
+  const admin = createAdminClient();
+  const { data: target } = await admin.from("profiles").select("email, is_active").eq("id", userId).maybeSingle();
+  if (!target) return { error: "That person couldn't be found." };
+  if (!target.is_active) return { error: "Reactivate this account before setting a password." };
+
+  // Confirming the email too means an unaccepted invitation becomes a working account.
+  const { error } = await admin.auth.admin.updateUserById(userId, { password, email_confirm: true });
+  if (error) return { error: `The password couldn't be set: ${error.message}` };
+  await audit(me.id, "set_password", "profile", userId);
+  revalidatePath(`/admin/staff/${userId}`);
+  revalidatePath("/admin/staff");
+  return { ok: true, message: `Password set. They can sign in with ${target.email} and the new password.` };
+}
+
+/** Deletes someone completely: their account, assignments, progress and
+ * quiz history. They disappear from Staff. Can't be undone. */
+export async function deleteStaff(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { profile: me } = await requireAdmin();
+  const userId = String(formData.get("userId") ?? "");
+  const typed = String(formData.get("confirmEmail") ?? "").trim().toLowerCase();
+  if (userId === me.id) return { error: "You can't delete your own account." };
+
+  const admin = createAdminClient();
+  const { data: target } = await admin.from("profiles").select("email, full_name").eq("id", userId).maybeSingle();
+  if (!target) return { error: "That person couldn't be found. They may already have been deleted." };
+  if (typed !== target.email.toLowerCase()) return { error: `Type ${target.email} exactly to confirm.` };
+
+  const { error } = await admin.rpc("delete_user_completely", { p_user: userId, p_actor: me.id });
+  if (error) {
+    if (/LAST_ADMIN/.test(error.message)) return { error: "This is the only active admin. Make someone else an admin first." };
+    if (/Could not find the function|does not exist/i.test(error.message)) {
+      return { error: "Deleting needs the latest database update. Run supabase/migrations/0017_delete_user.sql in Supabase, then try again." };
+    }
+    return { error: `They couldn't be deleted: ${error.message}` };
+  }
+  // The profile is gone; now remove the sign-in account itself.
+  const { error: authError } = await admin.auth.admin.deleteUser(userId);
+  if (authError && !/not found/i.test(authError.message)) {
+    console.error(`[staff] auth delete failed after profile delete: ${authError.message}`);
+  }
+  revalidatePath("/admin/staff");
+  revalidatePath("/admin");
+  redirect(`/admin/staff?deleted=${encodeURIComponent(target.full_name)}`);
 }
 
 export async function setRole(formData: FormData) {
