@@ -161,7 +161,7 @@ declare
       "Secure a first booking on the call"
      ],
      "correctIndex": 1,
-     "explanation": "Your only job is to book a clean 20-minute planning call with the closer."
+     "explanation": "The one and only job of the setter is to book a 20-minute planning call with the closer."
     },
     {
      "key": "sc-quiz-q2",
@@ -665,7 +665,7 @@ declare
       "As long as the owner wants"
      ],
      "correctIndex": 1,
-     "explanation": "Pacing: a 3–5 minute target call length."
+     "explanation": "The pitch is fast-paced, lasting just three to five minutes."
     },
     {
      "key": "sc-quiz-q44",
@@ -681,75 +681,75 @@ declare
     },
     {
      "key": "sc-quiz-q45",
-     "prompt": "What is the roleplay drill plan for a new setter?",
+     "prompt": "Why should the setter never ask \"When suits you?\"",
      "options": [
-      "One two-hour session on day one",
-      "15 minutes a day, every day, for 10 working days",
-      "Once a week for a month",
-      "Only after the first live call goes wrong"
+      "It sounds too formal",
+      "The owner will say \"I'll check and get back to you\", and they never do",
+      "It takes too long",
+      "The closer sets the time"
      ],
      "correctIndex": 1,
-     "explanation": "\"First week: roleplay every one of these objections daily for 15 minutes… You do that for 10 working days.\""
+     "explanation": "Never ask \"when suits you\". Always offer two specific times."
     },
     {
      "key": "sc-quiz-q46",
-     "prompt": "In the Day 1 \"Objection Gauntlet\" recording, which objections do you answer, in order?",
+     "prompt": "How should the bridge line and the two appointment times be delivered?",
      "options": [
-      "1, 2, 5, 11 and 12",
-      "All 12",
-      "3, 4, 6, 7 and 8",
-      "Any three you choose"
+      "Bridge, pause for the owner to respond, then offer times",
+      "In a single unbroken breath, so the owner moves straight to looking at their diary",
+      "Offer the times first, then the bridge",
+      "Send the times by text after the call"
      ],
-     "correctIndex": 0,
-     "explanation": "Each one is a short answer from the sheet, then the bridge line."
+     "correctIndex": 1,
+     "explanation": "If you pause after the bridge, you hand control back to the owner and they'll throw another objection at you."
     },
     {
      "key": "sc-quiz-q47",
-     "prompt": "How does the blackout memorisation exercise work?",
+     "prompt": "How long should the setter's answer to \"What's your cut?\" be?",
      "options": [
-      "Read the script with the lights off",
-      "Print the script twice; on the working copy, read it out loud, black out a few words, read it again, and keep going until you can get through sections 1–5 with most of the page blacked out",
-      "Write the script out from memory once",
-      "Record yourself and listen back at night"
+      "As long as it takes to explain fully",
+      "Under 60 words",
+      "Exactly three sentences",
+      "One word"
      ],
      "correctIndex": 1,
-     "explanation": "Copy 1 stays clean as your reference. Copy 2 is the working copy you black out."
+     "explanation": "Never quote a percentage, paint the simple picture of commission on top, and keep the answer under 60 words."
     },
     {
      "key": "sc-quiz-q48",
-     "prompt": "Which three recordings do you send by 17:00 on Day 1?",
+     "prompt": "What does the bridge line show the owner about the setter's role?",
      "options": [
-      "A full script run-through, an \"easy yes\" example call roleplay, and the objection gauntlet",
-      "Three real calls to owners",
-      "A welcome video, a voicemail and a handover note",
-      "Three takes of the opener"
+      "That the setter is the final authority on price",
+      "That the setter is just the filter, not the final authority",
+      "That the setter is the owner's account manager",
+      "That the setter will visit the property"
      ],
-     "correctIndex": 0,
-     "explanation": "Phone recordings are fine."
+     "correctIndex": 1,
+     "explanation": "The bridge validates the question and hands the heavy lifting to the 20-minute call with the closer."
     },
     {
      "key": "sc-quiz-q49",
-     "prompt": "After the quiz, what do you do with any question you missed?",
+     "prompt": "What do self-managing hosts want most?",
      "options": [
-      "Nothing, move on",
-      "Find that line in the script or objection sheet and read it out loud 5 times",
-      "Ask Sean for the answer",
-      "Retake the quiz straight away"
+      "To sell their property",
+      "To fill empty midweek nights with longer stays and fewer changeovers",
+      "More weekend hen parties",
+      "A new cleaning team"
      ],
      "correctIndex": 1,
-     "explanation": "From the Day 1 plan."
+     "explanation": "Every guest changeover costs them time and cleaning fees. What they fear is losing control of pricing and getting locked into strict contracts."
     },
     {
      "key": "sc-quiz-q50",
-     "prompt": "To be cleared for live calls, you must hit standard on which three things?",
+     "prompt": "How does the setter describe the best case of having the planning call?",
      "options": [
-      "Script accuracy, objection handling and handover notes",
-      "Speed, volume and accent",
-      "Quiz score, attendance and dress code",
-      "Number of calls, bookings and revenue"
+      "\"You'll be fully booked all year\"",
+      "\"You pick up a few extra longer bookings a year, on your terms\"",
+      "\"You'll double your income\"",
+      "\"We'll take over your listings\""
      ],
-     "correctIndex": 0,
-     "explanation": "Hit standard on all three in the Day 2 certification roleplays and you're cleared to start live calls on this script."
+     "correctIndex": 1,
+     "explanation": "\"Worst case, you decide you're happier as you are and we take you off the list. Best case, you pick up a few extra longer bookings a year, on your terms. Seems fair?\""
     }
    ],
    "downloads": []
