@@ -247,29 +247,32 @@ function LessonEditor({
           <span className="label" id={id("kindlabel")}>Lesson type</span>
           <div className="option-row" role="radiogroup" aria-labelledby={id("kindlabel")}>
             <label className="check">
-              <input type="radio" name={id("kind")} checked={!isReading} onChange={() => onChange({ kind: "video" })} />
+              <input type="radio" name={id("kind")} checked={!isReading} onChange={() => onChange({ kind: "video", isTask: false })} />
               Video
             </label>
             <label className="check">
-              <input type="radio" name={id("kind")} checked={isReading} onChange={() => onChange({ kind: "reading" })} />
-              Reading (no video)
+              <input type="radio" name={id("kind")} checked={isReading && !lesson.isTask} onChange={() => onChange({ kind: "reading", isTask: false })} />
+              Reading
+            </label>
+            <label className="check">
+              <input type="radio" name={id("kind")} checked={isReading && lesson.isTask} onChange={() => onChange({ kind: "reading", isTask: true })} />
+              Task
             </label>
           </div>
-          {isReading && (
-            <p className="hint">Staff read the text below, tick &quot;I&apos;ve read this&quot;, then take the quiz. Attach the full document under Downloads if they need it too.</p>
-          )}
+          <p className="hint">
+            {!isReading
+              ? "Upload a video. Staff watch it, then take the quiz if there is one."
+              : lesson.isTask
+                ? "Something staff do outside the app (reading out loud, recordings, roleplays). Write short instructions; they tick \"I've done this\" to finish."
+                : "Text you've written for staff to read. They tick \"I've read this\", then take the quiz if there is one."}
+          </p>
         </div>
 
         {isReading && (
           <div className="field">
-            <label htmlFor={id("reading")}>Reading text</label>
-            <textarea id={id("reading")} rows={14} value={lesson.readingBody} onChange={(e) => onChange({ readingBody: e.target.value })} />
+            <label htmlFor={id("reading")}>{lesson.isTask ? "Instructions" : "Reading text"}</label>
+            <textarea id={id("reading")} rows={lesson.isTask ? 8 : 14} value={lesson.readingBody} onChange={(e) => onChange({ readingBody: e.target.value })} />
             <p className="hint">Leave a blank line between paragraphs. Start a line with &quot;# &quot; for a heading, or &quot;- &quot; for a bullet point.</p>
-            <label className="check" style={{ marginTop: 8 }}>
-              <input type="checkbox" checked={lesson.isTask} onChange={(e) => onChange({ isTask: e.target.checked })} />
-              This is a task: staff tick &quot;I&apos;ve done this&quot; instead of &quot;I&apos;ve read this&quot;
-            </label>
-            <p className="hint">Use it for things done outside the app, like reading the script out loud, recordings or roleplays.</p>
           </div>
         )}
 
@@ -307,7 +310,7 @@ function LessonEditor({
             </div>
           )}
           <div className="field">
-            <label htmlFor={id("mins")}>{isReading ? "Reading time (min)" : "Time to complete (min)"}</label>
+            <label htmlFor={id("mins")}>{isReading ? (lesson.isTask ? "Time to do it (min)" : "Reading time (min)") : "Time to complete (min)"}</label>
             <input id={id("mins")} type="number" min={1} value={lesson.estimatedMinutes ?? ""}
               onChange={(e) => onChange({ estimatedMinutes: e.target.value ? Math.max(1, Number(e.target.value)) : null })} />
           </div>

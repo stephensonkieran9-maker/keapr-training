@@ -93,7 +93,7 @@ SQL Editor → paste `supabase/migrations/0015_course_checklists.sql` → Run (a
 
 ## 19. Run the sixteenth migration (task lessons)
 
-SQL Editor → paste `supabase/migrations/0016_task_lessons.sql` → Run (after 0015). Reading lessons get a **This is a task** option in the course builder. A task lesson ends with one **I've done this** tick instead of **I've read this**, for things done outside the app like reading out loud, recordings or roleplays. Ticking it completes the lesson (or unlocks its quiz) and opens the next one, and you can see when it was ticked on their course detail page.
+SQL Editor → paste `supabase/migrations/0016_task_lessons.sql` → Run (after 0015). The course builder's **Lesson type** gets a third choice, **Task** (next to Video and Reading). A task lesson ends with one **I've done this** tick instead of **I've read this**, for things done outside the app like reading out loud, recordings or roleplays. Ticking it completes the lesson (or unlocks its quiz) and opens the next one, and you can see when it was ticked on their course detail page.
 
 ## Inviting staff
 

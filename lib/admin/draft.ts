@@ -242,8 +242,8 @@ export function publishProblems(draft: CourseDraft): string[] {
     const name = `Lesson ${li + 1}`;
     if (!l.title) problems.push(`${name} needs a title.`);
     if (l.kind === "reading") {
-      if (!l.readingBody) problems.push(`${name} needs the reading text.`);
-      if (!l.estimatedMinutes) problems.push(`${name} needs a reading time (time to complete).`);
+      if (!l.readingBody) problems.push(l.isTask ? `${name} needs instructions for the task.` : `${name} needs the reading text.`);
+      if (!l.estimatedMinutes) problems.push(l.isTask ? `${name} needs a time to do it.` : `${name} needs a reading time (time to complete).`);
     } else if (!(l.videoSeconds > 0)) problems.push(`${name} needs the video length.`);
     if (l.hasQuiz && l.questions.length === 0) problems.push(`${name} needs at least one quiz question, or untick "This lesson has a quiz".`);
     l.questions.forEach((q, qi) => {
