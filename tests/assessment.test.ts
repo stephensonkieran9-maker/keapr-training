@@ -22,9 +22,18 @@ test("the sample answer key has no problems", () => {
   assert.deepEqual(cleanConfig(SAMPLE_CONFIG), SAMPLE_CONFIG);
 });
 
-test("perfect answers score 100%, blank answers score 0%", () => {
+test("perfect answers score 100%; a blank form only gets the 'no discount' zeros", () => {
   assert.equal(scoreAnswers(SAMPLE_CONFIG, perfect(SAMPLE_CONFIG)).accuracy, 100);
-  assert.equal(scoreAnswers(SAMPLE_CONFIG, {}).accuracy, 0);
+  assert.equal(scoreAnswers(SAMPLE_CONFIG, {}).points, 2); // weekly and monthly discount are 0
+});
+
+test("a blank discount box counts as 0, but a blank price doesn't", () => {
+  const a = perfect(SAMPLE_CONFIG);
+  delete a.weeklyDiscount;
+  delete a.baseRate;
+  const byId = Object.fromEntries(scoreAnswers(SAMPLE_CONFIG, a).fields.map((f) => [f.id, f]));
+  assert.equal(byId.weeklyDiscount.fraction, 1);
+  assert.equal(byId.baseRate.fraction, 0);
 });
 
 test("falling for the case study's traps loses the right marks", () => {
@@ -53,10 +62,11 @@ test("amenities score by overlap, so ticking everything isn't rewarded", () => {
 
 test("contractor quote allows the set tolerance", () => {
   const q = (v: number) => scoreAnswers(SAMPLE_CONFIG, { ...perfect(SAMPLE_CONFIG), contractorQuote: v }).fields.find((x) => x.id === "contractorQuote")!.fraction;
-  assert.equal(q(2065), 1);
-  assert.equal(q(2065.8), 1);
-  assert.equal(q(2066.5), 0);
-  assert.equal(q(1995), 0); // forgot the cleaning fee
+  assert.equal(q(2730), 1);
+  assert.equal(q(2730.8), 1);
+  assert.equal(q(2731.5), 0);
+  assert.equal(q(2660), 0); // forgot the cleaning fee
+  assert.equal(q(2464), 0); // applied the 90-night discount to 28 nights
 });
 
 test("address matching ignores case, spaces and punctuation", () => {

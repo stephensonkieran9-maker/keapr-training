@@ -45,7 +45,7 @@ export interface FieldDef {
 export const BED_TYPES = [
   { value: "king", label: "King bed" },
   { value: "double", label: "Double bed" },
-  { value: "single", label: "Single bed" },
+  { value: "single", label: "Single / twin bed" },
   { value: "sofa", label: "Sofa bed" },
   { value: "bunk", label: "Bunk bed" },
   { value: "cot", label: "Cot" },
@@ -122,9 +122,11 @@ export const FIELDS: FieldDef[] = [
   { id: "cleaningFee", section: "pricing", label: "Cleaning fee (per stay)", type: "number", prefix: "£", min: 0, max: 5000, step: 0.01 },
   { id: "extraGuestFee", section: "pricing", label: "Extra guest fee (per guest, per night)", type: "number", prefix: "£", min: 0, max: 1000, step: 0.01 },
   { id: "extraGuestFrom", section: "pricing", label: "Extra guest fee applies after", type: "number", suffix: "guests", min: 0, max: 30, step: 1, stepper: true },
-  { id: "weeklyDiscount", section: "pricing", label: "Weekly discount (7+ nights)", type: "number", suffix: "%", min: 0, max: 99, step: 1 },
-  { id: "monthlyDiscount", section: "pricing", label: "Monthly discount (28+ nights)", type: "number", suffix: "%", min: 0, max: 99, step: 1 },
-  { id: "contractorQuote", section: "pricing", label: "Example contractor quote: total for a 4-week (28-night) stay", type: "number", prefix: "£", min: 0, max: 100000, step: 0.01, hint: "Work this out from the rates and discounts above, including the cleaning fee." },
+  { id: "securityDeposit", section: "pricing", label: "Security deposit (refundable)", type: "number", prefix: "£", min: 0, max: 10000, step: 0.01 },
+  { id: "weeklyDiscount", section: "pricing", label: "Weekly discount (7+ nights)", type: "number", suffix: "%", min: 0, max: 99, step: 1, hint: "Enter 0 if there isn't one." },
+  { id: "monthlyDiscount", section: "pricing", label: "Monthly discount (28+ nights)", type: "number", suffix: "%", min: 0, max: 99, step: 1, hint: "Enter 0 if there isn't one." },
+  { id: "longStayDiscount", section: "pricing", label: "Long-stay discount (90+ nights)", type: "number", suffix: "%", min: 0, max: 99, step: 1, hint: "Enter 0 if there isn't one." },
+  { id: "contractorQuote", section: "pricing", label: "Example contractor quote: total for a 4-week (28-night) stay", type: "number", prefix: "£", min: 0, max: 1000000, step: 0.01, hint: "Work this out from the rates and any discount that applies. Include the cleaning fee but not the refundable deposit." },
 
   // Availability & policies
   { id: "minNights", section: "policies", label: "Minimum stay", type: "number", suffix: "nights", min: 1, max: 365, step: 1, stepper: true },

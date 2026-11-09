@@ -96,7 +96,8 @@ function scoreField(f: FieldDef, key: FieldKey, raw: AnswerValue | undefined): {
     case "number": {
       const k = typeof key.answer === "number" ? key.answer : null;
       if (k === null) return { fraction: given === null ? 1 : 0 };
-      if (given === null) return { fraction: 0 };
+      // A blank box counts as 0 when the right answer is 0 (e.g. "no weekly discount").
+      if (given === null) return { fraction: k === 0 ? 1 : 0 };
       const tol = Math.max(0, key.tolerance ?? 0);
       // Small epsilon so 0.1 + 0.2 style float noise never fails a match.
       return { fraction: Math.abs((given as number) - k) <= tol + 1e-9 ? 1 : 0 };
