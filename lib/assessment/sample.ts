@@ -53,6 +53,16 @@ Build the listing using only the information in this brief.
 - **Pets:** Pets are allowed upon request. Additional charges apply.
 - **Parking:** Free street parking for 1 vehicle. There is no private or designated parking.
 
+## Suitable for
+
+The Hollies House is suitable for both short and long stays, including long-term guests. It's aimed at:
+
+- **Contractors** working on projects in Newcastle-under-Lyme and surrounding areas
+- **Business travellers** who need comfortable, practical accommodation
+- **Families** visiting relatives or exploring Staffordshire
+- **Relocation guests and professionals** who need temporary accommodation
+- **Long-stay guests** looking for a fully equipped home
+
 ## Sleeping arrangements
 
 - **Bedroom 1:** 1 King Bed
@@ -76,9 +86,9 @@ Download the photos from the **Photos** step, upload **all** of them, and put th
 
 ### Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme
 
-Welcome to The Hollies House, a comfortable three-bedroom home in Newcastle-under-Lyme, Staffordshire. Sleeping up to 6 guests, it's ideal for contractors working on projects in the area, business travellers, families visiting relatives or exploring Staffordshire, and relocation guests and professionals who need temporary accommodation.
+Welcome to The Hollies House, a comfortable three-bedroom home in Newcastle-under-Lyme, Staffordshire, sleeping up to 6 guests.
 
-With a fully equipped kitchen, two bathrooms and a private garden, it works well for both short and long stays.
+It's ideal for contractors, business travellers, families, relocation guests and professionals. With a fully equipped kitchen, two bathrooms and a private garden, it's suitable for both short stays and long-term guests.
 
 ### Property features
 
