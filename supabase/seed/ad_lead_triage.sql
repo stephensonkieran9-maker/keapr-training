@@ -14,8 +14,8 @@
 -- Real Call Injection from the plan is left out.
 -- Day 2 quiz questions 26 and 28–30 name the drills by their Day 2 lesson
 -- (the plan had them as Day 1 blocks); everything else is word for word.
--- Not published: upload the video to lesson 1, the Day 1 PDF to lesson 2 and
--- the Day 2 PDF to lesson 7 (Downloads), preview, then Publish and assign.
+-- Not published: upload the video to lesson 1, both PDFs to lesson 2 and the
+-- Day 2 PDF to lesson 7 (Downloads), preview, then Publish and assign.
 -- Safe to re-run: if the course exists its draft is replaced, keeping the
 -- uploaded video. Downloads need uploading again.
 
@@ -53,7 +53,7 @@ declare
    "title": "Day 1 · 11:45 · Read the Triage Script and Management Objections",
    "kind": "reading",
    "isTask": true,
-   "readingBody": "# Day 1 · 11:45–12:15 · Read the Script\n\n- Read the Keapr Ad-Lead Triage Script once, top to bottom.\n- Read the Management Objections & Answers once, top to bottom.\n\nBoth are in the Day 1 PDF under Downloads. The Day 1 quiz covers the script and all 10 objections.",
+   "readingBody": "# Day 1 · 11:45–12:15 · Read the Script\n\n- Read the Keapr Ad-Lead Triage Script once, top to bottom.\n- Read the Management Objections & Answers once, top to bottom.\n\nThe script is in the Day 1 PDF and the objections are in the Day 2 PDF, both under Downloads. The Day 1 quiz covers the script and all 10 objections.",
    "objectives": [
     "Read the full triage script once, top to bottom",
     "Read the 10 management objections and answers once, top to bottom"
@@ -518,7 +518,7 @@ declare
    "title": "Day 2 · Objection Self-Practice",
    "kind": "reading",
    "isTask": true,
-   "readingBody": "# Day 2 · Objection Self-Practice\n\nYour job on management questions is simple: answer clearly, don't waffle, then point them back to the planning call.\n\nThe answers are in your Day 1 PDF. Today's plan is in the Day 2 PDF under Downloads.\n\nFor each of the 10 objections below, say the answer from the sheet out loud 5 times. Finish every answer with:\n\n\"and that's exactly what they'll go through in detail on the planning call.\"\n\n1. \"How much do you charge?\"\n2. \"What's included in that?\"\n3. \"Do you take care of cleaning?\"\n4. \"Who pays for the cleaning?\"\n5. \"Do you charge an onboarding fee?\"\n6. \"What's the minimum contract length?\"\n7. \"Can I try it shorter / month-to-month?\"\n8. \"Can you give me projections?\"\n9. \"Do you guarantee income / is it rent-to-rent?\"\n10. \"Will I lose my existing Airbnb/Booking.com setup?\"",
+   "readingBody": "# Day 2 · Objection Self-Practice\n\nYour job on management questions is simple: answer clearly, don't waffle, then point them back to the planning call.\n\nThe answers and today's plan are in the Day 2 PDF under Downloads.\n\nFor each of the 10 objections below, say the answer from the sheet out loud 5 times. Finish every answer with:\n\n\"and that's exactly what they'll go through in detail on the planning call.\"\n\n1. \"How much do you charge?\"\n2. \"What's included in that?\"\n3. \"Do you take care of cleaning?\"\n4. \"Who pays for the cleaning?\"\n5. \"Do you charge an onboarding fee?\"\n6. \"What's the minimum contract length?\"\n7. \"Can I try it shorter / month-to-month?\"\n8. \"Can you give me projections?\"\n9. \"Do you guarantee income / is it rent-to-rent?\"\n10. \"Will I lose my existing Airbnb/Booking.com setup?\"",
    "objectives": [
     "Say each of the 10 management answers out loud 5 times, each time finishing with the pivot line"
    ],
@@ -1042,5 +1042,5 @@ begin
   end if;
 
   update public.courses set draft = v_new, description = 'Two-day training for ad-lead triage calls: the triage script, your pay, and the 10 management objections. A 30-question quiz at the end of each day (pass mark 27/30).', updated_at = now() where id = v_course;
-  raise notice 'Updated the "Ad-Lead Triage" draft. Check the video, upload the Day 1 PDF (lesson 2) and Day 2 PDF (lesson 7), preview, then publish.';
+  raise notice 'Updated the "Ad-Lead Triage" draft. Check the video, upload both PDFs (lesson 2) and the Day 2 PDF (lesson 7), preview, then publish.';
 end $$;
