@@ -125,7 +125,7 @@ export function FieldInput({ f, value, onChange, disabled }: { f: FieldDef; valu
       control = (
         <>
           {f.multiline
-            ? <textarea id={id} rows={6} value={s} maxLength={f.maxLength} disabled={disabled} onChange={(e) => onChange(e.target.value)} aria-describedby={hintId} />
+            ? <textarea id={id} rows={(f.maxLength ?? 0) > 1000 ? 16 : 6} value={s} maxLength={f.maxLength} disabled={disabled} onChange={(e) => onChange(e.target.value)} aria-describedby={hintId} />
             : <input id={id} type="text" value={s} maxLength={f.maxLength} disabled={disabled} onChange={(e) => onChange(e.target.value)} aria-describedby={hintId} autoComplete="off" />}
           {f.maxLength && <span className="lb-count" aria-live="polite">{s.length} / {f.maxLength}</span>}
         </>

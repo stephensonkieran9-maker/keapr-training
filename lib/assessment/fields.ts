@@ -113,8 +113,8 @@ export const FIELDS: FieldDef[] = [
 
   // Title & description
   { id: "title", section: "listing", label: "Listing title", type: "text", maxLength: 50, hint: "Short and specific. 50 characters maximum." },
-  { id: "description", section: "listing", label: "Listing description", type: "text", multiline: true, maxLength: 500, hint: "500 characters maximum." },
-  { id: "neighbourhood", section: "listing", label: "The neighbourhood and getting around", type: "text", multiline: true, maxLength: 500, hint: "What's nearby and how guests get about. 500 characters maximum." },
+  { id: "description", section: "listing", label: "Listing description", type: "text", multiline: true, maxLength: 5000, hint: "The full description guests read: overview, features, amenities, parking, access and house rules. 5,000 characters maximum." },
+  { id: "neighbourhood", section: "listing", label: "The neighbourhood and getting around", type: "text", multiline: true, maxLength: 500, hint: "How guests get around: the town centre and transport links. 500 characters maximum." },
 
   // Photos
   { id: "photos", section: "photos", label: "Listing photos", type: "photos", hint: "Upload the files exactly as downloaded. Drag to reorder, or use the arrows." },

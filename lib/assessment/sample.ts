@@ -31,7 +31,9 @@ Build the listing using only the information in this brief.
 
 - **Amenities:** tick only what the brief lists.
 - **Discounts:** if the brief doesn't give a discount, enter 0.
-- **Title, description and neighbourhood:** write your own, within the character limits. The draft title below is too long to use as it is.
+- **Title:** write your own, within the 50-character limit. The draft title below is too long to use as it is.
+- **Description:** use the property description below, from the overview through to the house rules.
+- **Getting around:** the *Getting around* section at the end goes in the neighbourhood and getting around box, not the description.
 - **Example contractor quote:** work out the total for a contractor staying **28 nights**, with any discount that applies and the cleaning fee added once. Don't include the refundable security deposit.
 
 ---
@@ -133,18 +135,18 @@ Guests have access to the entire house, with self check-in. Access instructions 
 - New Vic Theatre: Approximately 1.5 miles away. A popular local theatre featuring live performances, musicals and cultural entertainment.
 - Apedale Heritage Centre: Approximately 2.5 miles away. Explore the area's mining heritage, museum exhibits and historic underground mine tours.
 
-**Getting around**
-
-- Newcastle-under-Lyme Town Centre: Approximately 0.7 miles away. Shops, restaurants, cafés and everyday amenities.
-- Newcastle-under-Lyme Bus Station: Approximately 0.9 miles away. Regular bus connections to Stoke-on-Trent, Hanley and surrounding areas.
-- Longport Railway Station: Approximately 1.9 miles away. Rail connections to Stoke-on-Trent, Crewe and other destinations.
-
 ### House rules
 
 - **Security deposit:** A £300 security deposit is required.
 - **Smoking:** Smoking is strictly prohibited inside the property.
 - **Pets:** Pets are allowed upon request. A pet fee of £200 per stay applies.
-- **Parties and events:** Parties, gatherings and events are not permitted.`;
+- **Parties and events:** Parties, gatherings and events are not permitted.
+
+### Getting around
+
+- Newcastle-under-Lyme Town Centre: Approximately 0.7 miles away. Shops, restaurants, cafés and everyday amenities.
+- Newcastle-under-Lyme Bus Station: Approximately 0.9 miles away. Regular bus connections to Stoke-on-Trent, Hanley and surrounding areas.
+- Longport Railway Station: Approximately 1.9 miles away. Rail connections to Stoke-on-Trent, Crewe and other destinations.`;
 
 /** The answer key. Weights: 1 point per simple field, more for the big ones. */
 export const SAMPLE_CONFIG: AssessmentConfig = {
@@ -166,14 +168,13 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
       "garden",
       "parking",
       "contractor|contractors",
-    ] },
-    neighbourhood: { weight: 2, mustMention: [
       "brampton park",
-      "new vic|theatre",
-      "apedale",
+      "house rules|smoking",
+    ] },
+    neighbourhood: { weight: 2, mustMention: [                         // the Getting around section
       "town centre",
       "bus station|bus",
-      "longport|railway|train",
+      "longport|railway|train|rail",
     ] },
 
     photos: { weight: 3 },
