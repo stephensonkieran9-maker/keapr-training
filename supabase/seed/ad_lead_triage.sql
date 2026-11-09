@@ -13,7 +13,8 @@
 --          13. Day 2 Quiz (30 q)
 -- Real Call Injection from the plan is left out.
 -- Day 2 quiz questions 26 and 28–30 name the drills by their Day 2 lesson
--- (the plan had them as Day 1 blocks); everything else is word for word.
+-- (the plan had them as Day 1 blocks), and the quizzes say "you" not "Reed";
+-- everything else is word for word.
 -- Not published: upload the video to lesson 1, both PDFs to lesson 2 and the
 -- Day 2 PDF to lesson 7 (Downloads), preview, then Publish and assign.
 -- Safe to re-run: if the course exists its draft is replaced, keeping the
@@ -132,7 +133,7 @@ declare
    "questions": [
     {
      "key": "alt-d1-q1",
-     "prompt": "What is Reed's job on an ad-lead triage call?",
+     "prompt": "What is your job on an ad-lead triage call?",
      "options": [
       "Sell full management to every lead who answers",
       "Quickly work out whether they want a few more bookings or a more hands-off setup, then send the Hybrid link or book a management call",
@@ -156,7 +157,7 @@ declare
     },
     {
      "key": "alt-d1-q3",
-     "prompt": "In the opener, how long does Reed say the call will take?",
+     "prompt": "In the opener, how long do you say the call will take?",
      "options": [
       "5 minutes",
       "2–3 minutes",
@@ -180,7 +181,7 @@ declare
     },
     {
      "key": "alt-d1-q5",
-     "prompt": "How does Reed introduce the reason for the call?",
+     "prompt": "How do you introduce the reason for the call?",
      "options": [
       "\"You registered with us recently about getting help with your place\"",
       "\"I'm calling about your Airbnb listing performance\"",
@@ -192,7 +193,7 @@ declare
     },
     {
      "key": "alt-d1-q6",
-     "prompt": "The lead says \"I'm busy but go ahead.\" What does Reed do?",
+     "prompt": "The lead says \"I'm busy but go ahead.\" What do you do?",
      "options": [
       "Offer to call back at a better time",
       "Continue the call, a bit faster",
@@ -204,7 +205,7 @@ declare
     },
     {
      "key": "alt-d1-q7",
-     "prompt": "It is a genuinely bad time. How does Reed offer a callback?",
+     "prompt": "It is a genuinely bad time. How do you offer a callback?",
      "options": [
       "\"When suits you? I'm flexible\"",
       "\"I'll email you a calendar link\"",
@@ -216,7 +217,7 @@ declare
     },
     {
      "key": "alt-d1-q8",
-     "prompt": "How long a call does Reed propose for that callback?",
+     "prompt": "How long a call do you propose for that callback?",
      "options": [
       "2–3 minutes",
       "20 minutes",
@@ -228,12 +229,12 @@ declare
     },
     {
      "key": "alt-d1-q9",
-     "prompt": "Once the callback is booked, what does Reed do?",
+     "prompt": "Once the callback is booked, what do you do?",
      "options": [
       "Repeat the time back and stop there",
-      "Quickly run through Question 1 while he has them",
+      "Quickly run through Question 1 while you have them",
       "Send the Hybrid link so they can watch it before the call",
-      "Ask Question 2 so he can tag them before the callback"
+      "Ask Question 2 so you can tag them before the callback"
      ],
      "correctIndex": 0,
      "explanation": ""
@@ -252,7 +253,7 @@ declare
     },
     {
      "key": "alt-d1-q11",
-     "prompt": "The lead has no listing live yet. What does Reed do?",
+     "prompt": "The lead has no listing live yet. What do you do?",
      "options": [
       "Book a management call – pre-launch owners need the most help",
       "Send the Hybrid link so they're ready when they go live",
@@ -264,7 +265,7 @@ declare
     },
     {
      "key": "alt-d1-q12",
-     "prompt": "Why does Reed tell a pre-launch lead that Keapr's help \"kicks in once the place is live\"?",
+     "prompt": "Why do you tell a pre-launch lead that Keapr's help \"kicks in once the place is live\"?",
      "options": [
       "Because Keapr doesn't take on new properties until they're trading",
       "Because what Keapr does – more bookings or more hands-off – needs a live listing to work on",
@@ -276,7 +277,7 @@ declare
     },
     {
      "key": "alt-d1-q13",
-     "prompt": "After confirming the lead is already hosting, what does Reed ask next?",
+     "prompt": "After confirming the lead is already hosting, what do you ask next?",
      "options": [
       "The full address and postcode",
       "The number of bedrooms and sleeps",
@@ -300,7 +301,7 @@ declare
     },
     {
      "key": "alt-d1-q15",
-     "prompt": "In option B, which channels does Reed say Keapr adds?",
+     "prompt": "In option B, which channels do you say Keapr adds?",
      "options": [
       "Social media and Google Ads",
       "All the main sites plus Keapr's contractor and insurance channels",
@@ -312,7 +313,7 @@ declare
     },
     {
      "key": "alt-d1-q16",
-     "prompt": "The lead says \"both, really – not sure.\" What is Reed's follow-up?",
+     "prompt": "The lead says \"both, really – not sure.\" What is your follow-up?",
      "options": [
       "\"Shall I send you both options and you can decide?\"",
       "\"What's your budget for management?\"",
@@ -348,7 +349,7 @@ declare
     },
     {
      "key": "alt-d1-q19",
-     "prompt": "How is the Hybrid link delivered, and what does Reed confirm before sending?",
+     "prompt": "How is the Hybrid link delivered, and what do you confirm before sending?",
      "options": [
       "By text and email; best email and mobile (repeating the last four digits)",
       "By WhatsApp only; their property address",
@@ -372,19 +373,19 @@ declare
     },
     {
      "key": "alt-d1-q21",
-     "prompt": "In Branch B, what is the next step Reed offers?",
+     "prompt": "In Branch B, what is the next step you offer?",
      "options": [
       "A site visit from the closer",
       "A contract sent by email",
       "A quick 20-minute planning call with the closer to look at the property, the numbers and what hands-off would look like",
-      "A 5-minute call with Reed next week"
+      "A 5-minute call with you next week"
      ],
      "correctIndex": 2,
      "explanation": ""
     },
     {
      "key": "alt-d1-q22",
-     "prompt": "The lead picks a slot. What is the correct order of what Reed does next?",
+     "prompt": "The lead picks a slot. What is the correct order of what you do next?",
      "options": [
       "Edify the closer → commitment question → repeat and lock → confirm contact and reminders",
       "Repeat and lock the time → commitment question → edify the closer → confirm contact and reminders",
@@ -408,7 +409,7 @@ declare
     },
     {
      "key": "alt-d1-q24",
-     "prompt": "What is included in full management, as Reed describes it?",
+     "prompt": "What is included in full management, as you describe it?",
      "options": [
       "Guest communication, pricing, calendar management, cleaner coordination, and getting onto all the main sites plus contractor and insurance channels",
       "Guest communication and cleaning only",
@@ -456,7 +457,7 @@ declare
     },
     {
      "key": "alt-d1-q28",
-     "prompt": "The lead asks for projections on the triage call. What does Reed offer?",
+     "prompt": "The lead asks for projections on the triage call. What do you offer?",
      "options": [
       "A rough monthly figure based on the town",
       "A short form to fill in now, so the closer can get to the numbers faster on the planning call",
@@ -677,7 +678,7 @@ declare
     },
     {
      "key": "alt-d2-q3",
-     "prompt": "Lead says \"both, really,\" Reed asks what annoys them more, and they say \"my cleaners keep letting me down.\" Which branch?",
+     "prompt": "Lead says \"both, really,\" you ask what annoys them more, and they say \"my cleaners keep letting me down.\" Which branch?",
      "options": [
       "Branch A – they just need more reliable bookings",
       "Branch B – \"hassle/time\" means management",
@@ -689,7 +690,7 @@ declare
     },
     {
      "key": "alt-d2-q4",
-     "prompt": "Lead: \"Just send me the Hybrid link AND book me a call with the closer, I'll decide later.\" What does Reed do?",
+     "prompt": "Lead: \"Just send me the Hybrid link AND book me a call with the closer, I'll decide later.\" What do you do?",
      "options": [
       "Do both – the lead asked for it",
       "Book the call only; the closer can send the link",
@@ -713,12 +714,12 @@ declare
     },
     {
      "key": "alt-d2-q6",
-     "prompt": "Lead asks what they'd earn. Reed says \"a 2-bed in your town? Easily £2,500 a month.\" What went wrong?",
+     "prompt": "Lead asks what they'd earn. You say \"a 2-bed in your town? Easily £2,500 a month.\" What went wrong?",
      "options": [
       "Nothing – a confident number helps close",
-      "He made up a projection instead of offering the short form and letting the closer build real projections on the planning call",
-      "He should have said £3,000 to be safe",
-      "He should have refused to discuss numbers at all"
+      "You made up a projection instead of offering the short form and letting the closer build real projections on the planning call",
+      "You should have said £3,000 to be safe",
+      "You should have refused to discuss numbers at all"
      ],
      "correctIndex": 1,
      "explanation": ""
@@ -797,7 +798,7 @@ declare
     },
     {
      "key": "alt-d2-q13",
-     "prompt": "Lead picks Tuesday at 2pm. Reed says \"Great, Tuesday 2pm it is, speak then!\" and hangs up. What did he miss?",
+     "prompt": "Lead picks Tuesday at 2pm. You say \"Great, Tuesday 2pm it is, speak then!\" and hang up. What did you miss?",
      "options": [
       "Nothing – the booking is done",
       "Confirming the Hybrid link was sent",
@@ -809,7 +810,7 @@ declare
     },
     {
      "key": "alt-d2-q14",
-     "prompt": "After the commitment question the lead says \"probably, yeah, I think so.\" What should Reed do?",
+     "prompt": "After the commitment question the lead says \"probably, yeah, I think so.\" What should you do?",
      "options": [
       "Accept it and end the call",
       "Use a re-commitment line or offer an alternative slot – a vague yes is a stall",
@@ -833,7 +834,7 @@ declare
     },
     {
      "key": "alt-d2-q16",
-     "prompt": "Reed answers the contract-length objection perfectly, then goes quiet. What's missing?",
+     "prompt": "You answer the contract-length objection perfectly, then go quiet. What's missing?",
      "options": [
       "A discount offer",
       "A second objection answer",
@@ -881,7 +882,7 @@ declare
     },
     {
      "key": "alt-d2-q20",
-     "prompt": "Lead fires three objections in a row: price, contract, cleaning. What is the principle Reed follows?",
+     "prompt": "Lead fires three objections in a row: price, contract, cleaning. What is the principle you follow?",
      "options": [
       "Answer the first one and ignore the rest",
       "Answer each clearly, don't waffle, then point them back to the planning call",
@@ -893,7 +894,7 @@ declare
     },
     {
      "key": "alt-d2-q21",
-     "prompt": "Lead: \"I don't want more bookings and I'm fine managing it myself.\" What does Reed say?",
+     "prompt": "Lead: \"I don't want more bookings and I'm fine managing it myself.\" What do you say?",
      "options": [
       "\"Let me at least send the Hybrid link in case\"",
       "\"Can I ask why you registered then?\"",
@@ -905,10 +906,10 @@ declare
     },
     {
      "key": "alt-d2-q22",
-     "prompt": "Lead asks for projections and says yes to the form. Why does Reed send it?",
+     "prompt": "Lead asks for projections and says yes to the form. Why do you send it?",
      "options": [
       "So the closer doesn't waste half the call asking basics and the lead gets to the numbers faster",
-      "So Reed can work out the projections himself before the call",
+      "So you can work out the projections yourself before the call",
       "To check the property qualifies for management",
       "Because it's required before any booking"
      ],
@@ -929,7 +930,7 @@ declare
     },
     {
      "key": "alt-d2-q24",
-     "prompt": "In the Day 2 \"Hard Landlord\" role-play, which objections does the trainer hit Reed with?",
+     "prompt": "In the Day 2 \"Hard Landlord\" role-play, which objections does the trainer hit you with?",
      "options": [
       "Price and contract length only",
       "Price, onboarding fee, contract length, projections, cleaning, rent guarantee",
@@ -953,10 +954,10 @@ declare
     },
     {
      "key": "alt-d2-q26",
-     "prompt": "After each live call in Live Calls With Spot-Coaching, how much feedback does Reed get?",
+     "prompt": "After each live call in Live Calls With Spot-Coaching, how much feedback do you get?",
      "options": [
       "A full written review",
-      "Exactly two notes – one thing he did well, one thing to fix",
+      "Exactly two notes – one thing you did well, one thing to fix",
       "A score out of ten",
       "Only feedback if something went wrong"
      ],
@@ -965,11 +966,11 @@ declare
     },
     {
      "key": "alt-d2-q27",
-     "prompt": "In the Lock-In Quiz, what must Reed do for each objection thrown at him?",
+     "prompt": "In the Lock-In Quiz, what must you do for each objection thrown at you?",
      "options": [
       "Say the first sentence of the answer exactly, then add a pivot line to the closer's call",
       "Read the full answer from the one-pager",
-      "Give any answer in his own words",
+      "Give any answer in your own words",
       "Say the answer and the fee"
      ],
      "correctIndex": 0,
@@ -977,12 +978,12 @@ declare
     },
     {
      "key": "alt-d2-q28",
-     "prompt": "Reed stumbles on two objections in the Lock-In Quiz. What happens?",
+     "prompt": "You stumble on two objections in the Lock-In Quiz. What happens?",
      "options": [
-      "He goes live anyway – two is acceptable",
-      "He re-sits the whole quiz the same afternoon",
+      "You go live anyway – two is acceptable",
+      "You re-sit the whole quiz the same afternoon",
       "Repeat the Walkthrough + Hand-Writing for those specific objections the next morning until they're automatic",
-      "The trainer takes those objections off his list"
+      "The trainer takes those objections off your list"
      ],
      "correctIndex": 2,
      "explanation": ""
@@ -992,7 +993,7 @@ declare
      "prompt": "In the Day 2 No-Paper Drill, why is 10 minutes recorded and played back?",
      "options": [
       "To build a library of sample calls for new starters",
-      "So Reed can hear where he hesitates and where he adds \"ums\" or rambles",
+      "So you can hear where you hesitate and where you add \"ums\" or ramble",
       "To check the answers against the one-pager",
       "For compliance"
      ],
@@ -1001,10 +1002,10 @@ declare
     },
     {
      "key": "alt-d2-q30",
-     "prompt": "In the Day 2 Walkthrough + Hand-Writing, what does Reed physically do with each objection?",
+     "prompt": "In the Day 2 Walkthrough + Hand-Writing, what do you physically do with each objection?",
      "options": [
       "Type it into a shared doc",
-      "Record himself saying it",
+      "Record yourself saying it",
       "Hand-write the objection and its answer once, then read the answer word-for-word when the trainer says the objection",
       "Memorise it silently"
      ],
