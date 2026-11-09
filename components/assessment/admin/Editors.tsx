@@ -148,6 +148,11 @@ export function AnswerKeyEditor({ id, config, started }: { id: string; config: A
                       />
                       <p className="hint">Separate acceptable alternatives with | (e.g. <code>3 bed|three bed</code>). Matches whole words, ignoring case and punctuation.</p>
                     </div>
+                  ) : f.type === "photos" ? (
+                    <div>
+                      <div className="lb-label">{f.label}</div>
+                      <p className="hint">Upload the photos and set which room each shows on the <strong>Photos</strong> tab.</p>
+                    </div>
                   ) : f.type === "shorttext" ? (
                     <div className="field">
                       <label htmlFor={`st-${f.id}`}>{f.label}: correct answer</label>

@@ -1,13 +1,14 @@
 "use server";
 
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { cleanAnswers } from "./fields";
+import { PHOTO_CATEGORIES, cleanAnswers, type PhotoCategory } from "./fields";
+import { PHOTO_BUCKET, sha256Hex } from "./photos";
 import { SAMPLE_CASE_STUDY, SAMPLE_CONFIG, SAMPLE_INTRO, SAMPLE_TITLE } from "./sample";
-import { cleanConfig, configProblems, formFieldIds, scoreAnswers, type ScoreResult } from "./scoring";
+import { cleanConfig, configProblems, formFieldIds, scoreAnswers, type PhotoKey, type ScoreResult } from "./scoring";
 import { hashPassword } from "./server";
 
 // Every action re-checks the caller is an active admin, writes with the
@@ -42,7 +43,7 @@ export async function createAssessment(formData: FormData) {
   const fromSample = formData.get("from") === "sample";
   const { data, error } = await db().from("assessments").insert({
     title: fromSample ? SAMPLE_TITLE : "New listing assessment",
-    slug: newSlug(fromSample ? "wherry" : "listing"),
+    slug: newSlug("listing"),
     intro: SAMPLE_INTRO,
     case_study: fromSample ? SAMPLE_CASE_STUDY : "# Property name\n\nWrite the case study here.",
     config: fromSample ? SAMPLE_CONFIG : { fields: {} },
@@ -143,7 +144,9 @@ export async function saveCaseStudy(_: AssessActionState | undefined, fd: FormDa
 export async function saveConfig(id: string, raw: unknown): Promise<AssessActionState> {
   const { profile: me } = await requireAdmin();
   if (!isId(id)) return { error: "Unknown assessment." };
-  const config = cleanConfig(raw);
+  const { data: current } = await db().from("assessments").select("config").eq("id", id).single();
+  // Photos are managed on their own tab, so keep whatever is stored.
+  const config = { ...cleanConfig({ fields: (raw as { fields?: unknown })?.fields }), photos: cleanConfig(current?.config).photos };
   const { error } = await db().from("assessments").update({ config, updated_at: new Date().toISOString() }).eq("id", id);
   if (error) return { error: error.message };
   await audit(me.id, "assessment_answer_key", id, { fields: Object.keys(config.fields).length });
@@ -168,8 +171,9 @@ export async function remarkAll(fd: FormData) {
     // Mark only the fields the candidate was shown when they sat the test.
     const shown = new Set(formFieldIds(cleanConfig(att.config_snapshot)));
     const fields = Object.fromEntries(Object.entries(config.fields).filter(([fid]) => shown.has(fid)));
-    const result = scoreAnswers({ fields }, cleanAnswers([...shown], att.answers));
-    await db().from("assessment_attempts").update({ score: result, accuracy: Math.round(result.accuracy * 1000) / 1000, config_snapshot: { fields: { ...cleanConfig(att.config_snapshot).fields, ...fields } } }).eq("id", att.id);
+    const result = scoreAnswers({ fields, photos: config.photos }, cleanAnswers([...shown], att.answers));
+    const snapshot = { fields: { ...cleanConfig(att.config_snapshot).fields, ...fields }, photos: config.photos ?? [] };
+    await db().from("assessment_attempts").update({ score: result, accuracy: Math.round(result.accuracy * 1000) / 1000, config_snapshot: snapshot }).eq("id", att.id);
     n++;
   }
   await audit(me.id, "assessment_remark", id, { attempts: n });
@@ -232,4 +236,79 @@ export async function setCandidatePassword(_: AssessActionState | undefined, fd:
   await db().from("assessment_sessions").delete().eq("candidate_id", candidateId);
   await audit(me.id, "assessment_candidate_password", id, { candidate: candidateId });
   return { ok: true, message: "Password set. Send it to the candidate yourself." };
+}
+
+// ─── Photos ───────────────────────────────────────────────────────────
+
+const PHOTO_EXT = /\.(jpe?g|png|webp)$/i;
+
+async function readConfig(id: string) {
+  const { data } = await db().from("assessments").select("config").eq("id", id).single();
+  return data ? cleanConfig(data.config) : null;
+}
+
+async function writePhotos(id: string, photos: PhotoKey[]) {
+  const config = await readConfig(id);
+  if (!config) throw new Error("Unknown assessment");
+  await db().from("assessments").update({ config: { ...config, photos }, updated_at: new Date().toISOString() }).eq("id", id);
+}
+
+/** A one-off link the admin's browser uploads a photo to. */
+export async function photoUploadTicket(id: string, fileName: string): Promise<{ path: string; token: string } | { error: string }> {
+  await requireAdmin();
+  if (!isId(id)) return { error: "Unknown assessment." };
+  const ext = PHOTO_EXT.exec(fileName)?.[1]?.toLowerCase().replace("jpeg", "jpg");
+  if (!ext) return { error: `${fileName}: use JPG, PNG or WebP images.` };
+  const path = `${id}/${randomUUID()}.${ext}`;
+  const { data, error } = await db().storage.from(PHOTO_BUCKET).createSignedUploadUrl(path);
+  if (error || !data) return { error: `Couldn't prepare the upload: ${error?.message ?? "unknown error"}` };
+  return { path, token: data.token };
+}
+
+/** Registers an uploaded photo. The server reads the file back and hashes it
+ * itself, so the hash candidates are matched against can be trusted. */
+export async function addPhoto(id: string, path: string, name: string): Promise<{ ok: true } | { error: string }> {
+  const { profile: me } = await requireAdmin();
+  if (!isId(id) || !path.startsWith(`${id}/`) || !PHOTO_EXT.test(path)) return { error: "Unknown upload." };
+  const { data: file, error } = await db().storage.from(PHOTO_BUCKET).download(path);
+  if (error || !file) return { error: "The upload couldn't be read back. Try again." };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const hash = sha256Hex(bytes);
+  const config = await readConfig(id);
+  if (!config) return { error: "Unknown assessment." };
+  const photos = config.photos ?? [];
+  if (photos.some((p) => p.hash === hash)) {
+    await db().storage.from(PHOTO_BUCKET).remove([path]);
+    return { error: `${name} is already uploaded.` };
+  }
+  if (photos.length >= 60) return { error: "60 photos is the maximum." };
+  photos.push({ id: randomUUID(), path, hash, category: "other", name: name.slice(0, 200) });
+  await writePhotos(id, photos);
+  await audit(me.id, "assessment_photo_add", id, { name });
+  paths(id);
+  return { ok: true };
+}
+
+export async function setPhotoCategory(id: string, photoId: string, category: string): Promise<{ ok: boolean }> {
+  await requireAdmin();
+  if (!isId(id) || !PHOTO_CATEGORIES.some((c) => c.value === category)) return { ok: false };
+  const config = await readConfig(id);
+  if (!config?.photos) return { ok: false };
+  await writePhotos(id, config.photos.map((p) => (p.id === photoId ? { ...p, category: category as PhotoCategory } : p)));
+  paths(id);
+  return { ok: true };
+}
+
+/** Takes a photo out of the assessment. The file itself is kept, because
+ * attempts that have already started may still use it. */
+export async function removePhoto(id: string, photoId: string): Promise<{ ok: boolean }> {
+  const { profile: me } = await requireAdmin();
+  if (!isId(id)) return { ok: false };
+  const config = await readConfig(id);
+  if (!config?.photos) return { ok: false };
+  const gone = config.photos.find((p) => p.id === photoId);
+  await writePhotos(id, config.photos.filter((p) => p.id !== photoId));
+  await audit(me.id, "assessment_photo_remove", id, { name: gone?.name });
+  paths(id);
+  return { ok: true };
 }

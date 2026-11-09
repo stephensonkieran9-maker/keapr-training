@@ -4,8 +4,8 @@ A timed listing-build test for job candidates. It sits inside Keapr Training und
 
 ## Setup (once)
 
-1. In the Supabase SQL editor, run `supabase/migrations/0018_listing_assessments.sql`.
-2. Optional: run `supabase/seed/listing_assessment_sample.sql` to add the sample case study (27 Wherry Lane). It starts **closed**. You can also create it from **Admin → Assessments → New from sample case study**.
+1. In the Supabase SQL editor, run `supabase/migrations/0018_listing_assessments.sql`, then `0019_assessment_photos.sql` (a private bucket for property photos).
+2. Create the sample from **Admin → Assessments → New from sample case study** (The Hollies House). It starts **closed**, and it can't be opened until its photos are uploaded on the **Photos** tab.
 3. Check `NEXT_PUBLIC_SITE_URL` is set in Vercel. Candidate links are built from it.
 
 Nothing else is needed: no new environment variables, and Supabase sign-ups stay switched off.
@@ -27,6 +27,8 @@ Each candidate gets **one attempt**. Closing the page, refreshing or switching d
 **Results tab.** Candidates are ranked by accuracy, then by time taken. **Results CSV** downloads the same ranking. Click a name to see every field: their answer, the answer key and the mark.
 
 **Setup tab.** Edit the title, the time limit (5–240 minutes) and the instructions shown before starting. **Make a new link** retires the old one. **Duplicate** copies the case study and answer key without the candidates, which is the quickest way to write a second case study. **Archive** hides an assessment and keeps its results.
+
+**Photos tab.** Upload every listing photo (JPG, PNG or WebP, up to 15 MB each) and choose which room each one shows. Candidates download a zip of the photos in a shuffled order with neutral names (photo-01.jpg…), upload them all, and put them in this order: **living spaces, dining, kitchen, bedrooms, bathrooms, then anything else**. Photos from the same room can go in any order among themselves. Each re-upload is matched to the original by its exact file contents, so a candidate who edits or re-saves a photo gets a warning and it doesn't count. Marks = share of the photos uploaded × share of photo pairs in the right order. On each candidate's page you can see the order they chose.
 
 **Case study tab.** Write the scenario in a simple format with a live preview: `#` headings, `- ` bullets, `| tables |`, `> ` quotes, `**bold**`, `---` dividers.
 
@@ -59,4 +61,4 @@ The available fields are listed in `lib/assessment/fields.ts`. Turning fields on
 
 ## Sample case study
 
-`lib/assessment/sample.ts` holds the sample's text and answer key, with a comment against each answer saying which document it comes from. The property, people and prices are **invented**, and none of it is Keapr policy or pricing. **Have someone check the answer key before sending the link to real candidates.**
+`lib/assessment/sample.ts` holds the sample (The Hollies House) in the team's usual brief format, with its answer key. Two things were added to the supplied case study: a **3-night minimum stay** (to confirm) and the standard **Strict (14 days)** cancellation. Fields the brief doesn't cover are switched off. **Check the answer key before sending the link to real candidates.**

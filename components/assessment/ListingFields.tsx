@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { PhotosInput } from "./PhotosInput";
 import {
   BED_TYPES, TIME_OPTIONS, countBeds, emptyRooms,
   type AnswerValue, type Beds, type FieldDef, type RoomsValue,
@@ -204,6 +205,10 @@ export function FieldInput({ f, value, onChange, disabled }: { f: FieldDef; valu
       );
       break;
     }
+    case "photos":
+      group = true;
+      control = <PhotosInput value={Array.isArray(v) ? (v as string[]) : []} onChange={onChange} disabled={disabled} label={f.label} />;
+      break;
     case "rooms":
       group = true;
       control = <RoomsInput value={v as RoomsValue | null} onChange={onChange} disabled={disabled} />;

@@ -4,7 +4,8 @@ import { CandidatePasswordForm } from "@/components/assessment/admin/Editors";
 import { requireAdmin } from "@/lib/auth";
 import { getAssessment, getCandidateDetail } from "@/lib/assessment/admin";
 import { deleteCandidate, resetAttempt } from "@/lib/assessment/admin-actions";
-import { FIELD_BY_ID, SECTIONS, displayValue } from "@/lib/assessment/fields";
+import { FIELD_BY_ID, PHOTO_CATEGORIES, SECTIONS, displayValue } from "@/lib/assessment/fields";
+import { signPhotoUrls } from "@/lib/assessment/photos";
 import { STATUS_LABEL, formatMinutesSeconds } from "@/lib/assessment/scoring";
 import { formatDateTime } from "@/lib/format";
 
@@ -25,7 +26,11 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   const d = await getCandidateDetail(id, cid);
   if (!d) notFound();
   const { row, score } = d;
-  const longText = ["title", "description", "additionalRules"].filter((f) => d.fieldIds.includes(f));
+  const photoUrls = d.fieldIds.includes("photos") ? await signPhotoUrls(d.photos) : {};
+  const photoByHash = new Map(d.photos.map((p) => [p.hash, p]));
+  const theirPhotos = Array.isArray(d.answers.photos) ? (d.answers.photos as string[]) : [];
+  const catLabel = (c: string) => PHOTO_CATEGORIES.find((x) => x.value === c)?.label.replace(/\s*\(.*\)$/, "") ?? c;
+  const longText = ["title", "description", "neighbourhood", "additionalRules"].filter((f) => d.fieldIds.includes(f));
 
   return (
     <>
@@ -58,6 +63,26 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               <p className="wrote">{String(d.answers[fid] ?? "") || <em>Left blank</em>}</p>
             </div>
           ))}
+        </div>
+      )}
+
+      {d.fieldIds.includes("photos") && row.startedAt && (
+        <div className="card form-stack">
+          <h2>Their photo order</h2>
+          {theirPhotos.length === 0 ? <p><em>No photos uploaded.</em></p> : (
+            <ol className="ph-grid ph-review">
+              {theirPhotos.map((h, i) => {
+                const p = photoByHash.get(h);
+                return (
+                  <li key={h} className={`ph-item${p ? "" : " unknown"}`}>
+                    <span className="ph-n">{i + 1}</span>
+                    {p && photoUrls[h] ? <img src={photoUrls[h]} alt={p.name} /> : <div className="ph-missing">Not a property photo</div>}
+                    <small>{p ? catLabel(p.category) : "Unknown file"}</small>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </div>
       )}
 

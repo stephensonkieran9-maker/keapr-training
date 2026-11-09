@@ -2,7 +2,7 @@ import "server-only";
 import { createAdminClient, check } from "@/lib/supabase/admin";
 import { cleanAnswers, type Answers } from "./fields";
 import { finaliseExpired, GRACE_SECONDS } from "./server";
-import { cleanConfig, formFieldIds, type AssessmentConfig, type CandidateRow, type CandidateStatus, type ScoreResult } from "./scoring";
+import { cleanConfig, formFieldIds, type AssessmentConfig, type CandidateRow, type CandidateStatus, type PhotoKey, type ScoreResult } from "./scoring";
 
 // Admin reads for listing assessments. Callers must have run requireAdmin().
 
@@ -110,6 +110,7 @@ export interface CandidateDetail {
   answers: Answers;
   fieldIds: string[];
   score: ScoreResult | null;
+  photos: PhotoKey[];
 }
 
 export async function getCandidateDetail(assessmentId: string, candidateId: string): Promise<CandidateDetail | null> {
@@ -134,6 +135,7 @@ export async function getCandidateDetail(assessmentId: string, candidateId: stri
     answers: a ? cleanAnswers(fieldIds, a.answers) : {},
     fieldIds,
     score: (a?.score as ScoreResult | null) ?? null,
+    photos: a ? cleanConfig(a.config_snapshot).photos ?? [] : [],
   };
 }
 

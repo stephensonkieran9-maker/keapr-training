@@ -8,7 +8,7 @@ import { TestScreen } from "../TestScreen";
 
 /** The candidate screen for admins: same layout and timer, but nothing is
  * saved, and submitting shows how the answers would be marked. */
-export function PreviewTest({ id, ...props }: { id: string; title: string; caseStudy: string; fieldIds: string[]; deadlineAt: string; serverNow: number }) {
+export function PreviewTest({ id, photoUrls, ...props }: { id: string; title: string; caseStudy: string; fieldIds: string[]; deadlineAt: string; serverNow: number; photoUrls: Record<string, string> }) {
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [error, setError] = useState("");
 
@@ -24,6 +24,7 @@ export function PreviewTest({ id, ...props }: { id: string; title: string; caseS
         {...props}
         initialAnswers={{}}
         save={null}
+        photos={{ downloadHref: Object.keys(photoUrls).length ? `/admin/assessments/${id}/photos` : null, urls: photoUrls }}
         submit={submit}
         banner={<div className="at-preview">Preview: nothing you enter here is saved or shown in results.</div>}
       />

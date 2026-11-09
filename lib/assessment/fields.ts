@@ -6,11 +6,12 @@
 // each is worth). Adding a brand-new field means adding it here; turning
 // existing fields on or off is done per assessment in the admin screens.
 
-export type SectionId = "basics" | "listing" | "rooms" | "amenities" | "pricing" | "policies" | "rules";
+export type SectionId = "basics" | "listing" | "photos" | "rooms" | "amenities" | "pricing" | "policies" | "rules";
 
 export const SECTIONS: { id: SectionId; label: string; blurb: string }[] = [
   { id: "basics", label: "Property basics", blurb: "What kind of place it is, where it is and who it's for." },
   { id: "listing", label: "Title & description", blurb: "What guests read first." },
+  { id: "photos", label: "Photos", blurb: "Download the property photos, upload every one, then put them in order: living spaces, dining, kitchen, bedrooms, bathrooms, then anything else." },
   { id: "rooms", label: "Rooms & beds", blurb: "Capacity and the bed layout, room by room." },
   { id: "amenities", label: "Amenities", blurb: "Tick everything the property actually offers. Nothing more." },
   { id: "pricing", label: "Pricing", blurb: "Nightly rate, fees and length-of-stay discounts. All prices in £." },
@@ -18,7 +19,7 @@ export const SECTIONS: { id: SectionId; label: string; blurb: string }[] = [
   { id: "rules", label: "House rules", blurb: "What guests can and can't do." },
 ];
 
-export type FieldType = "select" | "multi" | "number" | "yesno" | "time" | "shorttext" | "text" | "rooms";
+export type FieldType = "select" | "multi" | "number" | "yesno" | "time" | "shorttext" | "text" | "rooms" | "photos";
 
 export interface Option { value: string; label: string; group?: string }
 
@@ -53,6 +54,18 @@ export const BED_TYPES = [
 export type BedType = (typeof BED_TYPES)[number]["value"];
 export type Beds = Partial<Record<BedType, number>>;
 export interface RoomsValue { bedrooms: Beds[]; common: Beds }
+
+/** Photo categories, in the order photos must appear in the listing. */
+export const PHOTO_CATEGORIES = [
+  { value: "living", label: "Living space" },
+  { value: "dining", label: "Dining" },
+  { value: "kitchen", label: "Kitchen" },
+  { value: "bedroom", label: "Bedroom" },
+  { value: "bathroom", label: "Bathroom" },
+  { value: "other", label: "Anything else (garden, outside, hallway…)" },
+] as const;
+export type PhotoCategory = (typeof PHOTO_CATEGORIES)[number]["value"];
+export const isPhotoHash = (x: unknown): x is string => typeof x === "string" && /^[0-9a-f]{64}$/.test(x);
 
 export type AnswerValue = string | number | string[] | RoomsValue | null;
 export type Answers = Record<string, AnswerValue>;
@@ -95,12 +108,16 @@ export const FIELDS: FieldDef[] = [
   { id: "city", section: "basics", label: "Town / city", type: "shorttext", maxLength: 60 },
   { id: "postcode", section: "basics", label: "Postcode", type: "shorttext", maxLength: 10 },
   { id: "targetGuests", section: "basics", label: "Target guests", type: "multi", hint: "Who the listing is aimed at. Tick all that apply.", options: opts(
-    "Contractors and work crews", "Relocations", "Insurance placements", "Business travellers", "Families", "Holidaymakers", "Students",
+    "Contractors and work crews", "Relocations", "Insurance placements", "Business travellers", "Families", "Long-stay guests", "Holidaymakers", "Students",
   ) },
 
   // Title & description
   { id: "title", section: "listing", label: "Listing title", type: "text", maxLength: 50, hint: "Short and specific. 50 characters maximum." },
   { id: "description", section: "listing", label: "Listing description", type: "text", multiline: true, maxLength: 500, hint: "500 characters maximum." },
+  { id: "neighbourhood", section: "listing", label: "The neighbourhood and getting around", type: "text", multiline: true, maxLength: 500, hint: "What's nearby and how guests get about. 500 characters maximum." },
+
+  // Photos
+  { id: "photos", section: "photos", label: "Listing photos", type: "photos", hint: "Upload the files exactly as downloaded. Drag to reorder, or use the arrows." },
 
   // Rooms & beds
   { id: "maxGuests", section: "rooms", label: "Maximum guests", type: "number", min: 1, max: 30, step: 1, stepper: true },
@@ -122,6 +139,7 @@ export const FIELDS: FieldDef[] = [
   { id: "cleaningFee", section: "pricing", label: "Cleaning fee (per stay)", type: "number", prefix: "£", min: 0, max: 5000, step: 0.01 },
   { id: "extraGuestFee", section: "pricing", label: "Extra guest fee (per guest, per night)", type: "number", prefix: "£", min: 0, max: 1000, step: 0.01 },
   { id: "extraGuestFrom", section: "pricing", label: "Extra guest fee applies after", type: "number", suffix: "guests", min: 0, max: 30, step: 1, stepper: true },
+  { id: "petFee", section: "pricing", label: "Pet fee (per stay)", type: "number", prefix: "£", min: 0, max: 5000, step: 0.01 },
   { id: "securityDeposit", section: "pricing", label: "Security deposit (refundable)", type: "number", prefix: "£", min: 0, max: 10000, step: 0.01 },
   { id: "weeklyDiscount", section: "pricing", label: "Weekly discount (7+ nights)", type: "number", suffix: "%", min: 0, max: 99, step: 1, hint: "Enter 0 if there isn't one." },
   { id: "monthlyDiscount", section: "pricing", label: "Monthly discount (28+ nights)", type: "number", suffix: "%", min: 0, max: 99, step: 1, hint: "Enter 0 if there isn't one." },
@@ -162,7 +180,7 @@ export function emptyRooms(): RoomsValue {
 }
 
 export function emptyValue(f: FieldDef): AnswerValue {
-  if (f.type === "multi") return [];
+  if (f.type === "multi" || f.type === "photos") return [];
   if (f.type === "rooms") return emptyRooms();
   if (f.type === "number") return null;
   return "";
@@ -176,7 +194,7 @@ export function countBeds(b: Beds): number {
 /** Has this field been filled in at all? Used for section progress. */
 export function isAnswered(f: FieldDef, v: AnswerValue | undefined): boolean {
   if (v === undefined || v === null) return false;
-  if (f.type === "multi") return Array.isArray(v) && v.length > 0;
+  if (f.type === "multi" || f.type === "photos") return Array.isArray(v) && v.length > 0;
   if (f.type === "rooms") {
     const r = v as RoomsValue;
     return r.bedrooms.length > 0 || countBeds(r.common) > 0;
@@ -228,6 +246,8 @@ export function cleanValue(f: FieldDef, raw: unknown): AnswerValue {
       const s = typeof raw === "string" ? raw.replace(/\r\n/g, "\n") : "";
       return s.slice(0, f.maxLength ?? 2000);
     }
+    case "photos":
+      return [...new Set((Array.isArray(raw) ? raw : []).filter(isPhotoHash))].slice(0, 60);
     case "rooms": {
       const r = (raw && typeof raw === "object" ? raw : {}) as { bedrooms?: unknown; common?: unknown };
       const bedrooms = Array.isArray(r.bedrooms) ? r.bedrooms.slice(0, 20).map(cleanBeds) : [];
@@ -259,6 +279,10 @@ export function displayValue(f: FieldDef, v: AnswerValue | undefined): string {
       return v === "yes" ? "Yes" : "No";
     case "multi":
       return (v as string[]).map((x) => f.options?.find((o) => o.value === x)?.label.replace(/\s*\(.*\)$/, "") ?? x).join(", ");
+    case "photos": {
+      const n = (v as string[]).length;
+      return n ? `${n} photo${n === 1 ? "" : "s"}` : "";
+    }
     case "number":
       return `${f.prefix ?? ""}${v}${f.suffix ? (f.suffix === "%" ? "%" : ` ${f.suffix}`) : ""}`;
     case "rooms": {

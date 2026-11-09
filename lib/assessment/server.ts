@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { cleanAnswers, type Answers } from "./fields";
-import { cleanConfig, formFieldIds, scoreAnswers, type AssessmentConfig } from "./scoring";
+import { cleanConfig, formFieldIds, scoreAnswers, type AssessmentConfig, type PhotoKey } from "./scoring";
 
 // Candidates for listing assessments. They are not Supabase Auth users: the
 // server keeps its own small account and session tables (migration 0018),
@@ -43,6 +43,8 @@ export interface AttemptState {
   savedAt: string | null;
   caseStudy: string;
   fieldIds: string[];
+  /** Photos from the snapshot (server use: includes categories). */
+  photos: PhotoKey[];
 }
 
 const db = () => createAdminClient();
@@ -150,7 +152,7 @@ export async function signInCandidate(a: PublicAssessment, email: string, passwo
   return { ok: true };
 }
 
-type AttemptRow = {
+export type AttemptRow = {
   id: string; started_at: string; deadline_at: string; submitted_at: string | null; submit_kind: "candidate" | "timeout" | null;
   answers: unknown; saved_at: string | null; case_study_snapshot: string; config_snapshot: unknown;
 };
@@ -162,6 +164,7 @@ function toState(r: AttemptRow): AttemptState {
   return {
     id: r.id, startedAt: r.started_at, deadlineAt: r.deadline_at, submittedAt: r.submitted_at, submitKind: r.submit_kind,
     answers: cleanAnswers(fieldIds, r.answers), savedAt: r.saved_at, caseStudy: r.case_study_snapshot, fieldIds,
+    photos: config.photos ?? [],
   };
 }
 
@@ -206,6 +209,13 @@ export async function finaliseExpired(filter: { assessmentId?: string; candidate
     const config = cleanConfig(row.config_snapshot);
     await finalise(row, cleanAnswers(formFieldIds(config), row.answers), "timeout");
   }
+}
+
+/** The raw attempt row (server use only: it includes the answer key). */
+export async function attemptRowForCandidate(candidateId: string): Promise<AttemptRow | null> {
+  await finaliseExpired({ candidateId });
+  const { data } = await db().from("assessment_attempts").select(ATTEMPT_COLS).eq("candidate_id", candidateId).maybeSingle();
+  return (data as AttemptRow | null) ?? null;
 }
 
 export async function getAttempt(candidateId: string): Promise<AttemptState | null> {

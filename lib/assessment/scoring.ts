@@ -2,8 +2,8 @@
 // ranking candidates. Pure functions: no database, no browser.
 
 import {
-  BED_TYPES, FIELDS, FIELD_BY_ID, SECTIONS, cleanValue, countBeds, displayValue,
-  type AnswerValue, type Answers, type Beds, type FieldDef, type RoomsValue, type SectionId,
+  BED_TYPES, FIELDS, FIELD_BY_ID, PHOTO_CATEGORIES, SECTIONS, cleanValue, countBeds, displayValue, isPhotoHash,
+  type AnswerValue, type Answers, type Beds, type FieldDef, type PhotoCategory, type RoomsValue, type SectionId,
 } from "./fields.ts";
 
 /** One field's entry in an assessment's config. */
@@ -19,8 +19,59 @@ export interface FieldKey {
   mustMention?: string[];
 }
 
+/** A property photo uploaded by an admin. The hash identifies the exact
+ * file, so a candidate's re-uploaded copy can be matched to it. */
+export interface PhotoKey {
+  id: string;
+  path: string;
+  hash: string;
+  category: PhotoCategory;
+  name: string;
+}
+
 export interface AssessmentConfig {
   fields: Record<string, FieldKey>;
+  /** Kept outside `fields` so turning the photos field off and on again
+   * doesn't lose them. */
+  photos?: PhotoKey[];
+}
+
+export const PHOTO_ORDER: PhotoCategory[] = PHOTO_CATEGORIES.map((c) => c.value);
+const categoryLabel = (c: PhotoCategory) => PHOTO_CATEGORIES.find((x) => x.value === c)?.label.replace(/\s*\(.*\)$/, "").toLowerCase() ?? c;
+
+/** Photos: every photo uploaded, in category order. Score = share of the
+ * right photos uploaded × share of photo pairs in the right order. */
+export function scorePhotos(given: string[], photos: PhotoKey[]): { fraction: number; note?: string } {
+  if (photos.length === 0) return { fraction: 1 };
+  const byHash = new Map(photos.map((p) => [p.hash, p]));
+  const matched = given.filter((h) => byHash.has(h));
+  const unknown = given.length - matched.length;
+  if (matched.length === 0) return { fraction: 0, note: given.length ? "None of the uploads were the property photos" : "No photos uploaded" };
+  const coverage = matched.length / Math.max(photos.length, given.length);
+  const ranks = matched.map((h) => PHOTO_ORDER.indexOf(byHash.get(h)!.category));
+  let pairs = 0;
+  let good = 0;
+  for (let i = 0; i < ranks.length; i++) {
+    for (let j = i + 1; j < ranks.length; j++) {
+      if (ranks[i] === ranks[j]) continue;
+      pairs++;
+      if (ranks[i] < ranks[j]) good++;
+    }
+  }
+  const order = pairs === 0 ? 1 : good / pairs;
+  const notes: string[] = [];
+  const missing = photos.length - matched.length;
+  if (missing > 0) notes.push(`${missing} photo${missing === 1 ? "" : "s"} missing`);
+  if (unknown > 0) notes.push(`${unknown} upload${unknown === 1 ? " wasn't a property photo" : "s weren't property photos"}`);
+  let maxSoFar = -1;
+  for (const r of ranks) {
+    if (r < maxSoFar) {
+      notes.push(`Out of order: a ${categoryLabel(PHOTO_ORDER[r])} photo comes after a ${categoryLabel(PHOTO_ORDER[maxSoFar])} photo`);
+      break;
+    }
+    maxSoFar = Math.max(maxSoFar, r);
+  }
+  return { fraction: coverage * order, note: notes.join(". ") || undefined };
 }
 
 export interface FieldScore {
@@ -90,9 +141,11 @@ function scoreRooms(given: RoomsValue, key: RoomsValue): { fraction: number; not
   return { fraction: right / total, note: wrong.length ? `Wrong: ${wrong.join(", ")}` : "" };
 }
 
-function scoreField(f: FieldDef, key: FieldKey, raw: AnswerValue | undefined): { fraction: number; note?: string } {
+function scoreField(f: FieldDef, key: FieldKey, raw: AnswerValue | undefined, config: AssessmentConfig): { fraction: number; note?: string } {
   const given = cleanValue(f, raw ?? null);
   switch (f.type) {
+    case "photos":
+      return scorePhotos(given as string[], config.photos ?? []);
     case "number": {
       const k = typeof key.answer === "number" ? key.answer : null;
       if (k === null) return { fraction: given === null ? 1 : 0 };
@@ -147,7 +200,11 @@ function label(f: FieldDef, value: string) {
   return f.options?.find((o) => o.value === value)?.label.replace(/\s*\(.*\)$/, "") ?? value;
 }
 
-function expectedText(f: FieldDef, key: FieldKey): string {
+function expectedText(f: FieldDef, key: FieldKey, config: AssessmentConfig): string {
+  if (f.type === "photos") {
+    const n = config.photos?.length ?? 0;
+    return `All ${n} photos: living spaces, dining, kitchen, bedrooms, bathrooms, then anything else`;
+  }
   if (f.type === "text") {
     const groups = mentionGroups(key.mustMention);
     return groups.length ? `Mentions: ${(key.mustMention ?? []).map((m) => m.split("|")[0].trim()).join(", ")}` : "Any answer";
@@ -165,12 +222,12 @@ export function scoreAnswers(config: AssessmentConfig, answers: Answers): ScoreR
     const key = config.fields[id];
     const weight = Math.max(0, Number(key.weight) || 0);
     if (weight === 0) continue;
-    const { fraction, note } = scoreField(f, key, answers[id]);
+    const { fraction, note } = scoreField(f, key, answers[id], config);
     fields.push({
       id, label: f.label, section: f.section, weight, fraction,
       points: weight * fraction,
       given: displayValue(f, cleanValue(f, answers[id] ?? null)),
-      expected: expectedText(f, key),
+      expected: expectedText(f, key, config),
       note,
     });
   }
@@ -198,6 +255,10 @@ export function configProblems(config: AssessmentConfig): string[] {
       if (mentionGroups(key.mustMention).length === 0) p.push(`${f.label}: add at least one fact it must mention, or set its weight to 0.`);
       continue;
     }
+    if (f.type === "photos") {
+      if (!config.photos?.length) p.push(`${f.label}: upload the property photos on the Photos tab, or set its weight to 0.`);
+      continue;
+    }
     const clean = cleanValue(f, key.answer ?? null);
     const blank = clean === null || clean === "" || (f.type === "rooms" && (clean as RoomsValue).bedrooms.length === 0 && countBeds((clean as RoomsValue).common) === 0);
     if (blank && f.type !== "multi") p.push(`${f.label}: set the correct answer.`);
@@ -216,7 +277,9 @@ export function cleanConfig(raw: unknown): AssessmentConfig {
     const k = src[f.id] as Partial<FieldKey> | undefined;
     if (!k || typeof k !== "object") continue;
     const entry: FieldKey = { weight: Math.max(0, Math.min(100, Number(k.weight) || 0)) };
-    if (f.type === "text") {
+    if (f.type === "photos") {
+      // nothing to store: the photos themselves live in config.photos
+    } else if (f.type === "text") {
       entry.mustMention = Array.isArray(k.mustMention) ? k.mustMention.map(String).map((s) => s.trim()).filter(Boolean).slice(0, 30) : [];
     } else if (f.type === "shorttext") {
       entry.answer = typeof k.answer === "string" ? k.answer.slice(0, 200) : "";
@@ -226,7 +289,15 @@ export function cleanConfig(raw: unknown): AssessmentConfig {
     if (f.type === "number" && k.tolerance !== undefined && Number(k.tolerance) > 0) entry.tolerance = Number(k.tolerance);
     fields[f.id] = entry;
   }
-  return { fields };
+  const rawPhotos = (raw && typeof raw === "object" ? (raw as { photos?: unknown }).photos : null);
+  const photos: PhotoKey[] = (Array.isArray(rawPhotos) ? rawPhotos : [])
+    .filter((p): p is PhotoKey => Boolean(p) && typeof p === "object" && isPhotoHash((p as PhotoKey).hash) && typeof (p as PhotoKey).path === "string")
+    .map((p) => ({
+      id: String(p.id), path: p.path, hash: p.hash, name: String(p.name ?? "").slice(0, 200),
+      category: (PHOTO_ORDER.includes(p.category) ? p.category : "other") as PhotoCategory,
+    }))
+    .slice(0, 60);
+  return photos.length ? { fields, photos } : { fields };
 }
 
 /** Sections that have at least one field turned on, in order. */

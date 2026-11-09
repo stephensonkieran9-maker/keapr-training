@@ -4,7 +4,7 @@ import type { Answers } from "@/lib/assessment/fields";
 import { TestScreen, type SaveOutcome } from "./TestScreen";
 
 /** The candidate's timed test, saving to the server as they go. */
-export function CandidateTest({ slug, ...props }: {
+export function CandidateTest({ slug, photoUrls, hasPhotos, ...props }: {
   slug: string;
   title: string;
   caseStudy: string;
@@ -12,6 +12,8 @@ export function CandidateTest({ slug, ...props }: {
   initialAnswers: Answers;
   deadlineAt: string;
   serverNow: number;
+  photoUrls: Record<string, string>;
+  hasPhotos: boolean;
 }) {
   const save = async (answers: Answers, opts?: { keepalive?: boolean }): Promise<SaveOutcome> => {
     const res = await fetch(`/assess/${slug}/save`, {
@@ -36,5 +38,5 @@ export function CandidateTest({ slug, ...props }: {
     window.location.assign(`/assess/${slug}`);
   };
 
-  return <TestScreen {...props} save={save} submit={submit} />;
+  return <TestScreen {...props} save={save} submit={submit} photos={{ downloadHref: hasPhotos ? `/assess/${slug}/photos` : null, urls: photoUrls }} />;
 }

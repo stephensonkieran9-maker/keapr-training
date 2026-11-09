@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { CandidateTest } from "@/components/assessment/CandidateTest";
+import { signPhotoUrls } from "@/lib/assessment/photos";
 import { currentCandidate, getAssessmentBySlug, getAttempt } from "@/lib/assessment/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -26,6 +27,8 @@ export default async function TestPage({ params }: { params: Promise<{ slug: str
       initialAnswers={attempt.answers}
       deadlineAt={attempt.deadlineAt}
       serverNow={Date.now()}
+      photoUrls={await signPhotoUrls(attempt.photos)}
+      hasPhotos={attempt.photos.length > 0}
     />
   );
 }

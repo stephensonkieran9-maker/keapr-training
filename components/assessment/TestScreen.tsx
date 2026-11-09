@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FIELD_BY_ID, isAnswered, type AnswerValue, type Answers } from "@/lib/assessment/fields";
 import { CaseStudy } from "./CaseStudy";
 import { ListingBuilder } from "./ListingBuilder";
+import { PhotoContext } from "./PhotosInput";
 
 export type SaveOutcome = "ok" | "expired" | "submitted" | "error";
 
@@ -20,7 +21,7 @@ const timeOfDay = (d: Date) => d.toLocaleTimeString("en-GB", { hour: "2-digit", 
 /** The timed split screen: case study on the left, listing builder on the
  * right. Saving and submitting are passed in, so the admin preview can use
  * the same screen without recording anything. */
-export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlineAt, serverNow, save, submit, banner }: {
+export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlineAt, serverNow, save, submit, banner, photos }: {
   title: string;
   caseStudy: string;
   fieldIds: string[];
@@ -30,6 +31,7 @@ export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlin
   save: ((answers: Answers, opts?: { keepalive?: boolean }) => Promise<SaveOutcome>) | null;
   submit: (answers: Answers, kind: "candidate" | "timeout") => Promise<void>;
   banner?: React.ReactNode;
+  photos?: { downloadHref: string | null; urls: Record<string, string> };
 }) {
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [pane, setPane] = useState<"case" | "form">("case");
@@ -153,7 +155,9 @@ export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlin
           <CaseStudy text={caseStudy} />
         </section>
         <section className={`at-form${pane === "form" ? " show" : ""}`} aria-label="Listing builder">
-          <ListingBuilder fieldIds={fieldIds} answers={answers} onChange={onChange} disabled={submitting} footer={submitButton} />
+          <PhotoContext.Provider value={photos ?? { downloadHref: null, urls: {} }}>
+            <ListingBuilder fieldIds={fieldIds} answers={answers} onChange={onChange} disabled={submitting} footer={submitButton} />
+          </PhotoContext.Provider>
         </section>
       </div>
 

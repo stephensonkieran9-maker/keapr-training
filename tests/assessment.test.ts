@@ -2,94 +2,133 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { FIELD_BY_ID, cleanAnswers, cleanValue, type Answers } from "../lib/assessment/fields.ts";
 import {
-  candidatesCsv, cleanConfig, configProblems, formFieldIds, rankCandidates, scoreAnswers,
-  type AssessmentConfig, type CandidateRow,
+  candidatesCsv, cleanConfig, configProblems, formFieldIds, rankCandidates, scoreAnswers, scorePhotos,
+  type AssessmentConfig, type CandidateRow, type PhotoKey,
 } from "../lib/assessment/scoring.ts";
 import { SAMPLE_CONFIG } from "../lib/assessment/sample.ts";
 
 /** A perfect set of answers, built from the key itself. */
 function perfect(config: AssessmentConfig): Answers {
-  const a: Answers = {};
+  const a: Answers = { photos: RIGHT_ORDER };
   for (const [id, k] of Object.entries(config.fields)) {
     if (FIELD_BY_ID[id].type === "text") a[id] = (k.mustMention ?? []).map((m) => m.split("|")[0]).join(", ");
+    else if (typeof k.answer === "string" && FIELD_BY_ID[id].type === "shorttext") a[id] = k.answer.split("|")[0];
     else if (k.answer !== undefined) a[id] = k.answer;
   }
   return a;
 }
 
-test("the sample answer key has no problems", () => {
-  assert.deepEqual(configProblems(SAMPLE_CONFIG), []);
+const h = (n: number) => n.toString(16).padStart(64, "0");
+const PHOTOS: PhotoKey[] = [
+  { id: "a", path: "x/a.jpg", hash: h(1), category: "bedroom", name: "bed1.jpg" },
+  { id: "b", path: "x/b.jpg", hash: h(2), category: "living", name: "lounge.jpg" },
+  { id: "c", path: "x/c.jpg", hash: h(3), category: "kitchen", name: "kitchen.jpg" },
+  { id: "d", path: "x/d.jpg", hash: h(4), category: "other", name: "garden.jpg" },
+  { id: "e", path: "x/e.jpg", hash: h(5), category: "bathroom", name: "bath.jpg" },
+  { id: "f", path: "x/f.jpg", hash: h(6), category: "dining", name: "dining.jpg" },
+];
+const RIGHT_ORDER = [h(2), h(6), h(3), h(1), h(5), h(4)];
+const WITH_PHOTOS: AssessmentConfig = { ...SAMPLE_CONFIG, photos: PHOTOS };
+
+test("the sample needs photos before it can open, then has no problems", () => {
+  assert.deepEqual(configProblems(SAMPLE_CONFIG), ["Listing photos: upload the property photos on the Photos tab, or set its weight to 0."]);
+  assert.deepEqual(configProblems(WITH_PHOTOS), []);
   assert.deepEqual(cleanConfig(SAMPLE_CONFIG), SAMPLE_CONFIG);
+  assert.deepEqual(cleanConfig(WITH_PHOTOS), WITH_PHOTOS);
+});
+
+test("photos: all of them in category order scores full marks", () => {
+  assert.equal(scorePhotos(RIGHT_ORDER, PHOTOS).fraction, 1);
+  // Same-category photos can go in any order between themselves.
+  const twoBeds = [...PHOTOS, { id: "g", path: "x/g.jpg", hash: h(7), category: "bedroom" as const, name: "bed2.jpg" }];
+  assert.equal(scorePhotos([h(2), h(6), h(3), h(7), h(1), h(5), h(4)], twoBeds).fraction, 1);
+});
+
+test("photos: missing, unknown and out-of-order photos lose marks", () => {
+  const missing = scorePhotos(RIGHT_ORDER.slice(0, 3), PHOTOS);
+  assert.equal(missing.fraction, 0.5);
+  assert.match(missing.note!, /3 photos missing/);
+  const extra = scorePhotos([...RIGHT_ORDER, h(99), h(98)], PHOTOS);
+  assert.equal(extra.fraction, 6 / 8);
+  assert.match(extra.note!, /2 uploads weren't property photos/);
+  // Kitchen and living swapped: 1 of 15 pairs wrong.
+  const swapped = scorePhotos([h(3), h(6), h(2), h(1), h(5), h(4)], PHOTOS);
+  assert.ok(swapped.fraction < 1 && swapped.fraction > 0.7);
+  assert.match(swapped.note!, /Out of order: a dining photo comes after a kitchen photo/);
+  assert.equal(scorePhotos([...RIGHT_ORDER].reverse(), PHOTOS).fraction, 0);
+  assert.equal(scorePhotos([], PHOTOS).fraction, 0);
 });
 
 test("perfect answers score 100%; a blank form only gets the 'no discount' zeros", () => {
-  assert.equal(scoreAnswers(SAMPLE_CONFIG, perfect(SAMPLE_CONFIG)).accuracy, 100);
-  assert.equal(scoreAnswers(SAMPLE_CONFIG, {}).points, 2); // weekly and monthly discount are 0
+  assert.equal(scoreAnswers(WITH_PHOTOS, perfect(WITH_PHOTOS)).accuracy, 100);
+  assert.equal(scoreAnswers(WITH_PHOTOS, {}).points, 2); // weekly and monthly discount are 0
 });
 
 test("a blank discount box counts as 0, but a blank price doesn't", () => {
-  const a = perfect(SAMPLE_CONFIG);
+  const a = perfect(WITH_PHOTOS);
   delete a.weeklyDiscount;
   delete a.baseRate;
-  const byId = Object.fromEntries(scoreAnswers(SAMPLE_CONFIG, a).fields.map((f) => [f.id, f]));
+  const byId = Object.fromEntries(scoreAnswers(WITH_PHOTOS, a).fields.map((f) => [f.id, f]));
   assert.equal(byId.weeklyDiscount.fraction, 1);
   assert.equal(byId.baseRate.fraction, 0);
 });
 
-test("falling for the case study's traps loses the right marks", () => {
-  const a = perfect(SAMPLE_CONFIG);
-  a.baseRate = 110;                 // the owner's first ask
-  a.cleaningFee = 55;               // the cleaner's cost
-  a.rooms = { bedrooms: [{ king: 1 }, { double: 1 }, { single: 1 }], common: { sofa: 1 } }; // old bedroom 2
-  const r = scoreAnswers(SAMPLE_CONFIG, a);
+test("common mistakes lose the right marks", () => {
+  const a = perfect(WITH_PHOTOS);
+  a.monthlyDiscount = 10;           // applied the 90-night discount to 28+ nights
+  a.parking = "free_parking_on_premises"; // it's street parking
+  a.rooms = { bedrooms: [{ king: 1 }, { double: 1 }, { single: 1 }], common: {} }; // only one single
+  const r = scoreAnswers(WITH_PHOTOS, a);
   const byId = Object.fromEntries(r.fields.map((f) => [f.id, f]));
-  assert.equal(byId.baseRate.fraction, 0);
-  assert.equal(byId.cleaningFee.fraction, 0);
-  assert.equal(byId.rooms.fraction, 3 / 4);
-  assert.match(byId.rooms.note!, /bedroom 2/);
-  assert.equal(r.maxPoints - r.points, 1 + 1 + 0.5);
+  assert.equal(byId.monthlyDiscount.fraction, 0);
+  assert.equal(byId.parking.fraction, 0);
+  assert.equal(byId.rooms.fraction, 2 / 3);
+  assert.match(byId.rooms.note!, /bedroom 3/);
+  assert.ok(Math.abs(r.maxPoints - r.points - (1 + 1 + 2 / 3)) < 1e-9);
 });
 
 test("amenities score by overlap, so ticking everything isn't rewarded", () => {
   const f = FIELD_BY_ID.amenities;
   const all = f.options!.map((o) => o.value);
-  const a = { ...perfect(SAMPLE_CONFIG), amenities: all };
-  const s = scoreAnswers(SAMPLE_CONFIG, a).fields.find((x) => x.id === "amenities")!;
+  const a = { ...perfect(WITH_PHOTOS), amenities: all };
+  const s = scoreAnswers(WITH_PHOTOS, a).fields.find((x) => x.id === "amenities")!;
   const keyed = (SAMPLE_CONFIG.fields.amenities.answer as string[]).length;
   assert.equal(s.fraction, keyed / all.length);
   assert.match(s.note!, /Shouldn't be ticked: .*Tumble dryer/);
 });
 
 test("contractor quote allows the set tolerance", () => {
-  const q = (v: number) => scoreAnswers(SAMPLE_CONFIG, { ...perfect(SAMPLE_CONFIG), contractorQuote: v }).fields.find((x) => x.id === "contractorQuote")!.fraction;
-  assert.equal(q(2730), 1);
-  assert.equal(q(2730.8), 1);
-  assert.equal(q(2731.5), 0);
-  assert.equal(q(2660), 0); // forgot the cleaning fee
-  assert.equal(q(2464), 0); // applied the 90-night discount to 28 nights
+  const q = (v: number) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), contractorQuote: v }).fields.find((x) => x.id === "contractorQuote")!.fraction;
+  assert.equal(q(3560), 1);
+  assert.equal(q(3560.8), 1);
+  assert.equal(q(3561.5), 0);
+  assert.equal(q(3500), 0); // forgot the cleaning fee
+  assert.equal(q(3210), 0); // applied the 90-night discount to 28 nights
+  assert.equal(q(3860), 0); // added the deposit
 });
 
 test("address matching ignores case, spaces and punctuation", () => {
-  const s = (postcode: string) => scoreAnswers(SAMPLE_CONFIG, { ...perfect(SAMPLE_CONFIG), postcode }).fields.find((x) => x.id === "postcode")!.fraction;
-  assert.equal(s("ip39qx"), 1);
-  assert.equal(s(" IP3  9QX "), 1);
-  assert.equal(s("IP3 9QZ"), 0);
+  const s = (postcode: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), postcode }).fields.find((x) => x.id === "postcode")!.fraction;
+  assert.equal(s("st50qt"), 1);
+  assert.equal(s(" ST5  0QT "), 1);
+  assert.equal(s("ST5 0QX"), 0);
 });
 
 test("text fields score by facts mentioned", () => {
-  const t = (title: string) => scoreAnswers(SAMPLE_CONFIG, { ...perfect(SAMPLE_CONFIG), title }).fields.find((x) => x.id === "title")!;
-  assert.equal(t("Three-bed house in Ipswich for contractors").fraction, 1);
-  const half = t("Lovely 3 bed home in Ipswich");
-  assert.equal(half.fraction, 2 / 3);
-  assert.match(half.note!, /contractor/);
+  const t = (title: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), title }).fields.find((x) => x.id === "title")!;
+  assert.equal(t("Three-bed house in Newcastle-under-Lyme").fraction, 1);
+  const half = t("Lovely 3 bed home with garden");
+  assert.equal(half.fraction, 1 / 2);
+  assert.match(half.note!, /newcastle/);
   assert.equal(t("").fraction, 0);
   // Whole words only: "bedside" doesn't count as "bed".
-  assert.equal(t("Ipswichy 3 bedside").fraction, 0);
+  assert.equal(t("Newcastles 3 bedside").fraction, 0);
 });
 
 test("weight 0 fields are shown but not marked", () => {
-  assert.ok(formFieldIds(SAMPLE_CONFIG).includes("checkInUntil"));
-  assert.ok(!scoreAnswers(SAMPLE_CONFIG, {}).fields.some((f) => f.id === "checkInUntil"));
+  const cfg = { ...WITH_PHOTOS, fields: { ...WITH_PHOTOS.fields, checkInUntil: { weight: 0, answer: "" } } };
+  assert.ok(formFieldIds(cfg).includes("checkInUntil"));
+  assert.ok(!scoreAnswers(cfg, {}).fields.some((f) => f.id === "checkInUntil"));
 });
 
 test("answers from the browser are cleaned to their field types", () => {
@@ -97,7 +136,7 @@ test("answers from the browser are cleaned to their field types", () => {
   const clean = cleanAnswers(ids, {
     baseRate: "£95", maxGuests: 999, propertyType: "castle", amenities: ["wi_fi", "jacuzzi", "wi_fi"],
     title: "x".repeat(80), rooms: { bedrooms: [{ king: "1", spaceship: 2 }], common: null }, hacked: true,
-    smokingAllowed: "maybe",
+    smokingAllowed: "maybe", photos: [h(1), "not-a-hash", h(1), 5],
   });
   assert.equal(clean.baseRate, 95);
   assert.equal(clean.maxGuests, 30);
@@ -106,6 +145,7 @@ test("answers from the browser are cleaned to their field types", () => {
   assert.equal((clean.title as string).length, 50);
   assert.deepEqual(clean.rooms, { bedrooms: [{ king: 1 }], common: {} });
   assert.equal(clean.smokingAllowed, "");
+  assert.deepEqual(clean.photos, [h(1)]);
   assert.ok(!("hacked" in clean));
   assert.equal(cleanValue(FIELD_BY_ID.bathrooms, "1.5"), 1.5);
 });

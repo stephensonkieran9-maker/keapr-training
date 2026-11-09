@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyLink } from "@/components/admin/CopyLink";
 import { AnswerKeyEditor, CaseStudyEditor, SettingsForm } from "@/components/assessment/admin/Editors";
+import { PhotoManager } from "@/components/assessment/admin/PhotoManager";
+import { signPhotoUrls } from "@/lib/assessment/photos";
 import { Icon } from "@/components/Icons";
 import { requireAdmin } from "@/lib/auth";
 import { assessmentLink, getAssessment, loadCandidateRows } from "@/lib/assessment/admin";
@@ -16,6 +18,7 @@ const TABS = [
   { id: "results", label: "Results" },
   { id: "setup", label: "Setup" },
   { id: "case", label: "Case study" },
+  { id: "photos", label: "Photos" },
   { id: "key", label: "Answer key" },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
@@ -36,6 +39,7 @@ export default async function AssessmentPage({ params, searchParams }: {
   const link = assessmentLink(a.slug);
   const rows = tab === "results" ? rankCandidates(await loadCandidateRows(a.id)) : [];
   const finished = rows.filter((r) => r.accuracy !== null);
+  const photoUrls = tab === "photos" ? await signPhotoUrls(a.config.photos ?? []) : {};
   let rank = 0;
 
   return (
@@ -145,6 +149,10 @@ export default async function AssessmentPage({ params, searchParams }: {
       )}
 
       {tab === "case" && <CaseStudyEditor id={a.id} text={a.caseStudy} started={a.started} />}
+
+      {tab === "photos" && (
+        <PhotoManager id={a.id} started={a.started} photos={(a.config.photos ?? []).map((p) => ({ id: p.id, name: p.name, category: p.category, url: photoUrls[p.hash] ?? null }))} />
+      )}
 
       {tab === "key" && (
         <>

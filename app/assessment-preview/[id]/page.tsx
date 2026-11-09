@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { PreviewTest } from "@/components/assessment/admin/PreviewTest";
 import { requireAdmin } from "@/lib/auth";
 import { getAssessment } from "@/lib/assessment/admin";
+import { signPhotoUrls } from "@/lib/assessment/photos";
 import { formFieldIds } from "@/lib/assessment/scoring";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ id: st
       fieldIds={formFieldIds(a.config)}
       deadlineAt={new Date(now + a.timeLimitMinutes * 60_000).toISOString()}
       serverNow={now}
+      photoUrls={await signPhotoUrls(a.config.photos ?? [])}
     />
   );
 }
