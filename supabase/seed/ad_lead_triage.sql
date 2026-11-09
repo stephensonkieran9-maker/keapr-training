@@ -3,6 +3,7 @@
 -- Built from the Ad-Lead Triage Script, the Management Objections & 2-Day
 -- Training Plan, the Setter Comp sheet, the 48-Hour Sales Training video and
 -- the Day 1 / Day 2 quizzes (questions word for word, pass mark 27/30 = 90%).
+--   Day 1 runs 11:30–15:30 with a break 13:30–14:00. Day 2 keeps the plan's block lengths.
 --   Day 1  1. Training video          2. Read script + objections (task)
 --          3. Your pay (reading)      4. Script Reps (task)
 --          5. Day 1 Quiz (30 q)       6. Required Recording (task)
@@ -27,7 +28,7 @@ declare
  "lessons": [
   {
    "key": "alt-video",
-   "title": "Day 1 · Training Video: Keapr 48-Hour Sales Training",
+   "title": "Day 1 · 11:30 · Training Video: Keapr 48-Hour Sales Training",
    "kind": "video",
    "isTask": false,
    "readingBody": "",
@@ -49,10 +50,10 @@ declare
   },
   {
    "key": "alt-read",
-   "title": "Day 1 · Read the Triage Script and Management Objections",
+   "title": "Day 1 · 11:45 · Read the Triage Script and Management Objections",
    "kind": "reading",
    "isTask": true,
-   "readingBody": "# Day 1 · Read the Script\n\n- Read the Keapr Ad-Lead Triage Script once, top to bottom.\n- Read the Management Objections & Answers once, top to bottom.\n\nBoth are in the Day 1 PDF under Downloads. The Day 1 quiz covers the script and all 10 objections.",
+   "readingBody": "# Day 1 · 11:45–12:15 · Read the Script\n\n- Read the Keapr Ad-Lead Triage Script once, top to bottom.\n- Read the Management Objections & Answers once, top to bottom.\n\nBoth are in the Day 1 PDF under Downloads. The Day 1 quiz covers the script and all 10 objections.",
    "objectives": [
     "Read the full triage script once, top to bottom",
     "Read the 10 management objections and answers once, top to bottom"
@@ -63,14 +64,14 @@ declare
    "passPercent": 90,
    "requiredWatchPercent": 100,
    "isRequired": true,
-   "estimatedMinutes": 20,
+   "estimatedMinutes": 30,
    "hasQuiz": false,
    "questions": [],
    "downloads": []
   },
   {
    "key": "alt-pay",
-   "title": "Day 1 · Your Pay & What Counts As A Qualified Management Show",
+   "title": "Day 1 · 12:15 · Your Pay & What Counts As A Qualified Management Show",
    "kind": "reading",
    "isTask": false,
    "readingBody": "# Your pay has 3 parts\n\n# 1. Base pay\n\n- You earn $6 per hour for your time on shift. This is for showing up and doing the work.\n\n# 2. Show bonus (qualified management calls only)\n\n- You earn $3 for every qualified management planning call that actually shows.\n- \"Shows\" means the prospect turns up and stays on the call for at least 10 minutes.\n\n# 3. Onboarding bonus (cash collected)\n\n- You earn $35 for every management client who pays the £495 onboarding fee that came from a call you set.\n- This is where the real upside is for you.\n\n# What \"Qualified Management Show\" Means\n\nYou ONLY get the $3 show bonus if all of these are true:\n\n1. They are (or will be) hosting: they are already hosting now on Airbnb/Booking.com/etc, or they will be live within the next 60 days.\n2. They want it more hands-off (management): on Question 2, they clearly chose the hands-off / management option (B), or said their biggest problem is the time and hassle of running it, not just \"a few extra bookings.\"\n3. They are a service fit: the property is in an area we actually want to work in. The property type and expected rates are sensible (not something we would obviously never take on).\n4. The call actually happens: the prospect attends the planning call you booked and stays at least 10 minutes.\n\nIf any of these points are missing, that call does not count as a qualified management show, and there is no $3 show bonus for that one. You still earn your hourly pay, and you still earn $35 if they end up paying the £495 onboarding fee.\n\n# Why This Matters\n\n- Stuffing the calendar with low-quality or wrong-fit calls does not help you or the company.\n- You make the most money when you book real management prospects who show up, and those prospects become paying management clients.\n\n# Summary\n\n\"You get $6/hr base, $3 for every qualified management call that shows, and $35 for every management client who pays the £495 onboarding fee from your calls. Focus on quality, not just volume.\"",
@@ -85,17 +86,17 @@ declare
    "passPercent": 90,
    "requiredWatchPercent": 100,
    "isRequired": true,
-   "estimatedMinutes": 10,
+   "estimatedMinutes": 15,
    "hasQuiz": false,
    "questions": [],
    "downloads": []
   },
   {
    "key": "alt-reps",
-   "title": "Day 1 · Script Reps",
+   "title": "Day 1 · 12:30 · Script Reps",
    "kind": "reading",
    "isTask": true,
-   "readingBody": "# Day 1 · Script Reps\n\nRead the full triage script (sections 0–6) out loud 5 times.\n\nThen focus on:\n\n- Section 1 (Opener + \"Is now a terrible time for a quick 2–3 minute call?\") – out loud 5 more times.\n- Sections 2–3 (Question 1: are they hosting? + Question 2: A vs B, and \"If you had to choose, what annoys you more right now…\") – out loud 5 more times.\n- Section 5 (Branch B: repeat and lock → commitment question → edify the closer → confirm contact + reminders) – out loud 5 more times.",
+   "readingBody": "# Day 1 · 12:30–13:30 · Script Reps\n\nRead the full triage script (sections 0–6) out loud 5 times.\n\nThen focus on:\n\n- Section 1 (Opener + \"Is now a terrible time for a quick 2–3 minute call?\") – out loud 5 more times.\n- Sections 2–3 (Question 1: are they hosting? + Question 2: A vs B, and \"If you had to choose, what annoys you more right now…\") – out loud 5 more times.\n- Section 5 (Branch B: repeat and lock → commitment question → edify the closer → confirm contact + reminders) – out loud 5 more times.\n\nThen take your break (13:30–14:00).",
    "objectives": [
     "Read the full script (sections 0–6) out loud 5 times",
     "Then focus on the opener, Questions 1–2 and the Branch B lock-in, out loud 5 more times each"
@@ -113,10 +114,10 @@ declare
   },
   {
    "key": "alt-quiz1",
-   "title": "Day 1 · Quiz",
+   "title": "Day 1 · 14:00 · Quiz",
    "kind": "reading",
    "isTask": false,
-   "readingBody": "# Day 1 · Quiz\n\nDay 1 is a recall test: 30 questions on the triage script (Part A) and the 10 management objections (Part B). You sit it at the end of Day 1, closed book, in one go. Pass mark is 27/30 – anything you miss goes back into the drill the next morning before live calls.\n\n- Part A – The triage script (questions 1–22)\n- Part B – Management objections (questions 23–30)\n\nOne correct answer per question.",
+   "readingBody": "# Day 1 · 14:00–14:30 · Quiz\n\nDay 1 is a recall test: 30 questions on the triage script (Part A) and the 10 management objections (Part B). You sit it at the end of Day 1, closed book, in one go. Pass mark is 27/30 – anything you miss goes back into the drill the next morning before live calls.\n\n- Part A – The triage script (questions 1–22)\n- Part B – Management objections (questions 23–30)\n\nOne correct answer per question.",
    "objectives": [
     "Take the 30-question Day 1 quiz. Pass mark: 27/30"
    ],
@@ -494,10 +495,10 @@ declare
   },
   {
    "key": "alt-record",
-   "title": "Day 1 · Required Recording: The Triage Script",
+   "title": "Day 1 · 14:30 · Required Recording: The Triage Script",
    "kind": "reading",
    "isTask": true,
-   "readingBody": "# Day 1 · Required Recording (Send by end of Day 1)\n\nRecord and send two videos (phone is fine):\n\n# 1. Hybrid Route\n\nYou reading the script word-for-word, start to finish: Opener → Question 1 → Question 2 → Branch A (Hybrid link, confirm email + mobile, set expectation).\n\n# 2. Management Route\n\nYou reading the script word-for-word, start to finish: Opener → Question 1 → Question 2 → Branch B (planning call with [Closer name], repeat and lock, commitment question, edify the closer, confirm contact + reminders).",
+   "readingBody": "# Day 1 · 14:30–15:30 · Required Recording (Send by 15:30)\n\nRecord and send two videos (phone is fine):\n\n# 1. Hybrid Route\n\nYou reading the script word-for-word, start to finish: Opener → Question 1 → Question 2 → Branch A (Hybrid link, confirm email + mobile, set expectation).\n\n# 2. Management Route\n\nYou reading the script word-for-word, start to finish: Opener → Question 1 → Question 2 → Branch B (planning call with [Closer name], repeat and lock, commitment question, edify the closer, confirm contact + reminders).",
    "objectives": [
     "Record yourself running the full triage script, both routes, and send it in"
    ],
@@ -507,7 +508,7 @@ declare
    "passPercent": 90,
    "requiredWatchPercent": 100,
    "isRequired": true,
-   "estimatedMinutes": 30,
+   "estimatedMinutes": 60,
    "hasQuiz": false,
    "questions": [],
    "downloads": []
