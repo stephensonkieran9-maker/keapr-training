@@ -26,106 +26,110 @@ Build the listing using only the information in this brief.
 
 - **Amenities:** tick only what the brief lists.
 - **Discounts:** if the brief doesn't give a discount, enter 0.
-- **Photos:** download the property photos from the Photos step, upload all of them, and put them in this order: **living spaces, dining, kitchen, bedrooms, bathrooms, then anything else**.
-- **Title, description and neighbourhood:** write your own, within the character limits.
+- **Title, description and neighbourhood:** write your own, within the character limits. The draft title below is too long to use as it is.
+- **Example contractor quote:** work out the total for a contractor staying **28 nights**, with any discount that applies and the cleaning fee added once. Don't include the refundable security deposit.
 
 ---
 
-## 1. Property overview
+## Property summary
 
-The Hollies House is a three-bedroom house in Newcastle-under-Lyme, suitable for contractors, business travellers, families, relocation guests and professionals seeking short- or long-term accommodation.
+- **Address:** 18 The Hollies, Brampton Rd, Newcastle-under-Lyme, Newcastle ST5 0QT, UK
+- **Property type:** House. Guests have the whole house.
+- **Bedrooms:** 3
+- **Bathrooms:** 2
+- **Maximum occupancy:** 6 guests
+- **Nightly rate:** £125
+- **Cleaning fee:** £60 per stay
+- **Security deposit:** £300
+- **Pet fee:** £200 per stay
+- **Long-stay discount:** 10% off the nightly rate for stays of 90 nights or more
+- **Minimum stay:** 28 nights
+- **Cancellation policy:** Strict (14 days)
+- **Pets:** Pets are allowed upon request. Additional charges apply.
+- **Parking:** Free street parking for 1 vehicle. There is no private or designated parking.
 
-| Property detail | Information |
-| --- | --- |
-| Property name | The Hollies House |
-| Full address | 18 The Hollies, Brampton Rd, Newcastle-under-Lyme, Newcastle ST5 0QT, UK |
-| Property type | 3-bedroom house (guests have the whole house) |
-| Bedrooms | 3 |
-| Bathrooms | 2 |
-| Maximum occupancy | 6 guests |
-| Parking | Free street parking for 1 vehicle |
-| Outdoor space | Private garden |
-| Internet | Free Wi-Fi |
+## Sleeping arrangements
 
-## 2. Target guests
+- **Bedroom 1:** 1 King Bed
+- **Bedroom 2:** 1 Double Bed
+- **Bedroom 3:** 2 Single Beds
 
-- Contractors working on projects in Newcastle-under-Lyme and surrounding areas.
-- Business travellers requiring comfortable and practical accommodation.
-- Families visiting relatives or exploring Staffordshire.
-- Relocation guests and professionals requiring temporary accommodation.
-- Long-stay guests looking for a fully equipped home.
+## Photo order
 
-## 3. Sleeping arrangements
+Download the photos from the **Photos** step, upload **all** of them, and put them in this order:
 
-| Bedroom | Sleeping arrangement |
-| --- | --- |
-| Bedroom 1 | 1 King Bed |
-| Bedroom 2 | 1 Double Bed |
-| Bedroom 3 | 2 Single Beds |
+1. Living spaces
+2. Dining
+3. Kitchen
+4. Bedrooms
+5. Bathrooms
+6. Anything else (outside of the house, garden)
 
-## 4. Amenities and facilities
+---
 
-**Kitchen and dining:** Fully equipped kitchen • Refrigerator • Microwave • Oven • Dining area
+## Property description
 
-**Living and entertainment:** Television • Free Wi-Fi • Heating
+### Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme
 
-**Laundry and other facilities:** Washing machine • Iron and ironing board • Hairdryer
+Welcome to The Hollies House, a comfortable three-bedroom home in Newcastle-under-Lyme, Staffordshire. Sleeping up to 6 guests, it's ideal for contractors working on projects in the area, business travellers, families visiting relatives or exploring Staffordshire, and relocation guests and professionals who need temporary accommodation.
 
-**Outdoor facilities:** Private garden
+With a fully equipped kitchen, two bathrooms and a private garden, it works well for both short and long stays.
 
-**Parking information:** Free street parking is available for one vehicle. The property does not have private or designated parking.
+### Property features
 
-## 5. Check-in and check-out
+**Sleeping arrangements**
 
-| Information | Details |
-| --- | --- |
-| Check-in | 3:00 PM |
-| Check-out | 10:00 AM |
-| Check-in method | Self check-in |
-| Access instructions | Shared with guests before arrival |
+- Bedroom 1: 1 King Bed
+- Bedroom 2: 1 Double Bed
+- Bedroom 3: 2 Single Beds
 
-Guests will receive the necessary access instructions before their scheduled arrival.
+**Bathrooms**
 
-## 6. House rules and policies
+- 2 Bathrooms.
 
-| Policy | Details |
-| --- | --- |
-| Smoking | Smoking is strictly prohibited inside the property. |
-| Parties and events | Parties, gatherings and events are not permitted. |
-| Pets | Pets are allowed upon request. Additional charges apply. |
-| Security deposit | £300 security deposit is required. |
-| Minimum stay | 28 nights |
-| Cancellation policy | Strict (14 days) |
+**Amenities**
 
-## 7. Pricing and additional charges
+- Free Wi-Fi
+- Fully equipped kitchen with refrigerator, microwave and oven
+- Dining area
+- Television
+- Heating
+- Washing machine
+- Iron and ironing board
+- Hairdryer
+- Private garden
 
-| Pricing component | Amount / terms |
-| --- | --- |
-| Standard nightly rate | £125 per night |
-| Cleaning fee | £60 per stay |
-| Long-stay discount | 10% discount on the nightly rate for stays of 90 nights or more |
-| Pet fee | £200 per stay |
-| Security deposit | £300 |
+**Parking details**
 
-**Example contractor quote:** show the total for a contractor staying **28 nights**, with any discount that applies and the cleaning fee added once. Don't include the refundable security deposit.
+- Free street parking for 1 vehicle. The property does not have private or designated parking.
 
-## 8. Location highlights
+### Guest access
+
+Guests have access to the entire house, with self check-in. Access instructions are shared with guests before their scheduled arrival.
+
+- Check-in: From 3:00 PM
+- Check-out: By 10:00 AM
+
+### Location highlights
 
 **Nearby attractions**
 
-| Attraction | Approx. distance | Description |
-| --- | --- | --- |
-| Brampton Park & Museum | 0.5 miles | Beautiful gardens, walking paths, a children's play area and local history exhibitions. |
-| New Vic Theatre | 1.5 miles | A popular local theatre featuring live performances, musicals and cultural entertainment. |
-| Apedale Heritage Centre | 2.5 miles | Explore the area's mining heritage, museum exhibits and historic underground mine tours. |
+- Brampton Park & Museum: Approximately 0.5 miles away. Beautiful gardens, walking paths, a children's play area and local history exhibitions.
+- New Vic Theatre: Approximately 1.5 miles away. A popular local theatre featuring live performances, musicals and cultural entertainment.
+- Apedale Heritage Centre: Approximately 2.5 miles away. Explore the area's mining heritage, museum exhibits and historic underground mine tours.
 
 **Getting around**
 
-| Location | Approx. distance | Description |
-| --- | --- | --- |
-| Newcastle-under-Lyme Town Centre | 0.7 miles | Shops, restaurants, cafés and everyday amenities. |
-| Newcastle-under-Lyme Bus Station | 0.9 miles | Regular bus connections to Stoke-on-Trent, Hanley and surrounding areas. |
-| Longport Railway Station | 1.9 miles | Rail connections to Stoke-on-Trent, Crewe and other destinations. |$cs$,
+- Newcastle-under-Lyme Town Centre: Approximately 0.7 miles away. Shops, restaurants, cafés and everyday amenities.
+- Newcastle-under-Lyme Bus Station: Approximately 0.9 miles away. Regular bus connections to Stoke-on-Trent, Hanley and surrounding areas.
+- Longport Railway Station: Approximately 1.9 miles away. Rail connections to Stoke-on-Trent, Crewe and other destinations.
+
+### House rules
+
+- **Security deposit:** A £300 security deposit is required.
+- **Smoking:** Smoking is strictly prohibited inside the property.
+- **Pets:** Pets are allowed upon request. A pet fee of £200 per stay applies.
+- **Parties and events:** Parties, gatherings and events are not permitted.$cs$,
        $cfg${
   "fields": {
     "propertyType": {
