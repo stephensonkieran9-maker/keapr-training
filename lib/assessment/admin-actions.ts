@@ -106,6 +106,24 @@ export async function setOpen(fd: FormData) {
   paths(id);
 }
 
+/** Replaces the case study, instructions and answer key with the latest
+ * built-in sample. Photos, settings and candidates are kept; anyone who has
+ * already started keeps the version they started with. */
+export async function refreshFromSample(fd: FormData) {
+  const { profile: me } = await requireAdmin();
+  const id = String(fd.get("id") ?? "");
+  if (!isId(id)) return;
+  const { data } = await db().from("assessments").select("config").eq("id", id).single();
+  if (!data) return;
+  const photos = cleanConfig(data.config).photos;
+  await db().from("assessments").update({
+    intro: SAMPLE_INTRO, case_study: SAMPLE_CASE_STUDY, config: { ...SAMPLE_CONFIG, photos }, updated_at: new Date().toISOString(),
+  }).eq("id", id);
+  await audit(me.id, "assessment_refresh_from_sample", id);
+  paths(id);
+  redirect(`/admin/assessments/${id}?tab=case&refreshed=1`);
+}
+
 export async function newLink(fd: FormData) {
   const { profile: me } = await requireAdmin();
   const id = String(fd.get("id") ?? "");

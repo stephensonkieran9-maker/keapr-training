@@ -116,13 +116,16 @@ test("address matching ignores case, spaces and punctuation", () => {
 
 test("text fields score by facts mentioned", () => {
   const t = (title: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), title }).fields.find((x) => x.id === "title")!;
-  assert.equal(t("Three-bed house in Newcastle-under-Lyme").fraction, 1);
-  const half = t("Lovely 3 bed home with garden");
-  assert.equal(half.fraction, 1 / 2);
-  assert.match(half.note!, /newcastle/);
+  assert.equal(t("The Hollies House").fraction, 1);
+  const wrong = t("Lovely 3 bed home with garden");
+  assert.equal(wrong.fraction, 0);
+  assert.match(wrong.note!, /hollies/);
   assert.equal(t("").fraction, 0);
-  // Whole words only: "bedside" doesn't count as "bed".
-  assert.equal(t("Newcastles 3 bedside").fraction, 0);
+  // Whole words only: "Holliesville" doesn't count as "Hollies".
+  assert.equal(t("Holliesville House").fraction, 0);
+  // Several facts: marked as a share.
+  const n = (neighbourhood: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), neighbourhood }).fields.find((x) => x.id === "neighbourhood")!.fraction;
+  assert.equal(n("Close to the town centre and the bus station."), 2 / 3);
 });
 
 test("weight 0 fields are shown but not marked", () => {

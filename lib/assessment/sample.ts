@@ -31,16 +31,17 @@ Build the listing using only the information in this brief.
 
 - **Amenities:** tick only what the brief lists.
 - **Discounts:** if the brief doesn't give a discount, enter 0.
-- **Title:** write your own, within the 50-character limit. The draft title below is too long to use as it is.
+- **Title:** the listing title is the property name, **The Hollies House**.
 - **Description:** use the property description below, from the overview through to the house rules.
 - **Getting around:** the *Getting around* section at the end goes in the neighbourhood and getting around box, not the description.
-- **Example contractor quote:** work out the total for a contractor staying **28 nights**, with any discount that applies and the cleaning fee added once. Don't include the refundable security deposit.
+- **Example contractor quote:** work out the total for one contractor (**no pets**) staying **28 nights**: the nightly rate for every night, minus any discount that applies, plus the cleaning fee once. Don't include the refundable security deposit.
 
 ---
 
 ## Property summary
 
 - **Address:** 18 The Hollies, Brampton Rd, Newcastle-under-Lyme, Newcastle ST5 0QT, UK
+- **Property name (listing title):** The Hollies House
 - **Property type:** House. Guests have the whole house.
 - **Bedrooms:** 3
 - **Bathrooms:** 2
@@ -86,7 +87,7 @@ Download the photos from the **Photos** step, upload **all** of them, and put th
 
 ## Property description
 
-### Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme
+**Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme**
 
 Welcome to The Hollies House, a comfortable three-bedroom home in Newcastle-under-Lyme, Staffordshire, sleeping up to 6 guests.
 
@@ -111,10 +112,13 @@ It's ideal for contractors, business travellers, families, relocation guests and
 - Dining area
 - Television
 - Heating
+- Hot water
 - Washing machine
 - Iron and ironing board
 - Hairdryer
 - Private garden
+- Smoke alarm
+- Carbon monoxide alarm
 
 **Parking details**
 
@@ -158,7 +162,7 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
     postcode: { weight: 1, answer: "ST5 0QT" },
     targetGuests: { weight: 1, answer: ["contractors_and_work_crews", "relocations", "business_travellers", "families", "long_stay_guests"] },
 
-    title: { weight: 2, mustMention: ["3 bed|three bed|3 bedroom|three bedroom|3bed|3 bedrooms|three bedrooms", "newcastle"] },
+    title: { weight: 2, mustMention: ["hollies"] },                       // the property name
     description: { weight: 3, mustMention: [
       "3 bed|three bed|3 bedroom|three bedroom|3bed|3 bedrooms|three bedrooms",
       "sleeps 6|6 guests|six guests|up to 6|sleeps six|up to six",
@@ -187,9 +191,10 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
 
     amenities: { weight: 4, answer: [
       "kitchen", "fridge", "microwave", "oven", "dining_table",
-      "tv", "wi_fi", "central_heating",
+      "tv", "wi_fi", "central_heating", "hot_water",
       "washing_machine", "iron", "hair_dryer",
       "private_garden",
+      "smoke_alarm", "carbon_monoxide_alarm",
       "long_term_stays_allowed",                                         // "short- or long-term", long-stay guests
     ] },
     parking: { weight: 1, answer: "free_on_street_parking" },
@@ -202,7 +207,7 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
     weeklyDiscount: { weight: 1, answer: 0 },
     monthlyDiscount: { weight: 1, answer: 0 },
     longStayDiscount: { weight: 1, answer: 10 },
-    contractorQuote: { weight: 2, answer: 3560, tolerance: 1 },          // 28 × £125 + £60 = £3,560 (under 90 nights, so no discount)
+    contractorQuote: { weight: 2, answer: 3560, tolerance: 1, explanation: "28 nights × £125 = £3,500, plus the £60 cleaning fee = £3,560. No discount (it's under 90 nights), no pet fee (no pets) and no deposit (it's refundable)." },
 
     minNights: { weight: 1, answer: 28 },
     checkInFrom: { weight: 1, answer: "15:00" },

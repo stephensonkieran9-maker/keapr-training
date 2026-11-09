@@ -17,6 +17,8 @@ export interface FieldKey {
   /** Text fields: facts the candidate must mention. Each entry can list
    * alternatives separated by "|", e.g. "contractor|work crew". */
   mustMention?: string[];
+  /** Optional working, shown next to the answer in results. */
+  explanation?: string;
 }
 
 /** A property photo uploaded by an admin. The hash identifies the exact
@@ -211,7 +213,8 @@ function expectedText(f: FieldDef, key: FieldKey, config: AssessmentConfig): str
   }
   if (f.type === "shorttext") return String(key.answer ?? "").split("|")[0];
   const v = displayValue(f, key.answer ?? null);
-  return f.type === "number" && key.tolerance ? `${v} (± ${key.tolerance})` : v;
+  const shown = f.type === "number" && key.tolerance ? `${v} (± ${key.tolerance})` : v;
+  return key.explanation ? `${shown}. ${key.explanation}` : shown;
 }
 
 /** Marks a set of answers. Accuracy is points earned ÷ points available. */
@@ -287,6 +290,7 @@ export function cleanConfig(raw: unknown): AssessmentConfig {
       entry.answer = cleanValue(f, k.answer ?? null);
     }
     if (f.type === "number" && k.tolerance !== undefined && Number(k.tolerance) > 0) entry.tolerance = Number(k.tolerance);
+    if (typeof k.explanation === "string" && k.explanation.trim()) entry.explanation = k.explanation.trim().slice(0, 500);
     fields[f.id] = entry;
   }
   const rawPhotos = (raw && typeof raw === "object" ? (raw as { photos?: unknown }).photos : null);

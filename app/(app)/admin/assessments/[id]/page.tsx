@@ -7,7 +7,7 @@ import { signPhotoUrls } from "@/lib/assessment/photos";
 import { Icon } from "@/components/Icons";
 import { requireAdmin } from "@/lib/auth";
 import { assessmentLink, getAssessment, loadCandidateRows } from "@/lib/assessment/admin";
-import { duplicateAssessment, newLink, remarkAll, setArchived, setOpen } from "@/lib/assessment/admin-actions";
+import { duplicateAssessment, newLink, refreshFromSample, remarkAll, setArchived, setOpen } from "@/lib/assessment/admin-actions";
 import { STATUS_LABEL, configProblems, formatMinutesSeconds, rankCandidates } from "@/lib/assessment/scoring";
 import { formatDateTime } from "@/lib/format";
 
@@ -27,7 +27,7 @@ const statusClass: Record<string, string> = { submitted: "done", timed_out: "don
 
 export default async function AssessmentPage({ params, searchParams }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string; cantopen?: string; remarked?: string; deleted?: string }>;
+  searchParams: Promise<{ tab?: string; cantopen?: string; remarked?: string; deleted?: string; refreshed?: string }>;
 }) {
   await requireAdmin();
   const { id } = await params;
@@ -68,6 +68,7 @@ export default async function AssessmentPage({ params, searchParams }: {
       {sp.cantopen && <p className="notice error" role="alert">It can&apos;t be opened or re-marked yet. Fix the answer key problems below{a.caseStudy.trim() ? "" : " and add a case study"} first.</p>}
       {sp.remarked && <p className="notice ok" role="status">Re-marked {sp.remarked} submitted attempt{sp.remarked === "1" ? "" : "s"} against the current answer key.</p>}
       {sp.deleted && <p className="notice ok" role="status">Candidate deleted.</p>}
+      {sp.refreshed && <p className="notice ok" role="status">Updated to the latest sample case study and answer key. Your photos and settings were kept.</p>}
 
       <div className="card">
         <h2>Candidate link</h2>
@@ -131,6 +132,10 @@ export default async function AssessmentPage({ params, searchParams }: {
             <div className="actions-row">
               <form action={newLink}><input type="hidden" name="id" value={a.id} /><button className="btn btn-ghost btn-sm" type="submit">Make a new link</button></form>
               <span className="hint">The old link stops working. Registered candidates will need the new one.</span>
+            </div>
+            <div className="actions-row">
+              <form action={refreshFromSample}><input type="hidden" name="id" value={a.id} /><button className="btn btn-ghost btn-sm" type="submit">Update to the latest sample</button></form>
+              <span className="hint">Replaces the case study, instructions and answer key with the latest built-in sample. Keeps the photos, time limit and candidates.</span>
             </div>
             <div className="actions-row">
               <form action={duplicateAssessment}><input type="hidden" name="id" value={a.id} /><button className="btn btn-ghost btn-sm" type="submit">Duplicate</button></form>

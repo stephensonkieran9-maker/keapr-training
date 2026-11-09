@@ -160,7 +160,15 @@ export function AnswerKeyEditor({ id, config, started }: { id: string; config: A
                       <p className="hint">Case, spaces and punctuation are ignored. Separate alternatives with |.</p>
                     </div>
                   ) : (
-                    <FieldInput f={f} value={k.answer as AnswerValue} onChange={(v) => update(f.id, { answer: v })} />
+                    <>
+                      <FieldInput f={f} value={k.answer as AnswerValue} onChange={(v) => update(f.id, { answer: v })} />
+                      {f.type === "number" && (
+                        <div className="field key-explain">
+                          <label htmlFor={`ex-${f.id}`}>Working shown in results (optional)</label>
+                          <input id={`ex-${f.id}`} value={k.explanation ?? ""} maxLength={500} onChange={(e) => update(f.id, { explanation: e.target.value })} placeholder="e.g. 28 nights × £125 = £3,500, plus £60 cleaning" />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
