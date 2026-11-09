@@ -11,25 +11,19 @@
 --          11. Live Calls With Spot-Coaching  12. Lock-In Quiz (all tasks)
 --          13. Day 2 Quiz (30 q)
 -- Real Call Injection from the plan is left out.
--- Not published: upload the video to lesson 1 and the script PDF to lesson 2
--- (Downloads), preview, then Publish and assign.
--- Safe to re-run: does nothing if a course with this title already exists.
+-- Day 2 quiz questions 26 and 28–30 name the drills by their Day 2 lesson
+-- (the plan had them as Day 1 blocks); everything else is word for word.
+-- Not published: upload the video to lesson 1, the Day 1 PDF to lesson 2 and
+-- the Day 2 PDF to lesson 7 (Downloads), preview, then Publish and assign.
+-- Safe to re-run: if the course exists its draft is replaced, keeping the
+-- uploaded video. Downloads need uploading again.
 
 do $$
 declare
   v_admin uuid;
-begin
-  select id into v_admin from public.profiles where role = 'admin' and is_active order by created_at limit 1;
-  if v_admin is null then
-    raise exception 'No active admin found.';
-  end if;
-  if exists (select 1 from public.courses where title = 'Ad-Lead Triage') then
-    raise notice 'A course called "Ad-Lead Triage" already exists. Nothing to do.';
-    return;
-  end if;
-
-  insert into public.courses (title, description, is_demo, created_by, draft)
-  values ('Ad-Lead Triage', 'Two-day training for ad-lead triage calls: the triage script, your pay, and the 10 management objections. A 30-question quiz at the end of each day (pass mark 27/30).', false, v_admin, $draft${
+  v_course uuid;
+  v_old jsonb;
+  v_new jsonb := $draft${
  "lessons": [
   {
    "key": "alt-video",
@@ -58,7 +52,7 @@ begin
    "title": "Day 1 · Read the Triage Script and Management Objections",
    "kind": "reading",
    "isTask": true,
-   "readingBody": "# Day 1 · Read the Script\n\n- Read the Keapr Ad-Lead Triage Script once, top to bottom.\n- Read Part 1: Management Objections & Answers once, top to bottom.\n\nBoth are in the PDF under Downloads. The Day 1 quiz covers the script and all 10 objections.",
+   "readingBody": "# Day 1 · Read the Script\n\n- Read the Keapr Ad-Lead Triage Script once, top to bottom.\n- Read the Management Objections & Answers once, top to bottom.\n\nBoth are in the Day 1 PDF under Downloads. The Day 1 quiz covers the script and all 10 objections.",
    "objectives": [
     "Read the full triage script once, top to bottom",
     "Read the 10 management objections and answers once, top to bottom"
@@ -177,7 +171,7 @@ begin
      "options": [
       "\"Have you got a few minutes?\"",
       "\"Is now a good time to talk?\"",
-      "\"Can I grab 5 minutes of your time?\" Keapr Triage Quiz – Day 1 (30 Questions)",
+      "\"Can I grab 5 minutes of your time?\"",
       "\"Is now a terrible time for a quick 2–3 minute call?\""
      ],
      "correctIndex": 3,
@@ -257,7 +251,7 @@ begin
     },
     {
      "key": "alt-d1-q11",
-     "prompt": "The lead has no listing live yet. What does Reed do? Keapr Triage Quiz – Day 1 (30 Questions)",
+     "prompt": "The lead has no listing live yet. What does Reed do?",
      "options": [
       "Book a management call – pre-launch owners need the most help",
       "Send the Hybrid link so they're ready when they go live",
@@ -322,7 +316,7 @@ begin
       "\"Shall I send you both options and you can decide?\"",
       "\"What's your budget for management?\"",
       "\"If you had to choose, what annoys you more: not having enough good bookings, or spending time dealing with guests, cleaners, messages, all of that?\"",
-      "\"Let's book a call and the closer can work it out\" Keapr Triage Quiz – Day 1 (30 Questions)"
+      "\"Let's book a call and the closer can work it out\""
      ],
      "correctIndex": 2,
      "explanation": ""
@@ -393,7 +387,7 @@ begin
      "options": [
       "Edify the closer → commitment question → repeat and lock → confirm contact and reminders",
       "Repeat and lock the time → commitment question → edify the closer → confirm contact and reminders",
-      "Confirm contact → repeat and lock → edify the closer → commitment question Keapr Triage Quiz – Day 1 (30 Questions)",
+      "Confirm contact → repeat and lock → edify the closer → commitment question",
       "Commitment question → repeat and lock → confirm contact → edify the closer"
      ],
      "correctIndex": 1,
@@ -463,7 +457,7 @@ begin
      "key": "alt-d1-q28",
      "prompt": "The lead asks for projections on the triage call. What does Reed offer?",
      "options": [
-      "A rough monthly figure based on the town Keapr Triage Quiz – Day 1 (30 Questions)",
+      "A rough monthly figure based on the town",
       "A short form to fill in now, so the closer can get to the numbers faster on the planning call",
       "A link to Keapr's average occupancy data",
       "Nothing – projections aren't something Keapr provides"
@@ -523,7 +517,7 @@ begin
    "title": "Day 2 · Objection Self-Practice",
    "kind": "reading",
    "isTask": true,
-   "readingBody": "# Day 2 · Objection Self-Practice\n\nYour job on management questions is simple: answer clearly, don't waffle, then point them back to the planning call.\n\nFor each of the 10 objections below, say the answer from the sheet out loud 5 times. Finish every answer with:\n\n\"and that's exactly what they'll go through in detail on the planning call.\"\n\n1. \"How much do you charge?\"\n2. \"What's included in that?\"\n3. \"Do you take care of cleaning?\"\n4. \"Who pays for the cleaning?\"\n5. \"Do you charge an onboarding fee?\"\n6. \"What's the minimum contract length?\"\n7. \"Can I try it shorter / month-to-month?\"\n8. \"Can you give me projections?\"\n9. \"Do you guarantee income / is it rent-to-rent?\"\n10. \"Will I lose my existing Airbnb/Booking.com setup?\"",
+   "readingBody": "# Day 2 · Objection Self-Practice\n\nYour job on management questions is simple: answer clearly, don't waffle, then point them back to the planning call.\n\nThe answers are in your Day 1 PDF. Today's plan is in the Day 2 PDF under Downloads.\n\nFor each of the 10 objections below, say the answer from the sheet out loud 5 times. Finish every answer with:\n\n\"and that's exactly what they'll go through in detail on the planning call.\"\n\n1. \"How much do you charge?\"\n2. \"What's included in that?\"\n3. \"Do you take care of cleaning?\"\n4. \"Who pays for the cleaning?\"\n5. \"Do you charge an onboarding fee?\"\n6. \"What's the minimum contract length?\"\n7. \"Can I try it shorter / month-to-month?\"\n8. \"Can you give me projections?\"\n9. \"Do you guarantee income / is it rent-to-rent?\"\n10. \"Will I lose my existing Airbnb/Booking.com setup?\"",
    "objectives": [
     "Say each of the 10 management answers out loud 5 times, each time finishing with the pivot line"
    ],
@@ -694,7 +688,7 @@ begin
     },
     {
      "key": "alt-d2-q4",
-     "prompt": "Lead: \"Just send me the Hybrid link AND book me a call with the closer, I'll decide later.\" What does Reed do? Keapr Triage Quiz – Day 2 (30 Questions)",
+     "prompt": "Lead: \"Just send me the Hybrid link AND book me a call with the closer, I'll decide later.\" What does Reed do?",
      "options": [
       "Do both – the lead asked for it",
       "Book the call only; the closer can send the link",
@@ -747,7 +741,7 @@ begin
       "\"Sure, we can do 3 months\"",
       "\"No, it's 12 months minimum\"",
       "\"Let me check with the closer and come back to you\"",
-      "\"We've found 6 months with 2-month notice is the shortest that still lets us do a proper job – set everything up, get you on all the platforms, and actually see results. If it doesn't feel right, you can give notice and step away\" Keapr Triage Quiz – Day 2 (30 Questions)"
+      "\"We've found 6 months with 2-month notice is the shortest that still lets us do a proper job – set everything up, get you on all the platforms, and actually see results. If it doesn't feel right, you can give notice and step away\""
      ],
      "correctIndex": 3,
      "explanation": ""
@@ -807,7 +801,7 @@ begin
       "Nothing – the booking is done",
       "Confirming the Hybrid link was sent",
       "The commitment question, edifying the closer, and confirming the number and email with reminders",
-      "Asking for the full property address Keapr Triage Quiz – Day 2 (30 Questions)"
+      "Asking for the full property address"
      ],
      "correctIndex": 2,
      "explanation": ""
@@ -876,7 +870,7 @@ begin
      "key": "alt-d2-q19",
      "prompt": "Lead: \"I'm about to walk into a meeting, call me back.\" Correct move?",
      "options": [
-      "\"No problem, what time suits?\" Keapr Triage Quiz – Day 2 (30 Questions)",
+      "\"No problem, what time suits?\"",
       "\"I'll email you instead\"",
       "\"No problem at all. When's a better time for a quick 5-minute call? I've got [Day] at [Time A] or [Day] at [Time B] – what's easier?\" then book, repeat the time, stop",
       "Try to squeeze in Question 2 before they go"
@@ -937,7 +931,7 @@ begin
      "prompt": "In the Day 2 \"Hard Landlord\" role-play, which objections does the trainer hit Reed with?",
      "options": [
       "Price and contract length only",
-      "Price, onboarding fee, contract length, projections, cleaning, rent guarantee Keapr Triage Quiz – Day 2 (30 Questions)",
+      "Price, onboarding fee, contract length, projections, cleaning, rent guarantee",
       "Whatever comes up naturally",
       "The ten objections in order"
      ],
@@ -958,7 +952,7 @@ begin
     },
     {
      "key": "alt-d2-q26",
-     "prompt": "After each live call in Day 2 Block 2, how much feedback does Reed get?",
+     "prompt": "After each live call in Live Calls With Spot-Coaching, how much feedback does Reed get?",
      "options": [
       "A full written review",
       "Exactly two notes – one thing he did well, one thing to fix",
@@ -986,7 +980,7 @@ begin
      "options": [
       "He goes live anyway – two is acceptable",
       "He re-sits the whole quiz the same afternoon",
-      "Repeat Day 1 Block 1 for those specific objections the next morning until they're automatic",
+      "Repeat the Walkthrough + Hand-Writing for those specific objections the next morning until they're automatic",
       "The trainer takes those objections off his list"
      ],
      "correctIndex": 2,
@@ -994,7 +988,7 @@ begin
     },
     {
      "key": "alt-d2-q29",
-     "prompt": "In the Day 1 No-Paper Drill, why is 10 minutes recorded and played back?",
+     "prompt": "In the Day 2 No-Paper Drill, why is 10 minutes recorded and played back?",
      "options": [
       "To build a library of sample calls for new starters",
       "So Reed can hear where he hesitates and where he adds \"ums\" or rambles",
@@ -1006,11 +1000,11 @@ begin
     },
     {
      "key": "alt-d2-q30",
-     "prompt": "In Day 1 Block 1, what does Reed physically do with each objection?",
+     "prompt": "In the Day 2 Walkthrough + Hand-Writing, what does Reed physically do with each objection?",
      "options": [
       "Type it into a shared doc",
-      "Record himself saying it Keapr Triage Quiz – Day 2 (30 Questions)",
-      "Hand-write the objection and its answer once, then read the answer word-forword when the trainer says the objection",
+      "Record himself saying it",
+      "Hand-write the objection and its answer once, then read the answer word-for-word when the trainer says the objection",
       "Memorise it silently"
      ],
      "correctIndex": 2,
@@ -1021,7 +1015,31 @@ begin
   }
  ],
  "checklist": []
-}$draft$::jsonb);
+}$draft$::jsonb;
+  v_video jsonb;
+begin
+  select id into v_admin from public.profiles where role = 'admin' and is_active order by created_at limit 1;
+  if v_admin is null then
+    raise exception 'No active admin found.';
+  end if;
 
-  raise notice 'Created "Ad-Lead Triage" as a draft. Upload the video and the script PDF, preview, then publish.';
+  select id, draft into v_course, v_old from public.courses where title = 'Ad-Lead Triage' order by created_at limit 1;
+
+  if v_course is null then
+    insert into public.courses (title, description, is_demo, created_by, draft)
+    values ('Ad-Lead Triage', 'Two-day training for ad-lead triage calls: the triage script, your pay, and the 10 management objections. A 30-question quiz at the end of each day (pass mark 27/30).', false, v_admin, v_new);
+    raise notice 'Created "Ad-Lead Triage" as a draft. Upload the video and the two PDFs, preview, then publish.';
+    return;
+  end if;
+
+  -- Already there: replace the draft, keeping the uploaded training video.
+  select l into v_video from jsonb_array_elements(coalesce(v_old->'lessons', '[]'::jsonb)) l
+  where l->>'key' = 'alt-video' and coalesce(l->>'videoRef', '') <> '' limit 1;
+  if v_video is not null then
+    v_new := jsonb_set(v_new, '{lessons,0,videoRef}', v_video->'videoRef');
+    v_new := jsonb_set(v_new, '{lessons,0,videoSeconds}', coalesce(v_video->'videoSeconds', '0'::jsonb));
+  end if;
+
+  update public.courses set draft = v_new, description = 'Two-day training for ad-lead triage calls: the triage script, your pay, and the 10 management objections. A 30-question quiz at the end of each day (pass mark 27/30).', updated_at = now() where id = v_course;
+  raise notice 'Updated the "Ad-Lead Triage" draft. Check the video, upload the Day 1 PDF (lesson 2) and Day 2 PDF (lesson 7), preview, then publish.';
 end $$;
