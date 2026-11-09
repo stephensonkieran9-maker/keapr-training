@@ -94,7 +94,7 @@ Guests will receive the necessary access instructions before their scheduled arr
 | Parties and events | Parties, gatherings and events are not permitted. |
 | Pets | Pets are allowed upon request. Additional charges apply. |
 | Security deposit | £300 security deposit is required. |
-| Minimum stay | 3 nights |
+| Minimum stay | 28 nights |
 | Cancellation policy | Strict (14 days) |
 
 ## 7. Pricing and additional charges
@@ -286,7 +286,7 @@ Guests will receive the necessary access instructions before their scheduled arr
     },
     "minNights": {
       "weight": 1,
-      "answer": 3
+      "answer": 28
     },
     "checkInFrom": {
       "weight": 1,

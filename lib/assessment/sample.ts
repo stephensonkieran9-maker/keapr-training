@@ -1,7 +1,6 @@
 // SAMPLE ASSESSMENT: The Hollies House, from the property case study
 // Kieran supplied (Nov 2026), set out in the team's usual brief format.
-// Added to the supplied details: a minimum stay (3 nights, Kieran to
-// confirm) and the standard Strict (14 days) cancellation policy.
+// Added to the supplied details: a 28-night minimum stay and the standard Strict (14 days) cancellation policy.
 //
 // The answer key only marks what the brief says. Fields the brief doesn't
 // cover (quiet hours, Wi-Fi speed, check-in method, etc.) are switched off.
@@ -100,7 +99,7 @@ Guests will receive the necessary access instructions before their scheduled arr
 | Parties and events | Parties, gatherings and events are not permitted. |
 | Pets | Pets are allowed upon request. Additional charges apply. |
 | Security deposit | £300 security deposit is required. |
-| Minimum stay | 3 nights |
+| Minimum stay | 28 nights |
 | Cancellation policy | Strict (14 days) |
 
 ## 7. Pricing and additional charges
@@ -190,7 +189,7 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
     longStayDiscount: { weight: 1, answer: 10 },
     contractorQuote: { weight: 2, answer: 3560, tolerance: 1 },          // 28 × £125 + £60 = £3,560 (under 90 nights, so no discount)
 
-    minNights: { weight: 1, answer: 3 },
+    minNights: { weight: 1, answer: 28 },
     checkInFrom: { weight: 1, answer: "15:00" },
     checkOut: { weight: 1, answer: "10:00" },
     cancellation: { weight: 1, answer: "strict" },

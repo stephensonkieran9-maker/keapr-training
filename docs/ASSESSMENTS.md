@@ -61,4 +61,4 @@ The available fields are listed in `lib/assessment/fields.ts`. Turning fields on
 
 ## Sample case study
 
-`lib/assessment/sample.ts` holds the sample (The Hollies House) in the team's usual brief format, with its answer key. Two things were added to the supplied case study: a **3-night minimum stay** (to confirm) and the standard **Strict (14 days)** cancellation. Fields the brief doesn't cover are switched off. **Check the answer key before sending the link to real candidates.**
+`lib/assessment/sample.ts` holds the sample (The Hollies House) in the team's usual brief format, with its answer key. Two things were added to the supplied case study: a **28-night minimum stay** and the standard **Strict (14 days)** cancellation. Fields the brief doesn't cover are switched off. **Check the answer key before sending the link to real candidates.**
