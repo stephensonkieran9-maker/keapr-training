@@ -61,6 +61,10 @@ Covers progression rules (`lib/progress.ts`), watched-time ranges (`lib/video-ra
 
 The service role key is server-only. Never expose it in browser code or commit it.
 
+## Listing assessments (candidate screening)
+
+Timed listing-build tests for job candidates live under **Admin → Assessments**, with their own candidate sign-in at `/assess/<code>`. Setup and the admin guide are in [docs/ASSESSMENTS.md](docs/ASSESSMENTS.md).
+
 ## Ground rules from the brief
 
 - Eligibility, scoring and unlocking are enforced on the server, never only in the browser.

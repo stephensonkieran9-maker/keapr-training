@@ -5,7 +5,8 @@ import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "@/lib/supaba
 const SEEN_COOKIE = "kt_seen";
 
 // Pages anyone can open without signing in.
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/auth", "/demo"];
+// /assess is the candidate area: it has its own sign-in (lib/assessment/server.ts).
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/auth", "/demo", "/assess"];
 
 function isPublic(pathname: string) {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

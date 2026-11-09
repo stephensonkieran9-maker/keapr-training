@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export function CopyLink({ link }: { link: string }) {
+export function CopyLink({ link, label = "Sign-in link" }: { link: string; label?: string }) {
   const [copied, setCopied] = useState(false);
   async function copy(e: React.MouseEvent<HTMLButtonElement>) {
     const input = e.currentTarget.parentElement?.querySelector("input");
@@ -16,7 +16,7 @@ export function CopyLink({ link }: { link: string }) {
   }
   return (
     <div className="copybox">
-      <input readOnly value={link} aria-label="Sign-in link" onFocus={(e) => e.currentTarget.select()} />
+      <input readOnly value={link} aria-label={label} onFocus={(e) => e.currentTarget.select()} />
       <button type="button" className="btn btn-primary btn-sm" onClick={copy}>
         {copied ? "Copied" : "Copy"}
       </button>

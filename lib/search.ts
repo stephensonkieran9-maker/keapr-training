@@ -116,6 +116,7 @@ export function staticItems(isAdmin: boolean): SearchItem[] {
       { kind: "page", title: "Courses", subtitle: "Admin", href: "/admin/courses", text: "course builder new course publish archive delete" },
       { kind: "page", title: "Training paths", subtitle: "Admin", href: "/admin/paths", text: "paths teams order sequence assign" },
       { kind: "page", title: "Reports", subtitle: "Admin", href: "/admin/reports", text: "csv export spreadsheet download progress attempts" },
+      { kind: "page", title: "Assessments", subtitle: "Admin", href: "/admin/assessments", text: "candidates hiring screening listing test timed case study" },
     );
   }
   const help: SearchItem[] = [...faqs, ...(isAdmin ? adminTopics : [])].map((f) => ({

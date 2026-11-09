@@ -6,7 +6,7 @@ import { Icon, type IconName } from "./Icons";
 import type { Learner } from "@/lib/types";
 import { signOut } from "@/app/auth/actions";
 
-export type NavKey = "dashboard" | "training" | "resources" | "results" | "help" | "overview" | "staff" | "courses" | "paths" | "reports";
+export type NavKey = "dashboard" | "training" | "resources" | "results" | "help" | "overview" | "staff" | "courses" | "paths" | "reports" | "assessments";
 
 const learningLinks: { key: NavKey; label: string; href: string; icon: IconName }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", icon: "grid" },
@@ -28,6 +28,8 @@ export function Sidebar({ learner, demoMode = false, canSignOut = false }: { lea
       ? "paths"
       : pathname.startsWith("/admin/reports")
       ? "reports"
+      : pathname.startsWith("/admin/assessments")
+      ? "assessments"
       : pathname.startsWith("/help")
       ? "help"
       : pathname.startsWith("/results")
@@ -94,6 +96,12 @@ export function Sidebar({ learner, demoMode = false, canSignOut = false }: { lea
               <Link href="/admin/reports" aria-current={active === "reports" ? "page" : undefined}>
                 <Icon name="chart" />
                 Reports
+              </Link>
+            </li>
+            <li>
+              <Link href="/admin/assessments" aria-current={active === "assessments" ? "page" : undefined}>
+                <Icon name="checklist" />
+                Assessments
               </Link>
             </li>
           </ul>
