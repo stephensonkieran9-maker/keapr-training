@@ -7,14 +7,13 @@
 insert into public.assessments (title, slug, intro, case_study, config, time_limit_minutes, is_open, is_demo)
 select $t$Listing build: The Hollies House$t$,
        'listing-' || substr(md5(gen_random_uuid()::text), 1, 12),
-       $intro$This is a timed listing-build exercise.
+       $intro$This is a listing-build exercise.
 
-When you press **Start**, the timer begins and you'll see a property brief on the left and a listing builder on the right, like the one used on Airbnb or Booking.com. Read the brief carefully and build the listing from it.
+When you press **Start**, you'll see a property brief on the left and a listing builder on the right, like the one used on Airbnb or Booking.com. Read the brief carefully and build the listing from it.
 
-- You have one attempt. The timer keeps running if you close the page.
-- Your answers save automatically as you go.
-- When the time is up, whatever you've entered is submitted automatically.
-- You're marked on accuracy first, then on how quickly you finish. Accuracy matters more than speed.
+- You have one attempt.
+- Your answers save automatically as you go, so you can come back if you close the page.
+- Check your work before you submit. You can't change anything afterwards.
 - Use only the brief. Don't guess or add anything it doesn't say.$intro$,
        $cs$# The Hollies House
 
@@ -343,5 +342,5 @@ Guests have access to the entire house, with self check-in. Access instructions 
     }
   }
 }$cfg$::jsonb,
-       60, false, false
+       120, false, false
 where not exists (select 1 from public.assessments where title = $t$Listing build: The Hollies House$t$);

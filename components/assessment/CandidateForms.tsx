@@ -49,7 +49,7 @@ export function SignInForm({ slug }: { slug: string }) {
   );
 }
 
-export function StartForm({ slug, minutes }: { slug: string; minutes: number }) {
+export function StartForm({ slug }: { slug: string }) {
   const [state, action] = useActionState(startAction, undefined);
   return (
     <form action={action} className="form-stack">
@@ -57,7 +57,7 @@ export function StartForm({ slug, minutes }: { slug: string; minutes: number }) 
       <ErrorNote state={state} />
       <label className="check consent">
         <input type="checkbox" required />
-        <span>I&apos;m ready. I understand the {minutes}-minute timer starts now and can&apos;t be paused.</span>
+        <span>I&apos;m ready to start.</span>
       </label>
       <Submit>Start test</Submit>
     </form>

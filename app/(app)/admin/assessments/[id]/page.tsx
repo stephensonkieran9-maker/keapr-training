@@ -50,7 +50,7 @@ export default async function AssessmentPage({ params, searchParams }: {
           <h1>{a.title}</h1>
           <p>
             {a.archivedAt ? <span className="badge deactivated">Archived</span> : a.isOpen ? <span className="badge active">Open for candidates</span> : <span className="badge draft">Closed</span>}
-            {" "}{a.timeLimitMinutes}-minute time limit · {a.started} started
+            {" "}{a.timeLimitMinutes}-minute hidden cut-off · {a.started} started
           </p>
         </div>
         <div className="actions-row">

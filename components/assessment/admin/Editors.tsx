@@ -37,7 +37,7 @@ export function SettingsForm({ id, title, minutes, intro }: { id: string; title:
       <input type="hidden" name="id" value={id} />
       <div className="form-row">
         <div className="field"><label htmlFor="as-title">Title (candidates see this)</label><input id="as-title" name="title" defaultValue={title} required maxLength={200} /></div>
-        <div className="field"><label htmlFor="as-min">Time limit (minutes)</label><input id="as-min" name="minutes" type="number" min={5} max={240} defaultValue={minutes} required /></div>
+        <div className="field"><label htmlFor="as-min">Hidden cut-off (minutes)</label><input id="as-min" name="minutes" type="number" min={5} max={240} defaultValue={minutes} required aria-describedby="as-min-hint" /><p className="hint" id="as-min-hint">Candidates aren&apos;t shown a timer or told about this. If they reach it, their work is submitted automatically. You see how long each one took in the results.</p></div>
       </div>
       <div className="field">
         <label htmlFor="as-intro">Instructions shown before the candidate starts</label>

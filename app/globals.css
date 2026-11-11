@@ -643,7 +643,7 @@ a.path-card:hover{border-color:var(--accent)}
 .assess-card.wide{max-width:680px}
 .assess-intro p,.assess-intro ul{margin:0 0 10px;color:var(--fg)}
 .assess-intro ul{padding-left:20px}
-.assess-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0}
+.assess-facts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:4px 0}
 .assess-facts div{background:var(--surface-2);border-radius:8px;padding:10px 12px}
 .assess-facts dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .assess-facts dd{margin:2px 0 0;font-family:var(--display);font-weight:700}

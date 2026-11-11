@@ -47,7 +47,7 @@ export async function createAssessment(formData: FormData) {
     intro: SAMPLE_INTRO,
     case_study: fromSample ? SAMPLE_CASE_STUDY : "# Property name\n\nWrite the case study here.",
     config: fromSample ? SAMPLE_CONFIG : { fields: {} },
-    time_limit_minutes: 60,
+    time_limit_minutes: 120,
     is_open: false,
     created_by: me.id,
   }).select("id").single();

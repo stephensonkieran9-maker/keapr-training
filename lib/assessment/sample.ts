@@ -11,14 +11,13 @@ import type { AssessmentConfig } from "./scoring.ts";
 
 export const SAMPLE_TITLE = "Listing build: The Hollies House";
 
-export const SAMPLE_INTRO = `This is a timed listing-build exercise.
+export const SAMPLE_INTRO = `This is a listing-build exercise.
 
-When you press **Start**, the timer begins and you'll see a property brief on the left and a listing builder on the right, like the one used on Airbnb or Booking.com. Read the brief carefully and build the listing from it.
+When you press **Start**, you'll see a property brief on the left and a listing builder on the right, like the one used on Airbnb or Booking.com. Read the brief carefully and build the listing from it.
 
-- You have one attempt. The timer keeps running if you close the page.
-- Your answers save automatically as you go.
-- When the time is up, whatever you've entered is submitted automatically.
-- You're marked on accuracy first, then on how quickly you finish. Accuracy matters more than speed.
+- You have one attempt.
+- Your answers save automatically as you go, so you can come back if you close the page.
+- Check your work before you submit. You can't change anything afterwards.
 - Use only the brief. Don't guess or add anything it doesn't say.`;
 
 export const SAMPLE_CASE_STUDY = `# The Hollies House

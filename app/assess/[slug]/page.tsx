@@ -38,7 +38,7 @@ export default async function AssessmentLanding({ params, searchParams }: {
     return (
       <Shell title={a.title}>
         {!a.isOpen && <p className="notice">This assessment isn&apos;t taking new registrations at the moment. If you&apos;ve already registered, sign in below.</p>}
-        {a.isOpen && <p className="auth-intro">Register to take the {a.timeLimitMinutes}-minute listing exercise. The timer doesn&apos;t start until you press Start.</p>}
+        {a.isOpen && <p className="auth-intro">Register to take the listing exercise. It doesn&apos;t start until you press Start.</p>}
         {signIn ? <SignInForm slug={slug} /> : <RegisterForm slug={slug} />}
         <div className="auth-foot">
           {signIn
@@ -64,9 +64,7 @@ export default async function AssessmentLanding({ params, searchParams }: {
     return (
       <Shell title="Thanks, your listing has been submitted">
         <p className="auth-intro">
-          {attempt.submitKind === "timeout"
-            ? "Your time ran out, so we submitted everything you'd entered."
-            : "We've received your answers."}{" "}
+          We&apos;ve received your answers.{" "}
           The team will review your result and be in touch. You don&apos;t need to do anything else.
         </p>
         {signOut}
@@ -78,12 +76,11 @@ export default async function AssessmentLanding({ params, searchParams }: {
     <Shell title={`Welcome, ${candidate.fullName.split(" ")[0]}`} wide>
       <CaseStudy text={a.intro} className="assess-intro" />
       <dl className="assess-facts">
-        <div><dt>Time limit</dt><dd>{a.timeLimitMinutes} minutes</dd></div>
         <div><dt>Attempts</dt><dd>One</dd></div>
         <div><dt>Saving</dt><dd>Automatic</dd></div>
       </dl>
       {a.isOpen
-        ? <StartForm slug={slug} minutes={a.timeLimitMinutes} />
+        ? <StartForm slug={slug} />
         : <p className="notice">This assessment has been closed, so it can&apos;t be started now.</p>}
       {signOut}
     </Shell>

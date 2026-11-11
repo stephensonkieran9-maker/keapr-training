@@ -13,9 +13,9 @@ Nothing else is needed: no new environment variables, and Supabase sign-ups stay
 ## How it works for a candidate
 
 1. Opens the link (`/assess/<code>`) and registers with name, email, optional phone and a password.
-2. Reads the instructions and presses **Start test**. The timer starts on the server.
+2. Reads the instructions and presses **Start test**. Timing starts on the server, but they're never shown a timer.
 3. Sees the case study on the left and a listing builder on the right (on phones these are two tabs). Answers autosave every few seconds and when the tab is hidden.
-4. Submits, or when time runs out whatever they've entered is submitted automatically. If they close the page, the timer keeps running, and their last autosave is marked once time is up.
+4. Submits. If they reach the hidden cut-off, whatever they've entered is submitted automatically (including if they've closed the page).
 5. Sees a thank-you page. They don't see their score.
 
 Each candidate gets **one attempt**. Closing the page, refreshing or switching device (by signing in again) carries on the same attempt.
@@ -26,7 +26,7 @@ Each candidate gets **one attempt**. Closing the page, refreshing or switching d
 
 **Results tab.** Candidates are ranked by accuracy, then by time taken. **Results CSV** downloads the same ranking. Click a name to see every field: their answer, the answer key and the mark.
 
-**Setup tab.** Edit the title, the time limit (5–240 minutes) and the instructions shown before starting. **Make a new link** retires the old one. **Duplicate** copies the case study and answer key without the candidates, which is the quickest way to write a second case study. **Archive** hides an assessment and keeps its results.
+**Setup tab.** Edit the title, the hidden cut-off (5–240 minutes, default 120) and the instructions shown before starting. Candidates never see a timer, the cut-off or how many fields they've filled in; you see how long each one took in the results. **Make a new link** retires the old one. **Duplicate** copies the case study and answer key without the candidates, which is the quickest way to write a second case study. **Archive** hides an assessment and keeps its results.
 
 **Photos tab.** Upload every listing photo (JPG, PNG or WebP, up to 15 MB each) and choose which room each one shows. Candidates download a zip of the photos in a shuffled order with neutral names (photo-01.jpg…), upload them all, and put them in this order: **living spaces, dining, kitchen, bedrooms, bathrooms, then anything else**. Photos from the same room can go in any order among themselves. Each re-upload is matched to the original by its exact file contents, so a candidate who edits or re-saves a photo gets a warning and it doesn't count. Marks = share of the photos uploaded × share of photo pairs in the right order. On each candidate's page you can see the order they chose.
 

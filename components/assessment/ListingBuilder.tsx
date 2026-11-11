@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { FIELD_BY_ID, SECTIONS, isAnswered, type AnswerValue, type Answers } from "@/lib/assessment/fields";
+import { FIELD_BY_ID, SECTIONS, type AnswerValue, type Answers } from "@/lib/assessment/fields";
 import { FieldInput } from "./ListingFields";
 
 /** The right-hand listing editor: section steps across the top, one section
@@ -26,26 +26,19 @@ export function ListingBuilder({ fieldIds, answers, onChange, disabled, footer }
     top.current?.focus({ preventScroll: true });
   };
 
-  const progress = (sid: string) => {
-    const fs = fields.filter((f) => f.section === sid);
-    return { done: fs.filter((f) => isAnswered(f, answers[f.id])).length, total: fs.length };
-  };
 
   if (!section) return <p className="notice">No fields have been turned on for this assessment.</p>;
 
   return (
     <div className="lb">
       <nav className="lb-steps" aria-label="Listing sections">
-        {sections.map((s, i) => {
-          const p = progress(s.id);
-          const complete = p.done === p.total;
-          return (
-            <button key={s.id} type="button" aria-current={i === idx ? "step" : undefined} className={complete ? "complete" : ""} onClick={() => go(i)}>
-              <span className="lb-step-n" aria-hidden="true">{complete ? "✓" : i + 1}</span>
-              <span>{s.label}<small>{p.done} of {p.total} filled</small></span>
-            </button>
-          );
-        })}
+        {/* No "filled" counts or ticks: candidates check their own work. */}
+        {sections.map((s, i) => (
+          <button key={s.id} type="button" aria-current={i === idx ? "step" : undefined} onClick={() => go(i)}>
+            <span className="lb-step-n" aria-hidden="true">{i + 1}</span>
+            <span>{s.label}</span>
+          </button>
+        ))}
       </nav>
 
       <div className="lb-body" ref={top} tabIndex={-1}>

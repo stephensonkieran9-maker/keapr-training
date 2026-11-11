@@ -4,7 +4,7 @@ import { submitAnswers } from "@/lib/assessment/server";
 
 export const dynamic = "force-dynamic";
 
-/** Final submission (the Submit button, or the timer reaching zero). The
+/** Final submission (the Submit button, or the hidden cut-off being reached). The
  * server decides whether it was on time; the browser can't. */
 export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const r = await candidateRequest(req, (await params).slug);

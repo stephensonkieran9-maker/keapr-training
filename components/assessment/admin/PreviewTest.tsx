@@ -6,7 +6,7 @@ import type { Answers } from "@/lib/assessment/fields";
 import type { ScoreResult } from "@/lib/assessment/scoring";
 import { TestScreen } from "../TestScreen";
 
-/** The candidate screen for admins: same layout and timer, but nothing is
+/** The candidate screen for admins: same layout and hidden cut-off, but nothing is
  * saved, and submitting shows how the answers would be marked. */
 export function PreviewTest({ id, photoUrls, ...props }: { id: string; title: string; caseStudy: string; fieldIds: string[]; deadlineAt: string; serverNow: number; photoUrls: Record<string, string> }) {
   const [result, setResult] = useState<ScoreResult | null>(null);

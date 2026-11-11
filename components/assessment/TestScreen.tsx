@@ -1,20 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FIELD_BY_ID, isAnswered, type AnswerValue, type Answers } from "@/lib/assessment/fields";
+import type { AnswerValue, Answers } from "@/lib/assessment/fields";
 import { CaseStudy } from "./CaseStudy";
 import { ListingBuilder } from "./ListingBuilder";
 import { PhotoContext } from "./PhotosInput";
 
 export type SaveOutcome = "ok" | "expired" | "submitted" | "error";
-
-function clock(ms: number) {
-  const s = Math.max(0, Math.ceil(ms / 1000));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
-}
 
 const timeOfDay = (d: Date) => d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
@@ -36,9 +28,7 @@ export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlin
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [pane, setPane] = useState<"case" | "form">("case");
   const [status, setStatus] = useState<{ kind: "idle" | "saving" | "saved" | "error"; at?: Date }>({ kind: "idle" });
-  const [remaining, setRemaining] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [announce, setAnnounce] = useState("");
   const latest = useRef(answers);
   const dirty = useRef(false);
   const saving = useRef(false);
@@ -100,25 +90,16 @@ export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlin
   useEffect(() => {
     if (!deadlineAt) return;
     const end = new Date(deadlineAt).getTime();
-    const warned = new Set<number>();
+    // Silent cut-off: candidates never see a clock. When the admin's time
+    // limit is reached, whatever they've entered is submitted.
     const tick = () => {
-      const left = end - (Date.now() + skew.current);
-      setRemaining(left);
-      for (const mins of [10, 5, 1]) {
-        if (left <= mins * 60_000 && left > (mins * 60_000 - 5000) && !warned.has(mins)) {
-          warned.add(mins);
-          setAnnounce(`${mins} minute${mins === 1 ? "" : "s"} left.`);
-        }
-      }
-      if (left <= 0) void doSubmit("timeout");
+      if (end - (Date.now() + skew.current) <= 0) void doSubmit("timeout");
     };
     tick();
     const t = window.setInterval(tick, 1000);
     return () => window.clearInterval(t);
   }, [deadlineAt, doSubmit]);
 
-  const unanswered = fieldIds.filter((id) => FIELD_BY_ID[id] && !isAnswered(FIELD_BY_ID[id], answers[id])).length;
-  const urgency = remaining === null ? "" : remaining <= 120_000 ? "danger" : remaining <= 600_000 ? "warn" : "";
 
   const submitButton = (
     <button type="button" className="btn btn-primary" disabled={submitting} onClick={() => dialog.current?.showModal()}>
@@ -135,19 +116,13 @@ export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlin
           {status.kind === "saved" && status.at && `Saved ${timeOfDay(status.at)}`}
           {status.kind === "error" && <span className="at-err">Not saved. Check your connection.</span>}
         </div>
-        {remaining !== null && (
-          <div className={`at-timer ${urgency}`} role="timer" aria-label={`Time left ${clock(remaining)}`}>
-            <span aria-hidden="true">⏱</span> {clock(remaining)}
-          </div>
-        )}
         {submitButton}
       </header>
-      <div className="sr-only" aria-live="assertive">{announce}</div>
       {banner}
 
       <div className="at-tabs" role="tablist" aria-label="Show">
         <button role="tab" aria-selected={pane === "case"} onClick={() => setPane("case")}>Case study</button>
-        <button role="tab" aria-selected={pane === "form"} onClick={() => setPane("form")}>Listing ({fieldIds.length - unanswered}/{fieldIds.length})</button>
+        <button role="tab" aria-selected={pane === "form"} onClick={() => setPane("form")}>Listing</button>
       </div>
 
       <div className="at-panes">
@@ -164,7 +139,6 @@ export function TestScreen({ title, caseStudy, fieldIds, initialAnswers, deadlin
       <dialog ref={dialog} className="at-dialog" aria-labelledby="submit-title">
         <h2 id="submit-title">Submit your listing?</h2>
         <p>You can&apos;t change anything after you submit.</p>
-        {unanswered > 0 && <p className="notice">{unanswered} field{unanswered === 1 ? " is" : "s are"} still empty.</p>}
         <div className="actions-row">
           <button type="button" className="btn btn-ghost" onClick={() => dialog.current?.close()}>Keep working</button>
           <button type="button" className="btn btn-primary" onClick={() => void doSubmit("candidate")}>Submit now</button>
