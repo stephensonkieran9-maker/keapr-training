@@ -22,6 +22,9 @@ export interface FieldKey {
   /** Text fields: extra points for writing it as real prose in the
    * candidate's own words (not bullet points, not copied from the brief). */
   qualityWeight?: number;
+  /** Text fields: points taken off if the answer mentions any of these
+   * (e.g. information that belongs in a different box). */
+  avoid?: { mention: string[]; points: number; note?: string };
 }
 
 /** An admin's manual adjustment to one field's mark. */
@@ -251,6 +254,14 @@ export function scoreAnswers(config: AssessmentConfig, answers: Answers, ctx: Sc
     const { fraction: contentFraction, note } = scoreField(f, key, answers[id], config);
     let points = contentWeight * contentFraction;
     const notes = [note];
+    if (f.type === "text" && key.avoid && key.avoid.points > 0) {
+      const text = normaliseWords(String(cleanValue(f, answers[id] ?? null)));
+      const hit = mentionGroups(key.avoid.mention).find((alts) => alts.some((a) => text.includes(` ${a} `)));
+      if (hit) {
+        points = Math.max(0, points - key.avoid.points);
+        notes.push(`−${key.avoid.points}: ${key.avoid.note || `shouldn't mention "${hit[0]}"`}`);
+      }
+    }
     if (qualityWeight > 0) {
       const q = writingQuality(String(cleanValue(f, answers[id] ?? null)), ctx.source ?? "");
       points += qualityWeight * q.fraction;
@@ -372,6 +383,10 @@ export function cleanConfig(raw: unknown): AssessmentConfig {
     if (f.type === "number" && k.tolerance !== undefined && Number(k.tolerance) > 0) entry.tolerance = Number(k.tolerance);
     if (typeof k.explanation === "string" && k.explanation.trim()) entry.explanation = k.explanation.trim().slice(0, 500);
     if (f.type === "text" && Number(k.qualityWeight) > 0) entry.qualityWeight = Math.min(100, Number(k.qualityWeight));
+    if (f.type === "text" && k.avoid && Number(k.avoid.points) > 0 && Array.isArray(k.avoid.mention)) {
+      const mention = k.avoid.mention.map(String).map((x) => x.trim()).filter(Boolean).slice(0, 30);
+      if (mention.length) entry.avoid = { mention, points: Math.min(100, Number(k.avoid.points)), ...(k.avoid.note ? { note: String(k.avoid.note).slice(0, 200) } : {}) };
+    }
     fields[f.id] = entry;
   }
   const rawPhotos = (raw && typeof raw === "object" ? (raw as { photos?: unknown }).photos : null);

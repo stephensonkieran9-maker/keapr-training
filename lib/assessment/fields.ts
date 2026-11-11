@@ -170,7 +170,7 @@ export const FIELDS: FieldDef[] = [
   { id: "childrenAllowed", section: "rules", label: "Suitable for children (2–12)", type: "yesno" },
   { id: "quietFrom", section: "rules", label: "Quiet hours start", type: "time" },
   { id: "quietUntil", section: "rules", label: "Quiet hours end", type: "time" },
-  { id: "additionalRules", section: "rules", label: "Additional rules", type: "text", multiline: true, maxLength: 500 },
+  { id: "additionalRules", section: "rules", label: "House rules and policies", type: "text", multiline: true, maxLength: 1000, hint: "Everything guests must know or agree to before booking: deposits, fees and rules." },
 ];
 
 export const FIELD_BY_ID: Record<string, FieldDef> = Object.fromEntries(FIELDS.map((f) => [f.id, f]));

@@ -153,6 +153,13 @@ export function AnswerKeyEditor({ id, config, started }: { id: string; config: A
                           <input type="number" min={0} max={100} step={0.5} value={k.qualityWeight ?? 0} onChange={(e) => update(f.id, { qualityWeight: Number(e.target.value) || undefined })} />
                         </label>
                       )}
+                      {f.multiline && (
+                        <div className="field key-explain">
+                          <label htmlFor={`av-${f.id}`}>Take points off if it mentions (one per line, optional)</label>
+                          <textarea id={`av-${f.id}`} rows={3} value={(k.avoid?.mention ?? []).join("\n")} onChange={(e) => update(f.id, { avoid: { mention: e.target.value.split("\n"), points: k.avoid?.points ?? 2, note: k.avoid?.note } })} />
+                          <label className="key-weight">Points taken off<input type="number" min={0} max={100} step={0.5} value={k.avoid?.points ?? 0} onChange={(e) => update(f.id, { avoid: { mention: k.avoid?.mention ?? [], points: Number(e.target.value) || 0, note: k.avoid?.note } })} /></label>
+                        </div>
+                      )}
                       {f.multiline && <p className="hint">Half for reading as sentences rather than bullet points, half for being in their own words (up to a quarter copied word for word from the brief is fine).</p>}
                     </div>
                   ) : f.type === "photos" ? (

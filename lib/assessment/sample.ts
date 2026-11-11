@@ -30,7 +30,6 @@ Build the listing using only the information in this brief.
 
 - **Title:** write a title that tells guests what the property is, how big it is, its key features and where it is.
 - **Description:** write the listing description in your own words, as full sentences that would make a guest want to book. Don't just copy the bullet points from this brief.
-- **Getting around:** the *Getting around* section at the end goes in the neighbourhood and getting around box, not the description.
 - **Amenities:** tick only what the brief lists.
 - **Discounts:** if the brief doesn't give a discount, enter 0.
 - **Example contractor quote:** work out the total for one contractor (**no pets**) staying **28 nights**: the nightly rate for every night, minus any discount that applies, plus the cleaning fee once. Don't include the refundable security deposit.
@@ -153,7 +152,13 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
       "self check in|self checkin|self check|check yourself in|keyless",
       "brampton park|new vic|apedale",
       "smoking|smoke free|parties|party|events|pets|pet",
-    ] },
+    ],
+    // Getting-around details belong in the neighbourhood box, not here.
+    avoid: { points: 2, note: "getting-around details belong in the neighbourhood box, not the description", mention: [
+      "town centre|town center",
+      "bus station|bus|buses",
+      "longport|railway|train|trains|rail",
+    ] } },
     neighbourhood: { weight: 2, mustMention: [                         // the Getting around section
       "town centre",
       "bus station|bus",
@@ -196,6 +201,13 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
     petsAllowed: { weight: 1, answer: "yes" },                           // on request
     smokingAllowed: { weight: 1, answer: "no" },
     eventsAllowed: { weight: 1, answer: "no" },
-    additionalRules: { weight: 1, mustMention: ["deposit", "pet|pets"] },
+    // 1 point each: deposit, no smoking, no parties/events, pets on request, pet fee.
+    additionalRules: { weight: 5, mustMention: [
+      "deposit",
+      "smoking|smoke|non smoking|smoke free",
+      "parties|party|events|gatherings",
+      "pets|pet",
+      "£200|200",
+    ] },
   },
 };

@@ -224,3 +224,17 @@ test("description: 9 points for facts plus 3 for writing, and admin overrides ap
   assert.equal(o.maxPoints - o.points, 4);
   assert.ok(o.overrides?.description);
 });
+
+test("description loses 2 points for getting-around details; house rules worth 5", () => {
+  const good = "Welcome to The Hollies House, a spacious three-bedroom house in Newcastle-under-Lyme that sleeps six. It has two bathrooms, a fully equipped kitchen, free Wi-Fi and a private garden. It suits contractors, families and long-term guests, with free street parking and easy self check-in. Brampton Park is a short walk away, and smoking isn't allowed inside.";
+  const withTransport = good + " The town centre is 0.7 miles away and Longport railway station is close by.";
+  const mark = (description: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), description }, { source: SAMPLE_CASE_STUDY }).fields.find((f) => f.id === "description")!;
+  assert.equal(mark(good).points, 12);
+  const pen = mark(withTransport);
+  assert.equal(pen.points, 10);
+  assert.match(pen.note!, /−2: getting-around details belong in the neighbourhood box/);
+  const rules = (additionalRules: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), additionalRules }).fields.find((f) => f.id === "additionalRules")!;
+  assert.equal(rules("A £300 security deposit is required. No smoking inside, no parties or events. Pets welcome on request with a £200 pet fee.").points, 5);
+  assert.equal(rules("Please be respectful of the neighbours.").points, 0);
+  assert.equal(rules("A deposit is required.").points, 1);
+});
