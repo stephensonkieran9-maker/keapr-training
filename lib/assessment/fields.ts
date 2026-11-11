@@ -112,8 +112,8 @@ export const FIELDS: FieldDef[] = [
   ) },
 
   // Title & description
-  { id: "title", section: "listing", label: "Listing title", type: "text", maxLength: 50, hint: "Short and specific. 50 characters maximum." },
-  { id: "description", section: "listing", label: "Listing description", type: "text", multiline: true, maxLength: 5000, hint: "The full description guests read: overview, features, amenities, parking, access and house rules. 5,000 characters maximum." },
+  { id: "title", section: "listing", label: "Listing title", type: "text", maxLength: 100, hint: "100 characters maximum." },
+  { id: "description", section: "listing", label: "Listing description", type: "text", multiline: true, maxLength: 5000, hint: "The description guests read on the listing. 5,000 characters maximum." },
   { id: "neighbourhood", section: "listing", label: "The neighbourhood and getting around", type: "text", multiline: true, maxLength: 500, hint: "How guests get around: the town centre and transport links. 500 characters maximum." },
 
   // Photos

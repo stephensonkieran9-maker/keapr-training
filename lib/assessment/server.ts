@@ -176,7 +176,7 @@ function pastGrace(deadlineAt: string, now = Date.now()) {
  * second tab, a retry, the timeout sweep) change nothing. */
 async function finalise(row: AttemptRow, answers: Answers, kind: "candidate" | "timeout") {
   const config = cleanConfig(row.config_snapshot);
-  const result = scoreAnswers(config, answers);
+  const result = scoreAnswers(config, answers, { source: row.case_study_snapshot });
   const started = new Date(row.started_at).getTime();
   const deadline = new Date(row.deadline_at).getTime();
   const end = Math.min(Date.now(), deadline);

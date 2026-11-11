@@ -8,7 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { PHOTO_CATEGORIES, cleanAnswers, type PhotoCategory } from "./fields";
 import { PHOTO_BUCKET, sha256Hex } from "./photos";
 import { SAMPLE_CASE_STUDY, SAMPLE_CONFIG, SAMPLE_INTRO, SAMPLE_TITLE } from "./sample";
-import { cleanConfig, configProblems, formFieldIds, scoreAnswers, type PhotoKey, type ScoreResult } from "./scoring";
+import { cleanConfig, configProblems, formFieldIds, scoreAnswers, type Overrides, type PhotoKey, type ScoreResult } from "./scoring";
 import { hashPassword } from "./server";
 
 // Every action re-checks the caller is an active admin, writes with the
@@ -183,13 +183,15 @@ export async function remarkAll(fd: FormData) {
   if (!a) return;
   const config = cleanConfig(a.config);
   if (configProblems(config).length) redirect(`/admin/assessments/${id}?tab=key&cantopen=1`);
-  const { data: attempts } = await db().from("assessment_attempts").select("id, answers, config_snapshot").eq("assessment_id", id).not("submitted_at", "is", null);
+  const { data: attempts } = await db().from("assessment_attempts").select("id, answers, config_snapshot, case_study_snapshot, score").eq("assessment_id", id).not("submitted_at", "is", null);
   let n = 0;
   for (const att of attempts ?? []) {
     // Mark only the fields the candidate was shown when they sat the test.
     const shown = new Set(formFieldIds(cleanConfig(att.config_snapshot)));
     const fields = Object.fromEntries(Object.entries(config.fields).filter(([fid]) => shown.has(fid)));
-    const result = scoreAnswers({ fields, photos: config.photos }, cleanAnswers([...shown], att.answers));
+    // Admin adjustments survive a re-mark.
+    const overrides = ((att.score as ScoreResult | null)?.overrides ?? {}) as Overrides;
+    const result = scoreAnswers({ fields, photos: config.photos }, cleanAnswers([...shown], att.answers), { source: att.case_study_snapshot }, overrides);
     const snapshot = { fields: { ...cleanConfig(att.config_snapshot).fields, ...fields }, photos: config.photos ?? [] };
     await db().from("assessment_attempts").update({ score: result, accuracy: Math.round(result.accuracy * 1000) / 1000, config_snapshot: snapshot }).eq("id", att.id);
     n++;
@@ -203,10 +205,10 @@ export async function remarkAll(fd: FormData) {
 export async function previewScore(id: string, raw: unknown): Promise<ScoreResult | { error: string }> {
   await requireAdmin();
   if (!isId(id)) return { error: "Unknown assessment." };
-  const { data } = await db().from("assessments").select("config").eq("id", id).single();
+  const { data } = await db().from("assessments").select("config, case_study").eq("id", id).single();
   if (!data) return { error: "Unknown assessment." };
   const config = cleanConfig(data.config);
-  return scoreAnswers(config, cleanAnswers(formFieldIds(config), raw));
+  return scoreAnswers(config, cleanAnswers(formFieldIds(config), raw), { source: data.case_study });
 }
 
 export async function deleteCandidate(fd: FormData) {
@@ -329,4 +331,32 @@ export async function removePhoto(id: string, photoId: string): Promise<{ ok: bo
   await audit(me.id, "assessment_photo_remove", id, { name: gone?.name });
   paths(id);
   return { ok: true };
+}
+
+/** Sets or clears an admin's adjustment to one field's mark (e.g. after
+ * reading a candidate's description). The automatic mark is kept alongside
+ * it, and the candidate's accuracy and ranking update straight away. */
+export async function setFieldOverride(fd: FormData) {
+  const { profile: me } = await requireAdmin();
+  const id = String(fd.get("id") ?? "");
+  const candidateId = String(fd.get("candidateId") ?? "");
+  const fieldId = String(fd.get("fieldId") ?? "");
+  const clear = fd.get("clear") === "1";
+  const points = Number(fd.get("points"));
+  const reason = String(fd.get("reason") ?? "").trim().slice(0, 500);
+  if (!isId(id) || !isId(candidateId) || !fieldId) return;
+  if (!clear && (!Number.isFinite(points) || !reason)) return;
+  const { data: att } = await db().from("assessment_attempts")
+    .select("id, answers, config_snapshot, case_study_snapshot, score, submitted_at")
+    .eq("candidate_id", candidateId).eq("assessment_id", id).maybeSingle();
+  if (!att?.submitted_at) return;
+  const config = cleanConfig(att.config_snapshot);
+  const overrides: Overrides = { ...(((att.score as ScoreResult | null)?.overrides ?? {}) as Overrides) };
+  if (clear) delete overrides[fieldId];
+  else overrides[fieldId] = { points, reason, by: me.fullName || me.email || "Admin", at: new Date().toISOString() };
+  const result = scoreAnswers(config, cleanAnswers(formFieldIds(config), att.answers), { source: att.case_study_snapshot }, overrides);
+  await db().from("assessment_attempts").update({ score: result, accuracy: Math.round(result.accuracy * 1000) / 1000 }).eq("id", att.id);
+  await audit(me.id, clear ? "assessment_mark_override_clear" : "assessment_mark_override", id, { candidate: candidateId, field: fieldId, points: clear ? null : points, reason });
+  paths(id);
+  revalidatePath(`/admin/assessments/${id}/candidates/${candidateId}`);
 }

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CandidatePasswordForm } from "@/components/assessment/admin/Editors";
 import { requireAdmin } from "@/lib/auth";
 import { getAssessment, getCandidateDetail } from "@/lib/assessment/admin";
-import { deleteCandidate, resetAttempt } from "@/lib/assessment/admin-actions";
+import { deleteCandidate, resetAttempt, setFieldOverride } from "@/lib/assessment/admin-actions";
 import { FIELD_BY_ID, PHOTO_CATEGORIES, SECTIONS, displayValue } from "@/lib/assessment/fields";
 import { signPhotoUrls } from "@/lib/assessment/photos";
 import { STATUS_LABEL, formatMinutesSeconds } from "@/lib/assessment/scoring";
@@ -99,10 +99,37 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               <tbody>
                 {fs.map((f) => (
                   <tr key={f.id}>
-                    <td>{f.label}<small>Weight {f.weight}</small></td>
+                    <td>{f.label}<small>{f.points.toFixed(1)} of {f.weight} points</small></td>
                     <td className="ans">{f.given || <em>Blank</em>}{f.note && <small>{f.note}</small>}</td>
                     <td className="ans">{f.expected}</td>
-                    <td><Mark fraction={f.fraction} /></td>
+                    <td>
+                      <Mark fraction={f.fraction} />
+                      {f.override && (
+                        <small className="adj-note">
+                          Adjusted by {f.override.by} from {(f.autoPoints ?? 0).toFixed(1)}: {f.override.reason}
+                        </small>
+                      )}
+                      <details className="adj">
+                        <summary>Adjust</summary>
+                        <form action={setFieldOverride} className="form-stack">
+                          <input type="hidden" name="id" value={id} />
+                          <input type="hidden" name="candidateId" value={cid} />
+                          <input type="hidden" name="fieldId" value={f.id} />
+                          <label>Points (0–{f.weight})<input name="points" type="number" min={0} max={f.weight} step={0.5} defaultValue={f.points.toFixed(1)} required /></label>
+                          <label>Reason<input name="reason" required maxLength={500} placeholder="e.g. well written, just missed the wording check" /></label>
+                          <button className="btn btn-primary btn-sm" type="submit">Save mark</button>
+                        </form>
+                        {f.override && (
+                          <form action={setFieldOverride}>
+                            <input type="hidden" name="id" value={id} />
+                            <input type="hidden" name="candidateId" value={cid} />
+                            <input type="hidden" name="fieldId" value={f.id} />
+                            <input type="hidden" name="clear" value="1" />
+                            <button className="lb-link" type="submit">Go back to the automatic mark</button>
+                          </form>
+                        )}
+                      </details>
+                    </td>
                   </tr>
                 ))}
               </tbody>

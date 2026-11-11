@@ -28,23 +28,25 @@ export const SAMPLE_CASE_STUDY = `# The Hollies House
 
 Build the listing using only the information in this brief.
 
+- **Title:** write a title that tells guests what the property is, how big it is, what's good about it and where it is.
+- **Description:** write the listing description in your own words, as full sentences that would make a guest want to book. Don't just copy the bullet points from this brief.
+- **Getting around:** the *Getting around* section at the end goes in the neighbourhood and getting around box, not the description.
 - **Amenities:** tick only what the brief lists.
 - **Discounts:** if the brief doesn't give a discount, enter 0.
-- **Title:** the listing title is the property name, **The Hollies House**.
-- **Description:** use the property description below, from the overview through to the house rules.
-- **Getting around:** the *Getting around* section at the end goes in the neighbourhood and getting around box, not the description.
 - **Example contractor quote:** work out the total for one contractor (**no pets**) staying **28 nights**: the nightly rate for every night, minus any discount that applies, plus the cleaning fee once. Don't include the refundable security deposit.
 
 ---
 
 ## Property summary
 
+- **Property name:** The Hollies House
 - **Address:** 18 The Hollies, Brampton Rd, Newcastle-under-Lyme, Newcastle ST5 0QT, UK
-- **Property name (listing title):** The Hollies House
 - **Property type:** House. Guests have the whole house.
 - **Bedrooms:** 3
 - **Bathrooms:** 2
 - **Maximum occupancy:** 6 guests
+- **Outdoor space:** Private garden
+- **Internet:** Free Wi-Fi
 - **Nightly rate:** £125
 - **Cleaning fee:** £60 per stay
 - **Security deposit:** £300
@@ -71,6 +73,34 @@ The Hollies House is suitable for both short and long stays, including long-term
 - **Bedroom 2:** 1 Double Bed
 - **Bedroom 3:** 2 Single Beds
 
+## Amenities and facilities
+
+- **Kitchen and dining:** Fully equipped kitchen • Refrigerator • Microwave • Oven • Dining area
+- **Living and entertainment:** Television • Free Wi-Fi • Heating • Hot water
+- **Laundry and other facilities:** Washing machine • Iron and ironing board • Hairdryer
+- **Safety:** Smoke alarm • Carbon monoxide alarm
+- **Outdoor:** Private garden
+
+## Check-in and access
+
+- **Check-in:** From 3:00 PM
+- **Check-out:** By 10:00 AM
+- **Check-in method:** Self check-in
+- **Access instructions:** Shared with guests before their scheduled arrival
+
+## House rules
+
+- **Security deposit:** A £300 security deposit is required.
+- **Smoking:** Smoking is strictly prohibited inside the property.
+- **Pets:** Pets are allowed upon request. A pet fee of £200 per stay applies.
+- **Parties and events:** Parties, gatherings and events are not permitted.
+
+## Nearby attractions
+
+- **Brampton Park & Museum:** about 0.5 miles. Gardens, walking paths, a children's play area and local history exhibitions.
+- **New Vic Theatre:** about 1.5 miles. Live performances, musicals and cultural entertainment.
+- **Apedale Heritage Centre:** about 2.5 miles. The area's mining heritage, museum exhibits and underground mine tours.
+
 ## Photo order
 
 Download the photos from the **Photos** step, upload **all** of them, and put them in this order:
@@ -82,74 +112,11 @@ Download the photos from the **Photos** step, upload **all** of them, and put th
 5. Bathrooms
 6. Anything else (outside of the house, garden)
 
----
+## Getting around
 
-## Property description
-
-**Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme**
-
-Welcome to The Hollies House, a comfortable three-bedroom home in Newcastle-under-Lyme, Staffordshire, sleeping up to 6 guests.
-
-It's ideal for contractors, business travellers, families, relocation guests and professionals. With a fully equipped kitchen, two bathrooms and a private garden, it's suitable for both short stays and long-term guests.
-
-### Property features
-
-**Sleeping arrangements**
-
-- Bedroom 1: 1 King Bed
-- Bedroom 2: 1 Double Bed
-- Bedroom 3: 2 Single Beds
-
-**Bathrooms**
-
-- 2 Bathrooms.
-
-**Amenities**
-
-- Free Wi-Fi
-- Fully equipped kitchen with refrigerator, microwave and oven
-- Dining area
-- Television
-- Heating
-- Hot water
-- Washing machine
-- Iron and ironing board
-- Hairdryer
-- Private garden
-- Smoke alarm
-- Carbon monoxide alarm
-
-**Parking details**
-
-- Free street parking for 1 vehicle. The property does not have private or designated parking.
-
-### Guest access
-
-Guests have access to the entire house, with self check-in. Access instructions are shared with guests before their scheduled arrival.
-
-- Check-in: From 3:00 PM
-- Check-out: By 10:00 AM
-
-### Location highlights
-
-**Nearby attractions**
-
-- Brampton Park & Museum: Approximately 0.5 miles away. Beautiful gardens, walking paths, a children's play area and local history exhibitions.
-- New Vic Theatre: Approximately 1.5 miles away. A popular local theatre featuring live performances, musicals and cultural entertainment.
-- Apedale Heritage Centre: Approximately 2.5 miles away. Explore the area's mining heritage, museum exhibits and historic underground mine tours.
-
-### House rules
-
-- **Security deposit:** A £300 security deposit is required.
-- **Smoking:** Smoking is strictly prohibited inside the property.
-- **Pets:** Pets are allowed upon request. A pet fee of £200 per stay applies.
-- **Parties and events:** Parties, gatherings and events are not permitted.
-
-### Getting around
-
-- Newcastle-under-Lyme Town Centre: Approximately 0.7 miles away. Shops, restaurants, cafés and everyday amenities.
-- Newcastle-under-Lyme Bus Station: Approximately 0.9 miles away. Regular bus connections to Stoke-on-Trent, Hanley and surrounding areas.
-- Longport Railway Station: Approximately 1.9 miles away. Rail connections to Stoke-on-Trent, Crewe and other destinations.`;
+- **Newcastle-under-Lyme Town Centre:** about 0.7 miles. Shops, restaurants, cafés and everyday amenities.
+- **Newcastle-under-Lyme Bus Station:** about 0.9 miles. Regular buses to Stoke-on-Trent, Hanley and surrounding areas.
+- **Longport Railway Station:** about 1.9 miles. Trains to Stoke-on-Trent, Crewe and other destinations.`;
 
 /** The answer key. Weights: 1 point per simple field, more for the big ones. */
 export const SAMPLE_CONFIG: AssessmentConfig = {
@@ -161,18 +128,29 @@ export const SAMPLE_CONFIG: AssessmentConfig = {
     postcode: { weight: 1, answer: "ST5 0QT" },
     targetGuests: { weight: 1, answer: ["contractors_and_work_crews", "relocations", "business_travellers", "families", "long_stay_guests"] },
 
-    title: { weight: 2, mustMention: ["hollies"] },                       // the property name
-    description: { weight: 3, mustMention: [
+    // e.g. "Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme"
+    title: { weight: 3, mustMention: [
+      "3 bed|three bed|3 bedroom|three bedroom|3bed|3 bedrooms|three bedrooms|3 br",
+      "house|home",
+      "garden|wifi|wi fi|parking",
+      "newcastle",
+    ] },
+    // Their own description: 9 points for the facts it covers (shared
+    // equally), plus 3 for writing it as real sentences in their own words.
+    description: { weight: 9, qualityWeight: 3, mustMention: [
       "3 bed|three bed|3 bedroom|three bedroom|3bed|3 bedrooms|three bedrooms",
-      "sleeps 6|6 guests|six guests|up to 6|sleeps six|up to six",
+      "sleeps 6|sleeps six|6 guests|six guests|up to 6|up to six|accommodates 6|accommodates six|6 people|six people",
       "2 bathrooms|two bathrooms|2 bath|two bath",
       "newcastle",
-      "wifi|wi fi",
+      "contractor|contractors|business traveller|business travellers|families|family|relocation|relocating|professionals",
+      "long stay|long stays|long term|longer stays|extended stay|extended stays|short or long|short and long",
+      "kitchen",
+      "wifi|wi fi|internet|broadband",
       "garden",
-      "parking",
-      "contractor|contractors",
-      "brampton park",
-      "house rules|smoking",
+      "parking|park",
+      "self check in|self checkin|self check|check yourself in|keyless",
+      "brampton park|new vic|apedale",
+      "smoking|smoke free|parties|party|events|pets|pet",
     ] },
     neighbourhood: { weight: 2, mustMention: [                         // the Getting around section
       "town centre",

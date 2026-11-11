@@ -146,7 +146,14 @@ export function AnswerKeyEditor({ id, config, started }: { id: string; config: A
                         value={(k.mustMention ?? []).join("\n")}
                         onChange={(e) => update(f.id, { mustMention: e.target.value.split("\n") })}
                       />
-                      <p className="hint">Separate acceptable alternatives with | (e.g. <code>3 bed|three bed</code>). Matches whole words, ignoring case and punctuation.</p>
+                      <p className="hint">Separate acceptable alternatives with | (e.g. <code>3 bed|three bed</code>). Matches whole words, ignoring case and punctuation. The weight is shared between these facts.</p>
+                      {f.multiline && (
+                        <label className="key-weight">
+                          Extra points for writing quality
+                          <input type="number" min={0} max={100} step={0.5} value={k.qualityWeight ?? 0} onChange={(e) => update(f.id, { qualityWeight: Number(e.target.value) || undefined })} />
+                        </label>
+                      )}
+                      {f.multiline && <p className="hint">Half for reading as sentences rather than bullet points, half for being in their own words (up to a quarter copied word for word from the brief is fine).</p>}
                     </div>
                   ) : f.type === "photos" ? (
                     <div>

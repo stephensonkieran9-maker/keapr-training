@@ -36,13 +36,15 @@ Each candidate gets **one attempt**. Closing the page, refreshing or switching d
 - **On/Off** controls whether the field appears in the form.
 - **Weight** is how many points it's worth. Accuracy = points earned ÷ points available. Weight 0 shows a field without marking it.
 - **±** (number fields only) sets how far off still counts as correct, e.g. ±1 on a calculated quote.
-- **Text fields** (title, description, rules) are marked on the facts they mention. Put one fact per line, with alternatives separated by `|`, e.g. `3 bed|three bed|3 bedroom`. Matching ignores case and punctuation and uses whole words. You can read exactly what each candidate wrote on their page.
+- **Text fields** (title, description, rules) are marked on the facts they mention, with the weight shared equally between the facts. A long text field such as the description can also have **extra points for writing quality**: half for reading as sentences rather than bullet points, half for being in the candidate's own words. Up to a quarter copied word for word from the brief is fine; above that the marks drop, to none at three-quarters. Only runs of 6 or more identical words count as copying, so keywords like "free Wi-Fi" never do. Put one fact per line, with alternatives separated by `|`, e.g. `3 bed|three bed|3 bedroom`. Matching ignores case and punctuation and uses whole words. You can read exactly what each candidate wrote on their page.
 - **Amenities and target guests** are marked by overlap (correct ticks ÷ all ticks either side), so ticking everything scores badly.
 - **Address fields** ignore case, spaces and punctuation.
 
 An assessment can't be opened until the key has no problems.
 
 **Changing things after candidates have started.** Each attempt keeps the case study and answer key it started with. If you fix a mistake in the key, press **Re-mark everyone** on the Results tab: it re-marks every submitted attempt with the current key (their answers don't change) and records it in the audit log.
+
+**Adjusting a mark.** On a candidate's page, every marked field has **Adjust**: set the points and give a reason, for example after reading their description. Their accuracy and ranking update straight away, the automatic mark is shown alongside, and the change is in the audit log. **Go back to the automatic mark** removes it. Adjustments survive **Re-mark everyone**.
 
 **Candidate page.**
 - *Set password*: for a candidate who has forgotten theirs. There's no email reset, so you send it to them yourself.
@@ -62,3 +64,9 @@ The available fields are listed in `lib/assessment/fields.ts`. Turning fields on
 ## Sample case study
 
 `lib/assessment/sample.ts` holds the sample (The Hollies House) in the team's usual brief format, with its answer key. Two things were added to the supplied case study: a **28-night minimum stay** and the standard **Strict (14 days)** cancellation. Fields the brief doesn't cover are switched off. **Check the answer key before sending the link to real candidates.**
+
+## Reverting the "own description" change (Nov 2026)
+
+The version from before candidates wrote their own description is kept two ways:
+- `lib/assessment/sample-hollies-v1.ts`: the previous brief and answer key. Copy its exports back into `sample.ts` to restore them.
+- The `backup/assessments-v1-hollies` branch on GitHub: the whole app as it was.

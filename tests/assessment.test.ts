@@ -11,7 +11,8 @@ import { SAMPLE_CONFIG } from "../lib/assessment/sample.ts";
 function perfect(config: AssessmentConfig): Answers {
   const a: Answers = { photos: RIGHT_ORDER };
   for (const [id, k] of Object.entries(config.fields)) {
-    if (FIELD_BY_ID[id].type === "text") a[id] = (k.mustMention ?? []).map((m) => m.split("|")[0]).join(", ");
+    // Text answers as proper sentences, so writing-quality marks are full too.
+    if (FIELD_BY_ID[id].type === "text") a[id] = (k.mustMention ?? []).map((m) => `It offers ${m.split("|")[0]}.`).join(" ");
     else if (typeof k.answer === "string" && FIELD_BY_ID[id].type === "shorttext") a[id] = k.answer.split("|")[0];
     else if (k.answer !== undefined) a[id] = k.answer;
   }
@@ -116,13 +117,14 @@ test("address matching ignores case, spaces and punctuation", () => {
 
 test("text fields score by facts mentioned", () => {
   const t = (title: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), title }).fields.find((x) => x.id === "title")!;
-  assert.equal(t("The Hollies House").fraction, 1);
-  const wrong = t("Lovely 3 bed home with garden");
-  assert.equal(wrong.fraction, 0);
-  assert.match(wrong.note!, /hollies/);
+  assert.equal(t("Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme").fraction, 1);
+  assert.equal(t("Three bedroom home with parking, Newcastle").fraction, 1);
+  const nameOnly = t("The Hollies House");
+  assert.equal(nameOnly.fraction, 0.25); // only "house"
+  assert.match(nameOnly.note!, /3 bed, garden, newcastle/);
   assert.equal(t("").fraction, 0);
-  // Whole words only: "Holliesville" doesn't count as "Hollies".
-  assert.equal(t("Holliesville House").fraction, 0);
+  // Whole words only: "bedside" doesn't count as "bed".
+  assert.equal(t("Newcastles 3 bedside").fraction, 0);
   // Several facts: marked as a share.
   const n = (neighbourhood: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), neighbourhood }).fields.find((x) => x.id === "neighbourhood")!.fraction;
   assert.equal(n("Close to the town centre and the bus station."), 2 / 3);
@@ -145,7 +147,7 @@ test("answers from the browser are cleaned to their field types", () => {
   assert.equal(clean.maxGuests, 30);
   assert.equal(clean.propertyType, "");
   assert.deepEqual(clean.amenities, ["wi_fi"]);
-  assert.equal((clean.title as string).length, 50);
+  assert.equal((clean.title as string).length, 80); // under the 100 limit, kept whole
   assert.deepEqual(clean.rooms, { bedrooms: [{ king: 1 }], common: {} });
   assert.equal(clean.smokingAllowed, "");
   assert.deepEqual(clean.photos, [h(1)]);
@@ -185,4 +187,38 @@ test("CSV ranks finished candidates and defuses formulas", () => {
   assert.equal(lines.length, 3);
   assert.match(lines[1], /^1,'=HYPERLINK\(1\),n@x.com,,Submitted,91.3,39:00,2340,/);
   assert.match(lines[2], /^,Waiting,/);
+});
+
+import { copiedShare, writingQuality } from "../lib/assessment/scoring.ts";
+import { SAMPLE_CASE_STUDY } from "../lib/assessment/sample.ts";
+
+test("copying: only runs of 6+ words count, not keywords", () => {
+  const own = "A bright three-bedroom house in Newcastle-under-Lyme with a private garden, free Wi-Fi and room for six guests. Perfect for contractors on longer projects, with a fully equipped kitchen and two bathrooms.";
+  assert.equal(copiedShare(own, SAMPLE_CASE_STUDY), 0);
+  const pasted = "Smoking is strictly prohibited inside the property. Parties, gatherings and events are not permitted.";
+  assert.ok(copiedShare(pasted, SAMPLE_CASE_STUDY) > 0.9);
+});
+
+test("writing quality: prose in own words scores full, pasted bullets don't", () => {
+  const prose = "Welcome to The Hollies House, a spacious three-bedroom house in Newcastle-under-Lyme that sleeps six. It has two bathrooms, a fully equipped kitchen, free Wi-Fi and a private garden. It suits contractors, families and long-term guests, with free street parking and easy self check-in. Brampton Park is a short walk away.";
+  assert.equal(writingQuality(prose, SAMPLE_CASE_STUDY).fraction, 1);
+  const bullets = SAMPLE_CASE_STUDY.split("## Amenities and facilities")[1].split("## Nearby")[0];
+  const q = writingQuality(bullets, SAMPLE_CASE_STUDY);
+  assert.ok(q.fraction < 0.4, `pasted bullets scored ${q.fraction}`);
+  assert.equal(writingQuality("Nice house.", SAMPLE_CASE_STUDY).fraction, 0); // too short
+});
+
+test("description: 9 points for facts plus 3 for writing, and admin overrides apply", () => {
+  const prose = "Welcome to The Hollies House, a spacious three-bedroom house in Newcastle-under-Lyme that sleeps six. It has two bathrooms, a fully equipped kitchen, free Wi-Fi and a private garden. It suits contractors, families and long-term guests, with free street parking and easy self check-in. Brampton Park is a short walk away, and smoking isn't allowed inside.";
+  const r = scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), description: prose }, { source: SAMPLE_CASE_STUDY });
+  const d = r.fields.find((f) => f.id === "description")!;
+  assert.equal(d.weight, 12);
+  assert.equal(d.points, 12);
+  const o = scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), description: prose }, { source: SAMPLE_CASE_STUDY },
+    { description: { points: 8, reason: "bland", by: "Admin", at: "2026-11-11T10:00:00Z" } });
+  const od = o.fields.find((f) => f.id === "description")!;
+  assert.equal(od.points, 8);
+  assert.equal(od.autoPoints, 12);
+  assert.equal(o.maxPoints - o.points, 4);
+  assert.ok(o.overrides?.description);
 });

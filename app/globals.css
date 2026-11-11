@@ -830,3 +830,9 @@ a.path-card:hover{border-color:var(--accent)}
 .ph-admin-body select{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
 .ph-admin-body .lb-link{align-self:flex-start}
 .key-explain{margin-top:10px}
+.adj{margin-top:6px;font-size:13px}
+.adj summary{cursor:pointer;color:var(--accent);font-weight:600}
+.adj form{margin-top:8px;min-width:200px}
+.adj label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.adj input{font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.adj-note{display:block;margin-top:4px;color:var(--muted);font-size:12px;max-width:220px}

@@ -19,6 +19,23 @@ export interface FieldKey {
   mustMention?: string[];
   /** Optional working, shown next to the answer in results. */
   explanation?: string;
+  /** Text fields: extra points for writing it as real prose in the
+   * candidate's own words (not bullet points, not copied from the brief). */
+  qualityWeight?: number;
+}
+
+/** An admin's manual adjustment to one field's mark. */
+export interface FieldOverride {
+  points: number;
+  reason: string;
+  by: string;
+  at: string;
+}
+export type Overrides = Record<string, FieldOverride>;
+
+/** What marking can compare against (the brief the candidate saw). */
+export interface ScoreContext {
+  source?: string;
 }
 
 /** A property photo uploaded by an admin. The hash identifies the exact
@@ -77,6 +94,9 @@ export function scorePhotos(given: string[], photos: PhotoKey[]): { fraction: nu
 }
 
 export interface FieldScore {
+  /** Automatic mark before any admin adjustment. */
+  autoPoints?: number;
+  override?: FieldOverride;
   id: string;
   label: string;
   section: SectionId;
@@ -90,6 +110,7 @@ export interface FieldScore {
 }
 
 export interface ScoreResult {
+  overrides?: Overrides;
   fields: FieldScore[];
   points: number;
   maxPoints: number;
@@ -218,25 +239,84 @@ function expectedText(f: FieldDef, key: FieldKey, config: AssessmentConfig): str
 }
 
 /** Marks a set of answers. Accuracy is points earned ÷ points available. */
-export function scoreAnswers(config: AssessmentConfig, answers: Answers): ScoreResult {
+export function scoreAnswers(config: AssessmentConfig, answers: Answers, ctx: ScoreContext = {}, overrides: Overrides = {}): ScoreResult {
   const fields: FieldScore[] = [];
   for (const id of formFieldIds(config)) {
     const f = FIELD_BY_ID[id];
     const key = config.fields[id];
-    const weight = Math.max(0, Number(key.weight) || 0);
+    const contentWeight = Math.max(0, Number(key.weight) || 0);
+    const qualityWeight = f.type === "text" ? Math.max(0, Number(key.qualityWeight) || 0) : 0;
+    const weight = contentWeight + qualityWeight;
     if (weight === 0) continue;
-    const { fraction, note } = scoreField(f, key, answers[id], config);
-    fields.push({
-      id, label: f.label, section: f.section, weight, fraction,
-      points: weight * fraction,
+    const { fraction: contentFraction, note } = scoreField(f, key, answers[id], config);
+    let points = contentWeight * contentFraction;
+    const notes = [note];
+    if (qualityWeight > 0) {
+      const q = writingQuality(String(cleanValue(f, answers[id] ?? null)), ctx.source ?? "");
+      points += qualityWeight * q.fraction;
+      notes.push(`Writing: ${(qualityWeight * q.fraction).toFixed(1)} of ${qualityWeight} (${q.note})`);
+    }
+    const base: FieldScore = {
+      id, label: f.label, section: f.section, weight, fraction: points / weight, points,
       given: displayValue(f, cleanValue(f, answers[id] ?? null)),
-      expected: expectedText(f, key, config),
-      note,
-    });
+      expected: expectedText(f, key, config) + (qualityWeight > 0 ? `. Plus ${qualityWeight} points for writing it as a real description in their own words` : ""),
+      note: notes.filter(Boolean).join(". ") || undefined,
+    };
+    const o = overrides[id];
+    if (o) {
+      const p = Math.max(0, Math.min(weight, Number(o.points) || 0));
+      fields.push({ ...base, autoPoints: base.points, points: p, fraction: p / weight, override: o });
+    } else {
+      fields.push(base);
+    }
   }
   const points = fields.reduce((n, x) => n + x.points, 0);
   const maxPoints = fields.reduce((n, x) => n + x.weight, 0);
-  return { fields, points, maxPoints, accuracy: maxPoints === 0 ? 0 : (points / maxPoints) * 100 };
+  const result: ScoreResult = { fields, points, maxPoints, accuracy: maxPoints === 0 ? 0 : (points / maxPoints) * 100 };
+  if (Object.keys(overrides).length) result.overrides = overrides;
+  return result;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Writing quality: prose, not a list; own words, not the brief's
+// ─────────────────────────────────────────────────────────────
+
+const words = (s: string) => s.toLowerCase().replace(/[^a-z0-9£]+/g, " ").trim().split(" ").filter(Boolean);
+
+/** Share of the text that sits inside runs of 6+ words copied word for
+ * word from the source. Short keywords ("free Wi-Fi") never count. */
+export function copiedShare(text: string, source: string, run = 6): number {
+  const w = words(text);
+  const src = words(source);
+  if (w.length < run || src.length < run) return 0;
+  const grams = new Set<string>();
+  for (let i = 0; i + run <= src.length; i++) grams.add(src.slice(i, i + run).join(" "));
+  const covered = new Array<boolean>(w.length).fill(false);
+  for (let i = 0; i + run <= w.length; i++) {
+    if (grams.has(w.slice(i, i + run).join(" "))) for (let j = i; j < i + run; j++) covered[j] = true;
+  }
+  return covered.filter(Boolean).length / w.length;
+}
+
+/** 0 to 1, half for reading as prose, half for being in their own words. */
+export function writingQuality(text: string, source: string): { fraction: number; note: string } {
+  const all = words(text);
+  if (all.length < 30) return { fraction: 0, note: all.length ? "too short to judge" : "left blank" };
+  const lines = text.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  const listy = lines.filter((l) => /^([-*•·▪–]|\d+[.)])\s*/.test(l) || words(l).length < 6).length;
+  const listShare = lines.length <= 2 ? 0 : listy / lines.length;
+  const sentences = (text.match(/[.!?](\s|$)/g) ?? []).length;
+  let prose = 1 - listShare;
+  if (sentences < 2) prose = Math.min(prose, 0.5);
+  const copied = copiedShare(text, source);
+  // Up to 25% copied is fine; nothing for this half at 75% or more.
+  const own = copied <= 0.25 ? 1 : copied >= 0.75 ? 0 : 1 - (copied - 0.25) / 0.5;
+  const fraction = 0.5 * prose + 0.5 * own;
+  const bits = [
+    listShare > 0.3 ? `${Math.round(listShare * 100)}% list-style lines` : sentences < 2 ? "not written in sentences" : "reads as prose",
+    `${Math.round(copied * 100)}% copied word for word from the brief`,
+  ];
+  return { fraction, note: bits.join(", ") };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -291,6 +371,7 @@ export function cleanConfig(raw: unknown): AssessmentConfig {
     }
     if (f.type === "number" && k.tolerance !== undefined && Number(k.tolerance) > 0) entry.tolerance = Number(k.tolerance);
     if (typeof k.explanation === "string" && k.explanation.trim()) entry.explanation = k.explanation.trim().slice(0, 500);
+    if (f.type === "text" && Number(k.qualityWeight) > 0) entry.qualityWeight = Math.min(100, Number(k.qualityWeight));
     fields[f.id] = entry;
   }
   const rawPhotos = (raw && typeof raw === "object" ? (raw as { photos?: unknown }).photos : null);
