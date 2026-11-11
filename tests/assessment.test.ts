@@ -118,10 +118,12 @@ test("address matching ignores case, spaces and punctuation", () => {
 test("text fields score by facts mentioned", () => {
   const t = (title: string) => scoreAnswers(WITH_PHOTOS, { ...perfect(WITH_PHOTOS), title }).fields.find((x) => x.id === "title")!;
   assert.equal(t("Spacious 3-Bedroom House with Garden and Free Wi-Fi in Newcastle-under-Lyme").fraction, 1);
-  assert.equal(t("Three bedroom home with parking, Newcastle").fraction, 1);
+  const noWifi = t("Three bedroom home with garden, Newcastle");
+  assert.equal(noWifi.fraction, 4 / 5);
+  assert.match(noWifi.note!, /wifi/);
   const nameOnly = t("The Hollies House");
-  assert.equal(nameOnly.fraction, 0.25); // only "house"
-  assert.match(nameOnly.note!, /3 bed, garden, newcastle/);
+  assert.equal(nameOnly.fraction, 1 / 5); // only "house"
+  assert.match(nameOnly.note!, /3 bed, garden, wifi, newcastle/);
   assert.equal(t("").fraction, 0);
   // Whole words only: "bedside" doesn't count as "bed".
   assert.equal(t("Newcastles 3 bedside").fraction, 0);

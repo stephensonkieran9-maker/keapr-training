@@ -23,7 +23,7 @@ When you press **Start**, you'll see a property brief on the left and a listing 
 
 Build the listing using only the information in this brief.
 
-- **Title:** write a title that tells guests what the property is, how big it is, what's good about it and where it is.
+- **Title:** write a title that tells guests what the property is, how big it is, its key features and where it is.
 - **Description:** write the listing description in your own words, as full sentences that would make a guest want to book. Don't just copy the bullet points from this brief.
 - **Getting around:** the *Getting around* section at the end goes in the neighbourhood and getting around box, not the description.
 - **Amenities:** tick only what the brief lists.
@@ -145,11 +145,12 @@ Download the photos from the **Photos** step, upload **all** of them, and put th
       ]
     },
     "title": {
-      "weight": 3,
+      "weight": 5,
       "mustMention": [
         "3 bed|three bed|3 bedroom|three bedroom|3bed|3 bedrooms|three bedrooms|3 br",
         "house|home",
-        "garden|wifi|wi fi|parking",
+        "garden",
+        "wifi|wi fi",
         "newcastle"
       ]
     },
