@@ -20,6 +20,10 @@ export function EnrolmentDetailView({ d, staffId }: { d: EnrolmentDetail; staffI
             {d.unassignedAt && ` · unassigned ${formatDateTime(d.unassignedAt)}`}
           </p>
         </div>
+        <div className="actions-row">
+          <a className="btn btn-ghost" href={`/admin/staff/${id}/courses/${d.enrolmentId}/pdf?view=1`} target="_blank" rel="noopener">View PDF</a>
+          <a className="btn btn-primary" href={`/admin/staff/${id}/courses/${d.enrolmentId}/pdf`} download>Download PDF</a>
+        </div>
       </div>
 
       <section className="detail-stats" aria-label="Summary">

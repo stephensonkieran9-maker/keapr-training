@@ -61,7 +61,12 @@ export default async function StaffMemberPage({
 
       <div className="two-col">
         <section className="card" aria-labelledby="assigned-title">
-          <h2 id="assigned-title">Assigned training</h2>
+          <div className="ov-card-head">
+            <h2 id="assigned-title" style={{ margin: 0 }}>Assigned training</h2>
+            {person.courses.length > 0 && (
+              <a className="btn btn-ghost" href={`/admin/staff/${person.id}/pdf`} download>Download results PDF</a>
+            )}
+          </div>
           {person.courses.length === 0 ? (
             <p>No courses assigned yet.</p>
           ) : (

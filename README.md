@@ -2,7 +2,7 @@
 
 Private internal training app for Keapr staff: video lessons followed by quizzes, where passing a quiz unlocks the next lesson.
 
-**Status:** sign-in, learner dashboard, course pages, lesson player with watch tracking, server-scored quizzes, and admin (overview, staff with search, course builder with video upload and learner preview, reports with CSV export) are built. Public previews with sample data: `/demo` and `/demo/admin`. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
+**Status:** sign-in, learner dashboard, course pages, lesson player with watch tracking, server-scored quizzes, and admin (overview, staff with search, course builder with video upload and learner preview, reports with CSV export, per-person results as PDF) are built. Public previews with sample data: `/demo` and `/demo/admin`. See [docs/CHECKLIST.md](docs/CHECKLIST.md).
 
 ## Stack
 
