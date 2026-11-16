@@ -24,7 +24,7 @@ export async function getEnrolmentDetail(enrolmentId: string): Promise<Enrolment
   if (!e) return null;
 
   type Opt = { id: string; label: string; position: number };
-  type Q = { id: string; position: number; prompt: string; quiz_options: Opt[] | null; quiz_answer_keys: { correct_option_id: string } | { correct_option_id: string }[] | null };
+  type Q = { id: string; position: number; prompt: string; explanation?: string | null; quiz_options: Opt[] | null; quiz_answer_keys: { correct_option_id: string } | { correct_option_id: string }[] | null };
   type L = { id: string; position: number; title: string; video_seconds: number; is_required: boolean; quiz_questions: Q[] | null };
 
   // Timing columns arrive with migration 0013; fall back without them.
@@ -34,7 +34,7 @@ export async function getEnrolmentDetail(enrolmentId: string): Promise<Enrolment
   const [lessonsRes, completionsRes] = await Promise.all([
     admin
       .from("lessons")
-      .select("id, position, title, video_seconds, is_required, quiz_questions(id, position, prompt, quiz_options(id, label, position), quiz_answer_keys(correct_option_id))")
+      .select("id, position, title, video_seconds, is_required, quiz_questions(id, position, prompt, explanation, quiz_options(id, label, position), quiz_answer_keys(correct_option_id))")
       .eq("course_version_id", e.course_version_id)
       .order("position"),
     admin.from("lesson_completions").select("lesson_id, source, completed_at, override_reason").eq("enrolment_id", enrolmentId).is("revoked_at", null),
@@ -62,6 +62,7 @@ export async function getEnrolmentDetail(enrolmentId: string): Promise<Enrolment
           id: q.id,
           position: q.position,
           prompt: q.prompt,
+          explanation: q.explanation ?? "",
           options: [...(q.quiz_options ?? [])].sort((a, b) => a.position - b.position).map((o) => ({ id: o.id, label: o.label })),
           correctOptionId: key?.correct_option_id ?? null,
         };

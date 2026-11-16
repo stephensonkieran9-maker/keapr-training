@@ -9,6 +9,7 @@ import { LinkedText } from "@/components/LinkedText";
 import { previewQuiz } from "@/lib/admin/preview-actions";
 import { formatDuration } from "@/lib/format";
 import { sectionScores, withoutSectionTag } from "@/lib/quiz-sections";
+import { SectionScoreTable } from "@/components/SectionScoreTable";
 import type { LessonQuestion, LessonView } from "@/lib/lesson";
 import { useWatchTracker } from "./useWatchTracker";
 
@@ -478,25 +479,7 @@ function QuizResults({ view, result, onRetry, preview }: { view: LessonView; res
         </div>
       </div>
 
-      {sections.length > 0 && (
-        <div className="section-scores">
-          <h3>Score by section</h3>
-          <table>
-            <thead>
-              <tr><th scope="col">Section</th><th scope="col">Correct</th><th scope="col">Score</th></tr>
-            </thead>
-            <tbody>
-              {sections.map((s) => (
-                <tr key={s.number}>
-                  <th scope="row">{s.number}. {s.name}</th>
-                  <td>{s.correct} of {s.total}</td>
-                  <td>{s.percent}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {sections.length > 0 && <SectionScoreTable sections={sections} />}
 
       <ol className="result-list">
         {(result.results ?? []).map((r, i) => {

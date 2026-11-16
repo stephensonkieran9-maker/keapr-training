@@ -1,5 +1,7 @@
 import type { ReviewedAttempt } from "@/lib/attempt-history";
 import { formatDateTime } from "@/lib/format";
+import { sectionScores, withoutSectionTag } from "@/lib/quiz-sections";
+import { SectionScoreTable } from "@/components/SectionScoreTable";
 
 /** Past quiz attempts on a lesson: score, date, and each answer. */
 export function AttemptHistory({ attempts, passMark, revealed }: { attempts: ReviewedAttempt[]; passMark: number; revealed: boolean }) {
@@ -14,6 +16,7 @@ export function AttemptHistory({ attempts, passMark, revealed }: { attempts: Rev
       <ul className="attempt-list">
         {attempts.map((a) => {
           const pct = Math.floor((a.correct / Math.max(1, a.total)) * 100);
+          const sections = sectionScores(a.answers);
           return (
             <li key={a.id}>
               <details>
@@ -24,6 +27,7 @@ export function AttemptHistory({ attempts, passMark, revealed }: { attempts: Rev
                   <span className="muted">{formatDateTime(a.submittedAt)}</span>
                 </summary>
                 <p className="muted" style={{ margin: "8px 0 10px" }}>Pass mark {passMark}%.</p>
+                {sections.length > 0 && <SectionScoreTable sections={sections} />}
                 <ol className="result-list">
                   {a.answers.map((r) => (
                     <li key={r.questionId} className={r.isCorrect ? "ok" : "no"}>
@@ -35,7 +39,7 @@ export function AttemptHistory({ attempts, passMark, revealed }: { attempts: Rev
                           Your answer: {r.chosen ?? "No answer"}
                           {!r.isCorrect && r.correct ? <> · Correct answer: {r.correct}</> : null}
                         </div>
-                        {r.explanation && (revealed || r.isCorrect) && <div className="rx">{r.explanation}</div>}
+                        {r.explanation && (revealed || r.isCorrect) && <div className="rx">{sections.length ? withoutSectionTag(r.explanation) : r.explanation}</div>}
                       </div>
                     </li>
                   ))}
