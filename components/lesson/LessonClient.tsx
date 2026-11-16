@@ -8,6 +8,7 @@ import { confirmReading, submitQuiz, type QuizResult } from "@/lib/lesson-action
 import { LinkedText } from "@/components/LinkedText";
 import { previewQuiz } from "@/lib/admin/preview-actions";
 import { formatDuration } from "@/lib/format";
+import { sectionScores, withoutSectionTag } from "@/lib/quiz-sections";
 import type { LessonQuestion, LessonView } from "@/lib/lesson";
 import { useWatchTracker } from "./useWatchTracker";
 
@@ -454,6 +455,7 @@ function QuizResults({ view, result, onRetry, preview }: { view: LessonView; res
   const passed = Boolean(result.passed);
   const score = Math.floor(((result.correct ?? 0) / Math.max(1, result.total ?? 1)) * 100);
   const byId = new Map(view.questions.map((q) => [q.id, q]));
+  const sections = sectionScores(result.results ?? []);
 
   return (
     <section className={`card quiz result ${passed ? "pass" : "fail"}`} aria-labelledby="result-title" aria-live="polite">
@@ -476,6 +478,26 @@ function QuizResults({ view, result, onRetry, preview }: { view: LessonView; res
         </div>
       </div>
 
+      {sections.length > 0 && (
+        <div className="section-scores">
+          <h3>Score by section</h3>
+          <table>
+            <thead>
+              <tr><th scope="col">Section</th><th scope="col">Correct</th><th scope="col">Score</th></tr>
+            </thead>
+            <tbody>
+              {sections.map((s) => (
+                <tr key={s.number}>
+                  <th scope="row">{s.number}. {s.name}</th>
+                  <td>{s.correct} of {s.total}</td>
+                  <td>{s.percent}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <ol className="result-list">
         {(result.results ?? []).map((r, i) => {
           const q = byId.get(r.questionId);
@@ -491,7 +513,7 @@ function QuizResults({ view, result, onRetry, preview }: { view: LessonView; res
                   Your answer: {chosen}
                   {!r.isCorrect && correct ? <> · Correct answer: {correct}</> : null}
                 </div>
-                {r.explanation && <div className="rx">{r.explanation}</div>}
+                {r.explanation && <div className="rx">{sections.length ? withoutSectionTag(r.explanation) : r.explanation}</div>}
               </div>
             </li>
           );
