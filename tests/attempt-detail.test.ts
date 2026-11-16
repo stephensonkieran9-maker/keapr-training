@@ -57,3 +57,17 @@ test("most-missed questions are ranked", () => {
   const d = buildCourseDetail(input);
   assert.deepEqual(d.mostMissed.map((m) => [m.position, m.misses]), [[3, 2], [2, 1]]);
 });
+
+test("attempts on a sectioned quiz get a score per section", () => {
+  const sq = (id: string, position: number, section: string) => ({ ...q(id, position, `${id}a`), explanation: `Why. (${section})` });
+  const d = buildCourseDetail({
+    ...input,
+    lessons: [{ id: "big", position: 1, title: "Full quiz", videoSeconds: 0, isRequired: true, questions: [sq("s1", 1, "Section 1 — Leads"), sq("s2", 2, "Section 1 — Leads"), sq("s3", 3, "Section 2 — Clock")] }],
+    attempts: [{ id: "x", lessonId: "big", answers: { s1: "s1a", s2: "s2b", s3: "s3a" }, correct: 2, total: 3, passRatio: 0.8, passed: false, submittedAt: "2026-10-26T10:05:00Z", startedAt: null }],
+  });
+  assert.deepEqual(d.lessons[0].attempts[0].sections, [
+    { number: 1, name: "Leads", correct: 1, total: 2, percent: 50 },
+    { number: 2, name: "Clock", correct: 1, total: 1, percent: 100 },
+  ]);
+  assert.deepEqual(buildCourseDetail(input).lessons[1].attempts[0].sections, []);
+});

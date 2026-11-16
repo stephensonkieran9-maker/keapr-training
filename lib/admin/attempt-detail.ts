@@ -2,6 +2,8 @@
 // score, time taken and the questions got wrong, plus watch and completion
 // times per lesson. Pure computation from raw rows, so it's tested.
 
+import { sectionScores, type SectionScore } from "../quiz-sections.ts";
+
 export interface DetailInput {
   lessons: {
     id: string;
@@ -9,7 +11,7 @@ export interface DetailInput {
     title: string;
     videoSeconds: number;
     isRequired: boolean;
-    questions: { id: string; position: number; prompt: string; options: { id: string; label: string }[]; correctOptionId: string | null }[];
+    questions: { id: string; position: number; prompt: string; explanation?: string; options: { id: string; label: string }[]; correctOptionId: string | null }[];
   }[];
   attempts: {
     id: string;
@@ -45,6 +47,8 @@ export interface AttemptDetail {
   passed: boolean;
   durationSeconds: number | null;
   wrong: WrongAnswer[];
+  /** Score per section, for quizzes whose explanations carry section tags. */
+  sections: SectionScore[];
 }
 
 export interface LessonDetail {
@@ -119,6 +123,9 @@ export function buildCourseDetail(input: DetailInput): CourseDetail {
             passed: a.passed,
             durationSeconds: secondsBetween(a.startedAt, a.submittedAt),
             wrong,
+            sections: sectionScores(
+              l.questions.map((q) => ({ explanation: q.explanation, isCorrect: Boolean(q.correctOptionId) && a.answers[q.id] === q.correctOptionId })),
+            ),
           };
         });
       const v = input.video.find((x) => x.lessonId === l.id);

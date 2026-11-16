@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { EnrolmentDetail } from "@/lib/admin/attempt-detail-data";
+import { SectionScoreTable } from "@/components/SectionScoreTable";
 import { formatDateTime, formatDuration, formatElapsed } from "@/lib/format";
 
 const completedBy = { quiz_pass: "Passed the quiz", watched: "Watched the video", admin_override: "Marked complete by an admin" } as const;
@@ -87,7 +88,10 @@ export function EnrolmentDetailView({ d, staffId }: { d: EnrolmentDetail; staffI
                     <tr key={a.number}>
                       <td>#{a.number}</td>
                       <td>{formatDateTime(a.submittedAt)}</td>
-                      <td>{a.correct}/{a.total} <small>{a.percent}% · pass mark {a.passMarkPercent}%</small></td>
+                      <td>
+                        {a.correct}/{a.total} <small>{a.percent}% · pass mark {a.passMarkPercent}%</small>
+                        {a.sections.length > 0 && <SectionScoreTable sections={a.sections} collapsible />}
+                      </td>
                       <td><span className={`badge ${a.passed ? "st-completed" : "st-not_started"}`}>{a.passed ? "Passed" : "Not passed"}</span></td>
                       <td>{a.durationSeconds != null ? formatElapsed(a.durationSeconds) : <span className="muted">Not recorded</span>}</td>
                       <td>
